@@ -1,0 +1,14 @@
+# default
+.DS_Store
+.vscode
+.idea
+
+# Environ
+.env.development
+.env.production
+
+# Node Modules
+node_modules
+
+# Python
+.venv
