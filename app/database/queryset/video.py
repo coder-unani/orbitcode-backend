@@ -1,6 +1,7 @@
 
 from django.db import transaction
 
+from app.utils.logger import Logger
 from app.database.models import (
     Video,
     VideoThumbnail,
@@ -115,30 +116,32 @@ def create_video_watch(video, new_watch):
 
 def create_content_data(new_content):
     object_name = "create_content_data"
-    # try:
-    with transaction.atomic():
-        print(new_content)
-        video = create_video(new_content)
-        for new_actor in new_content['actor']:
-            print(new_actor)
-            create_video_actor(video, new_actor)
-        for new_staff in new_content['staff']:
-            print(new_staff)
-            create_video_staff(video, new_staff)
-        for new_genre in new_content['genre']:
-            print(new_genre)
-            create_video_genre(video, new_genre)
-        for new_watch in new_content['watch']:
-            print(new_watch)
-            create_video_watch(video, new_watch)
-        for new_thumbnail in new_content['thumbnail']:
-            print(new_thumbnail)
-            create_video_thumbnail(video, new_thumbnail)
-    info_log(object_name, "Created video data. platform_id: {} / id: {}".format(new_content['platform_id'], video.id))
-    return video
-    # except Exception as e:
-    #     error_log(object_name, "Video data creation failed. platform_id: {} / {}".format(new_content['platform_id'], e))
-    #     return False
+    try:
+        if exist_content_video(platform_id=new_content['platform_id']):
+            Logger.info_log(object_name, "Already exist. platform_id={}".format(new_content['platform_id']))
+            return False
+        with transaction.atomic():
+            video = create_video(new_content)
+            for new_actor in new_content['actor']:
+                print(new_actor)
+                create_video_actor(video, new_actor)
+            for new_staff in new_content['staff']:
+                print(new_staff)
+                create_video_staff(video, new_staff)
+            for new_genre in new_content['genre']:
+                print(new_genre)
+                create_video_genre(video, new_genre)
+            for new_watch in new_content['watch']:
+                print(new_watch)
+                create_video_watch(video, new_watch)
+            for new_thumbnail in new_content['thumbnail']:
+                print(new_thumbnail)
+                create_video_thumbnail(video, new_thumbnail)
+            Logger.info_log(object_name, "Created video data. platform_id: {} / id: {}".format(new_content['platform_id'], video.id))
+            return video
+    except Exception as e:
+        Logger.error_log(object_name, "Video data creation failed. platform_id: {} / {}".format(new_content['platform_id'], e))
+        return False
 
 
 def exist_content_video(video_id=None, platform_id=None):
@@ -154,18 +157,18 @@ def exist_content_video(video_id=None, platform_id=None):
         else:
             return False
     except Exception as e:
-        error_log("exist_video", "Failed to check video existence: {}".format(e))
+        Logger.error_log("exist_video", "Failed to check video existence: {}".format(e))
         return False
 
 
 def get_video(video_id):
     try:
         video = Video.objects.get(id=video_id),
-        info_log("get_video", "Video search successful with ID: {}".format(id))
+        Logger.info_log("get_video", "Video search successful with ID: {}".format(id))
         return video
     
     except Exception as e:
-        error_log("get_video", "Video retrieval failed with ID: {} / {}".format(id, e))
+        Logger.error_log("get_video", "Video retrieval failed with ID: {} / {}".format(id, e))
         return None
 
 
@@ -174,7 +177,7 @@ def get_video_by_platform_id(platform_id):
         video = Video.objects.get(platform_id=platform_id)
         return video
     except Exception as e:
-        error_log(
+        Logger.error_log(
             "get_video_by_platform_id",
             "Video retrieval failed with platform_id: {} / {}".format(platform_id, e)
         )

@@ -1,7 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 
-{% include  "./common/head.html" %}
+<head>
+    {% include  "./common/head.html" %}
+    <title>{% block title %} Orbitcode Galaxy {% endblock %}</title>
+    <!-- Start Head Content -->
+    {% block head %}
+    {% endblock %}
+    <!-- End Head Content -->
+</head>
 
 <body x-data="main" class="font-inter text-base antialiased font-medium relative vertical" :class="[ $store.app.sidebar ? 'toggle-sidebar' : '', $store.app.fullscreen ? 'full' : '',$store.app.mode]">
 

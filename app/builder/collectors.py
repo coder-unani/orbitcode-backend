@@ -59,7 +59,7 @@ class SeleniumParser:
             try:
                 self._selenium = webdriver.Chrome(options=options)
                 self._selenium.get(url)
-                self.wait(2)
+                self.selenium_wait(2)
                 Logger.info_log(self.__class__.__name__, "driver is ready")
                 return True
             except Exception as e:
@@ -96,7 +96,7 @@ class SeleniumParser:
         Logger.info_log(self.__class__.__name__, "selenium_elements")
         result = None
         try:
-            if target == None:
+            if target is None:
                 target = self._selenium
             if type == "class":
                 result = target.find_elements(by=By.CLASS_NAME, value=value)
@@ -141,11 +141,11 @@ class SeleniumParser:
         sleep(sec)
 
     def selenium_scroll_move(self, target):
-        info_log(self.__class__.__name__, "selenium_scroll_move")
+        Logger.info_log(self.__class__.__name__, "selenium_scroll_move")
         target.location_once_scrolled_into_view
 
     def selenium_scroll_down(self):
-        info_log(self.__class__.__name__, "selenium_scroll_down")
+        Logger.info_log(self.__class__.__name__, "selenium_scroll_down")
         if self._selenium is not None:
             try:
                 # PAGE_DOWN 키를 이용하여 스크롤 다운
@@ -155,13 +155,13 @@ class SeleniumParser:
                 self.selenium_wait(2)
                 return True
             except Exception as e:
-                info_log(self.__class__.__name__, str(e))
+                Logger.info_log(self.__class__.__name__, str(e))
                 return False
         else:
             return False
 
     def selenium_scroll_up(self):
-        info_log(self.__class__.__name__, "selenium_scroll_up")
+        Logger.info_log(self.__class__.__name__, "selenium_scroll_up")
         if self._selenium is not None:
             try:
                 # PAGE_DOWN 키를 이용하여 스크롤 다운
@@ -171,21 +171,21 @@ class SeleniumParser:
                 self.selenium_wait(2)
                 return True
             except Exception as e:
-                info_log(self.__class__.__name__, str(e))
+                Logger.info_log(self.__class__.__name__, str(e))
                 return False
         else:
             return False
 
     def selenium_close(self):
         if self._selenium is not None:
-            info_log(self.__class__.__name__, "Selenium driver is closed")
+            Logger.info_log(self.__class__.__name__, "Selenium driver is closed")
             self._selenium.quit()
 
 
 class NetflixParser(BeautyfulSoupParser, SeleniumParser):
 
     def login_netflix(self, id, pw):
-        info_log(self.__class__.__name__, "Try to login netflix. id={}".format(id))
+        Logger.info_log(self.__class__.__name__, "Try to login netflix. id={}".format(id))
         try:
             netflix_id = self.selenium_element(type="name", value="userLoginId")
             netflix_pw = self.selenium_element(type="name", value="password")
@@ -194,28 +194,28 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
             netflix_pw.send_keys(Keys.RETURN)
             # 로그인 후 페이지 전환 대기 (3s)
             self.selenium_wait(3)
-            info_log(self.__class__.__name__, "Netflix login success")
+            Logger.info_log(self.__class__.__name__, "Netflix login success")
             return True
         except Exception as e:
-            error_log(self.__class__.__name__, "Failed netflix login. {}".format(e))
+            Logger.error_log(self.__class__.__name__, "Failed netflix login. {}".format(e))
             return False
 
     def get_content_netflix(self, id):
-        info_log(self.__class__.__name__, "Try to import content. id={}".format(id))
+        Logger.info_log(self.__class__.__name__, "Try to import content. id={}".format(id))
         url = URL_NETFLIX_CONTENT + "/" + id
         try:
             with urlopen(url) as response:
                 html = response.read()
             # BeautySoup을 이용하여 데이터 파싱
-            content = self.parse_content_netflix(html)
-            info_log(self.__class__.__name__, "Content import success. content={}".format(content))
+            content = self.parse_content(html)
+            Logger.info_log(self.__class__.__name__, "Content import success. content={}".format(content))
             return content
         except Exception as e:
-            error_log(self.__class__.__name__, "Failed to import content. {}".format(e))
+            Logger.error_log(self.__class__.__name__, "Failed to import content. {}".format(e))
             return None
             
     def get_contents(self):
-        info_log(self.__class__.__name__, "Try to get most watched contents")
+        Logger.info_log(self.__class__.__name__, "Try to get most watched contents")
         try:
             # 넷플릭스 로그인
             self.set_selenium(URL_NETFLIX_LOGIN)
@@ -276,17 +276,17 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
             # rank 순으로 정렬
             ranks = sorted(ranks, key=lambda k: (k['type'], k['rank']))
             # Write Log
-            info_log(self.__class__.__name__, "Most watched contents parsing success")
+            Logger.info_log(self.__class__.__name__, "Most watched contents parsing success")
             # 파싱한 데이터 리턴
             return contents, ranks
         except Exception as e:
             # Write Log
-            error_log(self.__class__.__name__, "Failed to most watched contents parsing. {}".format(e))
+            Logger.error_log(self.__class__.__name__, "Failed to most watched contents parsing. {}".format(e))
             # 에러 발생시 None
             return None, None
     
     def parse_content(self, html):
-        info_log(self.__class__.__name__, "Try to parse netflix content")
+        Logger.info_log(self.__class__.__name__, "Try to parse netflix content")
         try:
             self.set_beautyfulsoup(html)        
             schema = self.soup_element(tag="script", attrs={"type": "application/ld+json"})
@@ -300,11 +300,11 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
                 content['type'] = "10"
             elif schema_to_dict['@type'] == "TVSeries":
                 content['type'] = "11"
-            content['title'] = schema_to_dict['name'] # title 추출
-            content['synopsis'] = schema_to_dict['description'] # synopsis 추출
-            content['platform_code'] = "10" # Netflix platform_code
-            content['platform_id'] = schema_to_dict['url'].split("/")[-1] # platform_id 추출
-            content['notice_age'] = schema_to_dict['contentRating'] # 연령고지 추출
+            content['title'] = schema_to_dict['name']  # title 추출
+            content['synopsis'] = schema_to_dict['description']  # synopsis 추출
+            content['platform_code'] = "10"  # Netflix platform_code
+            content['platform_id'] = schema_to_dict['url'].split("/")[-1]  # platform_id 추출
+            content['notice_age'] = schema_to_dict['contentRating']  # 연령고지 추출
             # Thumbnail 이미지 추출
             content['thumbnail'] = [
                 {"type": "11", "url": schema_to_dict['image'], "extension": "", "size": 0}
@@ -342,24 +342,28 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
             if content['release'] is not None:
                 content['release'] = content['release'].text.strip()
             # 상영시간 추출
-            content['runtime'] = self.soup_element(tag="span", classname="item-runtime", attrs={"data-uia": "item-runtime"})
+            content['runtime'] = self.soup_element(
+                tag="span",
+                classname="item-runtime",
+                attrs={"data-uia": "item-runtime"}
+            )
             if content['runtime'] is not None:
                 content['runtime'] = content['runtime'].text.strip()
             
-            info_log(self.__class__.__name__, "Netflix content parsing success")
+            Logger.info_log(self.__class__.__name__, "Netflix content parsing success")
             return content
         except Exception as e:
-            error_log(self.__class__.__name__, "Failed to parse content. {}".format(e))
+            Logger.error_log(self.__class__.__name__, "Failed to parse content. {}".format(e))
             return None
         finally:
             self.soup_close()
 
     def close(self):
-        info_log(self.__class__.__name__, "Close NetflixParser")
+        Logger.info_log(self.__class__.__name__, "Close NetflixParser")
         try:
             if self._selenium is not None:
                 self.selenium_close()
             if self._soup is not None:
                 self.soup_close()
         except Exception as e:
-            error_log(self.__class__.__name__, str(e))
+            Logger.error_log(self.__class__.__name__, str(e))

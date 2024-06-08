@@ -40,29 +40,39 @@ class CollectNetflix(LoginRequiredMixin, TemplateView):
         context = dict()
         if search_ids:
             search_ids_to_list = search_ids.split(',')
-            content_ids = []
-            contents = []
+            video_ids = []
+            videos = []
             parser = NetflixParser()
             for search_id in search_ids_to_list:
                 content = parser.get_content_netflix(search_id)
                 if content:
-                    content_ids.append(search_id)
-                    contents.append(content)
+                    video_ids.append(search_id)
+                    videos.append(content)
             parser.close()
-            context['content_ids'] = content_ids
-            context['contents'] = contents
+            context['video_ids'] = ",".join(video_ids)
+            context['videos'] = videos
         return render(request, template_name=self.template_name, context=context)
 
     def post(self, request):
-        content_ids = request.POST.get('content_ids')
-        content_ids_to_list = content_ids.split(',')
-        for content_id in content_ids_to_list:
-            content = eval(request.POST.get('content_' + content_id))
-            if create_content_data(content):
-                print("Success")
-            else:
-                print("Fail")
-        return render(request, template_name=self.template_name)
+        platform_ids = request.POST.getlist('platform_ids')
+        context = dict()
+        save_count = 0
+        fail_count = 0
+        context['summary'] = dict()
+        context['messages'] = list()
+        if len(platform_ids) > 0:
+            for platform_id in platform_ids:
+                content = eval(request.POST.get('video_' + platform_id))
+                if create_content_data(content):
+                    save_count += 1
+                    context['messages'].append({"result": "success", "message": "{} 저장에 성공하였습니다.".format(platform_id)})
+                else:
+                    fail_count += 1
+                    context['messages'].append({"result": "fail", "message": "{} 저장에 실패하였습니다.".format(platform_id)})
+        else:
+            context['messages'].append({"result": "fail", "message": "저장할 데이터가 없습니다."})
+        context['summary'] = {"total": int(save_count) + int(fail_count), "success": save_count, "fail": fail_count}
+        return render(request, template_name="pages/builder/collect/result.html", context=context)
 
 
 class CollectNetflixBoxoffice(LoginRequiredMixin, TemplateView):

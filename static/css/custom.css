@@ -1,0 +1,19 @@
+.w-\[100px\]{
+  width: 100px;
+}
+
+.break-all {
+  word-break: break-all;
+}
+
+.border-r-div {
+  border-right: 1px solid #e8e8e8;
+}
+
+.pr-1 {
+  padding-right: 0.25rem;
+}
+
+.min-w-\[200px\]{
+  min-width: 200px;
+}
