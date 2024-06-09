@@ -33,6 +33,8 @@ class Video(models.Model):
     is_confirm = models.BooleanField(default=False)
     # 삭제여부
     is_delete = models.BooleanField(default=False)
+    #
+
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)

@@ -1,0 +1,316 @@
+{% extends 'layouts/main.html' %}
+{% load common %}
+{% load static %}
+
+{% block title %} 컨텐츠 관리::비디오 {% endblock title %}
+
+{% block head %}
+    <script src="js/content/video/edit.js"></script>
+{% endblock head %}
+
+{% block content %}
+
+<div class="flex flex-col gap-5 min-h-[calc(100vh-188px)] sm:min-h-[calc(100vh-204px)]">
+    <div class="grid grid-cols-1 gap-4 flex-1" x-data="email">
+        <div class="flex gap-5 items-stretch relative overflow-hidden" x-data="{activeTab:'profile'}">
+            <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 rounded-lg p-5 absolute w-[240px] z-20 flex-none -left-[410px] xl:static overflow-hidden overflow-y-auto h-[calc(100vh-188px)] sm:h-[calc(100vh-204px)]" :class="isShowChatMenu && '!left-0'">
+                <div class="flex flex-col space-y-5">
+                    <button class="flex duration-300 p-5 bg-primary text-white text-sm/none font-semibold items-center gap-3 rounded-lg">
+                        기본 정보
+                    </button>
+                    <button @click="activeTab = 'thumbnail'" :class="activeTab === 'thumbnail' ? 'bg-primary text-white' : 'bg-gray/[8%] text-gray hover:bg-primary hover:text-white'" class="flex duration-300 p-5 text-sm/none font-semibold items-center gap-3 rounded-lg">
+                        이미지 정보
+                    </button>
+                    <button @click="activeTab = 'watch'" :class="activeTab === 'watch' ? 'bg-primary text-white' : 'bg-gray/[8%] text-gray hover:bg-primary hover:text-white'" class="flex duration-300 p-5 text-sm/none font-semibold items-center gap-3 rounded-lg">
+                        시청 정보
+                    </button>
+                    <button @click="activeTab = 'genre'" :class="activeTab === 'genre' ? 'bg-primary text-white' : 'bg-gray/[8%] text-gray hover:bg-primary hover:text-white'" class="flex duration-300 p-5 text-sm/none font-semibold items-center gap-3 rounded-lg">
+                        장르 정보
+                    </button>
+                    <button @click="activeTab = 'actor'" :class="activeTab === 'actor' ? 'bg-primary text-white' : 'bg-gray/[8%] text-gray hover:bg-primary hover:text-white'" class="flex duration-300 p-5 text-sm/none font-semibold items-center gap-3 rounded-lg">
+                        배우 정보
+                    </button>
+                    <button @click="activeTab = 'staff'" :class="activeTab === 'staff' ? 'bg-primary text-white' : 'bg-gray/[8%] text-gray hover:bg-primary hover:text-white'" class="flex duration-300 p-5 text-sm/none font-semibold items-center gap-3 rounded-lg">
+                        제작진 정보
+                    </button>
+                </div>
+            </div>
+            <div class="bg-transparent lg:hidden z-[5] w-full h-full absolute hidden" :class="isShowChatMenu && '!block xl:!hidden'" @click="isShowChatMenu = !isShowChatMenu"></div>
+            <div class="flex flex-col w-full">
+                <!-- 기본 정보 -->
+                <div class="flex flex-row relative w-full items-start gap-2.5 pb-2">
+                    <div class="w-full flex flex-col flex-1 rounded-lg overflow-y-auto">
+                        <div class="flex items-center gap-5">
+                            <button type="button" class="xl:hidden hover:text-primary duration-300" @click="isShowChatMenu = !isShowChatMenu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.3" x="3" y="17.2" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect opacity="0.5" x="3" y="11.6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect x="3" y="6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                </svg>
+                            </button>
+                            <div class="flex w-full justify-between items-center">
+                                <h3 class="text-lg font-semibold">기본정보</h3>
+                            </div>
+                        </div>
+
+                        <form method="post" class="w-full">
+                            {% csrf_token %}
+                            <input type="hidden" name="edit_type" value="basic">
+                            <div class="mt-[30px]">
+                                <div class="flex flex-col flex-wrap items-start gap-5 p-5 border-2 border-gray/[0.14] rounded-lg" style="background: linear-gradient(90.17deg, rgba(48, 154, 252, 0.1) -3.08%, rgba(87, 84, 255, 0.1) 31.4%, rgba(255, 81, 164, 0.1) 65.89%, rgba(255, 124, 81, 0.1) 100.37%);">
+                                    <div class="flex justify-between items-center gap-5 flex-wrap">
+                                        <div class="flex gap-5">
+                                            <span class="text-gray">ID : {{object.id}}</span>
+                                            <span class="text-gray">PID : {{object.platform_id}}</span>
+                                        </div>
+                                        <div class="flex gap-5">
+                                            <span class="text-gray">{{object.rating}}</span>
+                                            <div class="flex justify-center items-center ml-1 gap-2.5 text-gray text-sm">
+                                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path opacity="0.3" d="M2 12C2 13.6394 2.42496 14.1915 3.27489 15.2957C4.97196 17.5004 7.81811 20 12 20C16.1819 20 19.028 17.5004 20.7251 15.2957C21.575 14.1915 22 13.6394 22 12C22 10.3606 21.575 9.80853 20.7251 8.70433C19.028 6.49956 16.1819 4 12 4C7.81811 4 4.97196 6.49956 3.27489 8.70433C2.42496 9.80853 2 10.3606 2 12Z" fill="currentColor"></path>
+                                                    <path fill-rule="evenodd" clip-rule="evenodd" d="M8.25 12C8.25 9.92893 9.92893 8.25 12 8.25C14.0711 8.25 15.75 9.92893 15.75 12C15.75 14.0711 14.0711 15.75 12 15.75C9.92893 15.75 8.25 14.0711 8.25 12ZM9.75 12C9.75 10.7574 10.7574 9.75 12 9.75C13.2426 9.75 14.25 10.7574 14.25 12C14.25 13.2426 13.2426 14.25 12 14.25C10.7574 14.25 9.75 13.2426 9.75 12Z" fill="currentColor"></path>
+                                                </svg>
+                                                <span class="text-gray">{{object.view_count}}</span>
+                                            </div>
+                                            <div class="flex justify-center items-center gap-2.5 text-gray text-sm">
+                                                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path opacity="0.5" d="M13.6288 20.4718L13.0867 21.3877C12.6035 22.204 11.3965 22.204 10.9133 21.3877L10.3712 20.4718C9.95073 19.7614 9.74049 19.4063 9.40279 19.2098C9.06509 19.0134 8.63992 19.0061 7.78958 18.9915C6.53422 18.9698 5.74689 18.8929 5.08658 18.6194C3.86144 18.1119 2.88807 17.1386 2.3806 15.9134C2 14.9946 2 13.8297 2 11.5V10.5C2 7.22657 2 5.58985 2.7368 4.38751C3.14908 3.71473 3.71473 3.14908 4.38751 2.7368C5.58985 2 7.22657 2 10.5 2H13.5C16.7734 2 18.4101 2 19.6125 2.7368C20.2853 3.14908 20.8509 3.71473 21.2632 4.38751C22 5.58985 22 7.22657 22 10.5V11.5C22 13.8297 22 14.9946 21.6194 15.9134C21.1119 17.1386 20.1386 18.1119 18.9134 18.6194C18.2531 18.8929 17.4658 18.9698 16.2104 18.9915C15.36 19.0061 14.9349 19.0134 14.5972 19.2098C14.2595 19.4062 14.0492 19.7614 13.6288 20.4718Z" fill="currentColor"/>
+                                                    <path d="M10.9901 14.3082C9.6633 13.3304 7.5 11.4674 7.5 9.71476C7.5 7.03759 9.97507 6.03807 12 8.10615C14.0249 6.03807 16.5 7.03759 16.5 9.71475C16.5 11.4674 14.3367 13.3304 13.0099 14.3082C12.5558 14.643 12.3287 14.8103 12 14.8103C11.6713 14.8103 11.4442 14.643 10.9901 14.3082Z" fill="currentColor"/>
+                                                </svg>
+                                                <span class="text-gray">{{object.like_count}}</span>
+                                            </div>
+                                            <div class="flex justify-center items-center gap-2.5 text-gray text-sm">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path opacity="0.5" d="M1 12C1 6.81455 1 4.22183 2.61091 2.61091C4.22183 1 6.81455 1 12 1C17.1854 1 19.7782 1 21.3891 2.61091C23 4.22183 23 6.81455 23 12C23 17.1854 23 19.7782 21.3891 21.3891C19.7782 23 17.1854 23 12 23C6.81455 23 4.22183 23 2.61091 21.3891C1 19.7782 1 17.1854 1 12Z" fill="currentColor"/>
+                                                    <path d="M13.9261 14.3018C14.1711 14.1107 14.3933 13.8885 14.8377 13.4441L20.378 7.90374C20.512 7.7698 20.4507 7.53909 20.2717 7.477C19.6178 7.25011 18.767 6.82414 17.9713 6.02835C17.1755 5.23257 16.7495 4.38186 16.5226 3.72788C16.4605 3.54892 16.2298 3.48761 16.0959 3.62156L10.5555 9.16192C10.1111 9.60634 9.88888 9.82854 9.69778 10.0736C9.47235 10.3626 9.27908 10.6753 9.12139 11.0062C8.98771 11.2867 8.88834 11.5848 8.68959 12.181L8.43278 12.9515L8.02443 14.1765L7.64153 15.3252C7.54373 15.6186 7.6201 15.9421 7.8388 16.1608C8.0575 16.3795 8.38099 16.4559 8.67441 16.3581L9.82308 15.9752L11.0481 15.5668L11.8186 15.31L11.8186 15.31C12.4148 15.1113 12.7129 15.0119 12.9934 14.8782C13.3243 14.7205 13.637 14.5273 13.9261 14.3018Z" fill="currentColor"/>
+                                                    <path d="M22.1127 6.16905C23.2952 4.98656 23.2952 3.06936 22.1127 1.88687C20.9302 0.704377 19.013 0.704377 17.8306 1.88687L17.6524 2.06499C17.4806 2.23687 17.4027 2.47695 17.4456 2.7162C17.4726 2.8667 17.5227 3.08674 17.6138 3.3493C17.796 3.87439 18.14 4.56368 18.788 5.21165C19.4359 5.85961 20.1252 6.20364 20.6503 6.38581C20.9129 6.4769 21.1329 6.52697 21.2834 6.55399C21.5227 6.59693 21.7627 6.51905 21.9346 6.34717L22.1127 6.16905Z" fill="currentColor"/>
+                                                </svg>
+                                                <span class="text-gray">{{object.review_count}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-end gap-5">
+                                        <div class="inline-flex items-center text-xs justify-center px-1.5 py-0.5 text-gray">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-current me-1.5"></span>
+                                            <span>최초 생성일 {{object.created_at}}</span>
+                                        </div>
+                                        <div class="inline-flex items-center text-xs justify-center px-1.5 py-0.5 text-gray">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-current me-1.5"></span>
+                                            <span>최종 수정일 {{object.updated_at}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-5 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                    <div class="space-y-4 flex-1">
+                                        <label for="title" class="text-sm">제목</label>
+                                        <input id="title" type="text" name="title" class="form-input rounded-lg" value="{{object.title}}">
+                                    </div>
+                                    <div class="space-y-4">
+                                        <label for="type" class="text-sm">타입</label>
+                                        <select id="type" name="type" class="form-select">
+                                            {% if object.type == '10' %}
+                                                <option value="10" selected>영화</option>
+                                            {% else %}
+                                                <option value="10">영화</option>
+                                            {% endif %}
+                                            {% if object.type == '11' %}
+                                                <option value="11" selected>시리즈</option>
+                                            {% else %}
+                                                <option value="11">시리즈</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                    <div class="space-y-4 flex-1">
+                                        <label for="release" class="text-sm">출시일</label>
+                                        <input id="release" type="text" name="release" class="form-input rounded-lg" value="{{object.release}}">
+                                    </div>
+                                    <div class="space-y-4 flex-1">
+                                        <label for="runtime" class="text-sm">상영시간</label>
+                                        <input id="runtime" type="text" name="runtime" class="form-input rounded-lg" value="{{object.runtime}}">
+                                    </div>
+                                    <div class="space-y-4 flex-1">
+                                        <label for="notice_age" class="text-sm">관람등급</label>
+                                        <input id="notice_age" type="text" name="notice_age" class="form-input rounded-lg" value="{{object.notice_age}}">
+                                    </div>
+                                </div>
+                                <div class="space-y-4 mt-5">
+                                    <label for="synopsis" class="text-sm">시놉시스</label>
+                                    <textarea id="synopsis" type="text" rows="3" name="synopsis" class="form-input rounded-lg">{{object.synopsis}}</textarea>
+                                </div>
+                            </div>
+                            <div class="flex justify-end items-center mt-[30px] gap-2.5">
+                                <div class="togglebutton out-line inline-block">
+                                    <label for="is_confirm" class="flex items-center cursor-pointer">
+                                        <span class="px-2">관리자 승인</span>
+                                        <div class="relative">
+                                            <input type="checkbox" id="is_confirm" name="is_confirm" value="true" class="sr-only">
+                                            <div class="block band border border-gray/20 w-[52px] h-[29px] rounded-full"></div>
+                                            <div class="dot absolute left-[5px] top-[3.5px] bg-gray/20 w-[22PX] h-[22PX] rounded-full transition dark:bg-gray/60"></div>
+                                        </div>
+                                    </label>
+                                </div>
+                                <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!-- 시청 정보 -->
+                <div x-show="activeTab === 'thumbnail'" class="flex flex-row mt-[30px] items-start gap-4 relative w-full">
+                    <div class="w-full flex flex-col flex-1 rounded-lg overflow-y-auto">
+                        <div class="flex items-center gap-5">
+                            <button type="button" class="xl:hidden hover:text-primary duration-300" @click="isShowChatMenu = !isShowChatMenu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.3" x="3" y="17.2" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect opacity="0.5" x="3" y="11.6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect x="3" y="6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                </svg>
+                            </button>
+                            <h3 class="text-lg font-semibold">이미지 정보</h3>
+                        </div>
+                        <div class="mt-[30px]">
+                            <div class="flex bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 rounded-lg p-5 space-y-4">
+                                {% for thumbnail in object.thumbnail.all %}
+                                    {% if thumbnail.type == '11' %}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 시청 정보 -->
+                <div x-show="activeTab === 'watch'" class="flex flex-row mt-[30px] items-start gap-4 relative w-full">
+                    <div class="w-full flex flex-col flex-1 rounded-lg overflow-y-auto">
+                        <div class="flex items-center gap-5">
+                            <button type="button" class="xl:hidden hover:text-primary duration-300" @click="isShowChatMenu = !isShowChatMenu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.3" x="3" y="17.2" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect opacity="0.5" x="3" y="11.6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect x="3" y="6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                </svg>
+                            </button>
+                            <h3 class="text-lg font-semibold">시청 정보</h3>
+                        </div>
+                        <div class="mt-[30px]">
+                            <div id="watchList">
+                                {% for watch in object.watch.all %}
+                                    <div class="flex items-stretch gap-5">
+                                        <input type="hidden" name="edit_type_{{watch.id}}" value="update">
+                                        <select id="watch_type" name="watch_type_{{watch.id}}" class="form-select w-3/12 h-14 rounded-[10px]">
+                                            {% if watch.type == "10" %}
+                                                <option value="10" selected>넷플릭스</option>
+                                            {% else %}
+                                                <option value="10">넷플릭스</option>
+                                            {% endif %}
+                                            {% if watch.type == "11" %}
+                                                <option value="11" selected>디즈니+</option>
+                                            {% else %}
+                                                <option value="11">디즈니+</option>
+                                            {% endif %}
+                                            {% if watch.type == "12" %}
+                                                <option value="12" selected>티빙</option>
+                                            {% else %}
+                                                <option value="12">티빙</option>
+                                            {% endif %}
+                                            {% if watch.type == "13" %}
+                                                <option value="13" selected>웨이브</option>
+                                            {% else %}
+                                                <option value="13">웨이브</option>
+                                            {% endif %}
+                                        </select>
+                                        <input type="text" id="watch_url" name="watch_url_{{watch.id}}" value="{{watch.url}}" class="form-input rounded-[10px] h-14 placeholder:text-dark dark:placeholder:text-white">
+                                        <!-- 루프의 마지막 노드 -->
+                                        {% if forloop.last %}
+                                            <button type="button" id="btnWatchDelete" class="bg-primary text-white rounded-[10px] h-14 w-14 flex justify-center items-center">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+<!--                                                    <path d="M12 5C12.5523 5 13 5.44772 13 6V18C13 18.5523 12.5523 19 12 19C11.4477 19 11 18.5523 11 18V6C11 5.44772 11.4477 5 12 5Z" fill="currentColor"></path>-->
+                                                    <path d="M18 12C18.5523 12 19 12.4477 19 13C19 13.5523 18.5523 14 18 14H6C5.44772 14 5 13.5523 5 13C5 12.4477 5.44772 12 6 12H18Z" fill="currentColor"></path>
+                                                </svg>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 장르 정보 -->
+                <div x-show="activeTab === 'genre'" class="flex flex-row mt-[30px] items-start gap-4 relative w-full">
+                    <div class="w-full flex flex-col flex-1 rounded-lg overflow-y-auto">
+                        <div class="flex items-center gap-5">
+                            <button type="button" class="xl:hidden hover:text-primary duration-300" @click="isShowChatMenu = !isShowChatMenu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.3" x="3" y="17.2" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect opacity="0.5" x="3" y="11.6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect x="3" y="6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                </svg>
+                            </button>
+                            <h3 class="text-lg font-semibold">장르 정보</h3>
+                        </div>
+                        <div class="mt-[30px]">
+                            {% if object.genre %}
+                                {% for genre in object.genre.all %}
+                                    {{genre.name}}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- 배우 정보 -->
+                <div x-show="activeTab === 'actor'" class="flex flex-row mt-[30px] items-start gap-4 relative w-full">
+                    <div class="w-full flex flex-col flex-1 rounded-lg overflow-y-auto">
+                        <div class="flex items-center gap-5">
+                            <button type="button" class="xl:hidden hover:text-primary duration-300" @click="isShowChatMenu = !isShowChatMenu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.3" x="3" y="17.2" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect opacity="0.5" x="3" y="11.6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect x="3" y="6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                </svg>
+                            </button>
+                            <h3 class="text-lg font-semibold">배우 정보</h3>
+                        </div>
+                        <div class="mt-[30px]">
+                            {% if object.actor %}
+                                {% for actor in object.actor.all %}
+                                    {{actor.name}}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <!-- 제작진 정보 -->
+                <div x-show="activeTab === 'staff'" class="flex flex-row mt-[30px] items-start gap-4 relative w-full">
+                    <div class="w-full flex flex-col flex-1 rounded-lg overflow-y-auto">
+                        <div class="flex items-center gap-5">
+                            <button type="button" class="xl:hidden hover:text-primary duration-300" @click="isShowChatMenu = !isShowChatMenu">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <rect opacity="0.3" x="3" y="17.2" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect opacity="0.5" x="3" y="11.6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                    <rect x="3" y="6" width="18" height="1.6" rx="0.8" fill="currentColor"></rect>
+                                </svg>
+                            </button>
+                            <h3 class="text-lg font-semibold">제작진 정보</h3>
+                        </div>
+                        <div class="mt-[30px]">
+                            {% if object.staff %}
+                                {% for staff in object.staff.all %}
+                                    {{staff.name}}
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("alpine:init", () => {
+        Alpine.data("email", () => ({
+            isShowChatMenu: false,
+            selectMail: false,
+        }));
+    });
+</script>
+
+{% endblock content %}

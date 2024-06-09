@@ -1,0 +1,23 @@
+{% extends 'layouts/main.html' %}
+{% load static %}
+
+{% block title %}넷플릭스{% endblock title %}
+
+{% block content %}
+
+<div class="flex flex-col gap-5 min-h-[calc(100vh-188px)] sm:min-h-[calc(100vh-204px)]">
+    <h2 class="text-base font-semibold mb-4">비디오 관리</h2>
+
+    {% if object %}
+
+    <h1>{{object.title}}</h1>
+
+    <a href="{% url 'content:video-edit' object.id %}">
+        <button type="button" class="btn bg-dark dark:bg-white dark:text-dark dark:border-white border border-dark rounded-md text-white transition-all duration-300 hover:bg-dark/[0.85] hover:border-dark/[0.85]">수정</button>
+    </a>
+
+    {% endif %}
+
+</div>
+
+{% endblock content %}

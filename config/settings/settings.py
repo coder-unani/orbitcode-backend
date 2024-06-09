@@ -21,6 +21,8 @@ AWS_BUCKET_NAME = env.str('AWS_BUCKET_NAME')
 AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
 
+URL_THUMBNAIL = env.str('URL_THUMBNAIL')
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 

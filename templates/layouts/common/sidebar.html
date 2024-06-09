@@ -1,15 +1,15 @@
-
+{% load static %}
 <nav class="sidebar fixed z-50 flex-none w-[226px] border-r-2 border-lightgray/[8%] dark:border-gray/20 transition-all duration-300">
     <div class="bg-white dark:bg-dark h-full">
         <div class="p-3.5">
-            <a href="/static" class="main-logo w-full">
-                <img src="/images/logo-dark.svg" class="mx-auto dark-logo h-8 logo dark:hidden" alt="logo" />
-                <img src="/images/logo-light.svg" class="mx-auto light-logo h-8 logo hidden dark:block" alt="logo" />
-                <img src="/images/logo-icon.svg" class="logo-icon h-8 mx-auto hidden" alt="">
+            <a href="/static" class="main-logo w-full flex justify-start items-center px-2.5 pt-3">
+                <img src="{% static '/images/rvvs-logo-1.svg' %}" class="dark-logo h-8 logo dark:hidden" alt="logo" />
+                <img src="{% static '/images/rvvs-logo-1.svg' %}" class="light-logo h-8 logo hidden dark:block" alt="logo" />
+                <span class="px-2.5">ORBITCODE</span>
             </a>
         </div>
         <div class="flex items-center gap-2.5 py-2.5 pe-2.5">
-            <div class="h-[2px] bg-lightgray/10 dark:bg-gray/50 block flex-1"></div>
+            <div class="flex justify-start items-start h-[2px] bg-lightgray/10 dark:bg-gray/50 block flex-1"></div>
             <button type="button" class="shrink-0 btn-toggle hover:text-primary duration-300" @click="$store.app.toggleSidebar()">
                 <svg class="w-3.5" viewBox="0 0 13 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path opacity="0.2" d="M5.46133 6.00002L11.1623 12L12.4613 10.633L8.05922 6.00002L12.4613 1.36702L11.1623 0L5.46133 6.00002Z" fill="currentColor" />
@@ -45,9 +45,9 @@
                 <li class="menu nav-item">
                     <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'builder-crawling'}" @click="activeMenu === 'socialapps' ? activeMenu = null : activeMenu = 'builder-crawling'">
                         <div class="flex items-center">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18 14C18 18.4183 14.4183 22 10 22C8.76449 22 7.5944 21.7199 6.54976 21.2198C6.19071 21.0479 5.78393 20.9876 5.39939 21.0904L4.17335 21.4185C3.20701 21.677 2.32295 20.793 2.58151 19.8267L2.90955 18.6006C3.01245 18.2161 2.95209 17.8093 2.7802 17.4502C2.28008 16.4056 2 15.2355 2 14C2 9.58172 5.58172 6 10 6C14.4183 6 18 9.58172 18 14ZM6.5 15C7.05228 15 7.5 14.5523 7.5 14C7.5 13.4477 7.05228 13 6.5 13C5.94772 13 5.5 13.4477 5.5 14C5.5 14.5523 5.94772 15 6.5 15ZM10 15C10.5523 15 11 14.5523 11 14C11 13.4477 10.5523 13 10 13C9.44772 13 9 13.4477 9 14C9 14.5523 9.44772 15 10 15ZM13.5 15C14.0523 15 14.5 14.5523 14.5 14C14.5 13.4477 14.0523 13 13.5 13C12.9477 13 12.5 13.4477 12.5 14C12.5 14.5523 12.9477 15 13.5 15Z" fill="currentColor" />
-                                <path opacity="0.3" d="M17.9841 14.5084C18.092 14.4638 18.1985 14.4163 18.3033 14.3661C18.5951 14.2264 18.9256 14.1774 19.238 14.261L20.2342 14.5275C21.0193 14.7376 21.7376 14.0193 21.5275 13.2342L21.261 12.238C21.1774 11.9256 21.2264 11.595 21.3661 11.3033C21.7725 10.4545 22 9.50385 22 8.5C22 4.91015 19.0899 2 15.5 2C12.79 2 10.4673 3.6585 9.49158 6.0159C9.6597 6.00535 9.82924 6 10 6C14.4183 6 18 9.58172 18 14C18 14.1708 17.9947 14.3403 17.9841 14.5084Z" fill="currentColor" />
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path opacity="0.2" d="M17.5001 2.5C17.9603 2.5 18.3334 2.8731 18.3334 3.33333V16.6667C18.3334 17.1269 17.9603 17.5 17.5001 17.5H2.50008C2.03985 17.5 1.66675 17.1269 1.66675 16.6667V3.33333C1.66675 2.8731 2.03985 2.5 2.50008 2.5H17.5001Z" fill="currentColor"></path>
+                                <path d="M17.5001 2.5C17.9603 2.5 18.3334 2.8731 18.3334 3.33333V16.6667C18.3334 17.1269 17.9603 17.5 17.5001 17.5H2.50008C2.03985 17.5 1.66675 17.1269 1.66675 16.6667V3.33333C1.66675 2.8731 2.03985 2.5 2.50008 2.5H17.5001ZM16.6667 13.3333H3.33341V15.8333H16.6667V13.3333ZM6.66675 4.16667H3.33341V11.6667H6.66675V4.16667ZM11.6667 4.16667H8.33341V11.6667H11.6667V4.16667ZM16.6667 4.16667H13.3334V11.6667H16.6667V4.16667Z" fill="currentColor"></path>
                             </svg>
                             <span class="pl-1.5">데이터 수집</span>
                         </div>
@@ -65,7 +65,7 @@
                 <!-- CONTENT -->
                 <h2 class="pt-3.5 pb-2.5 text-gray text-xs">CONTENT</h2>
                 <li class="menu nav-item">
-                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'content-video'}" @click="activeMenu === 'components' ? activeMenu = null : activeMenu = 'content-video'">
+                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'content-video'}" @click="activeMenu === 'content-video' ? activeMenu = null : activeMenu = 'content-video'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M8.42229 20.618C10.1779 21.5393 11.0557 22 12 22V12L2.63802 7.07264C2.62423 7.09479 2.6107 7.11716 2.5974 7.13974C2 8.15425 2 9.41667 2 11.9415V12.0585C2 14.5833 2 15.8458 2.5974 16.8603C3.19479 17.8748 4.27063 18.4393 6.42229 19.5685L8.42229 20.618Z" fill="currentColor" />
@@ -81,20 +81,18 @@
                         </div>
                     </a>
                     <ul x-cloak x-show="activeMenu === 'content-video'" x-collapse class="sub-menu flex flex-col gap-1">
-                        <li><a :class="{'active': activeItem === 'accordions'}" href="/components/accordions">Accordions</a></li>
-                        <li><a :class="{'active': activeItem === 'tabs'}" href="/components/tabs">Tabs</a></li>
-                        <li><a :class="{'active': activeItem === 'modals'}" href="/components/modals">Modal</a></li>
-                        <li><a :class="{'active': activeItem === 'notification'}" href="/components/notification">Notification</a></li>
-                        <li><a :class="{'active': activeItem === 'lightbox'}" href="/components/lightbox">Lightbox</a></li>
-                        <li><a :class="{'active': activeItem === 'swiper'}" href="/components/swiper">Swiper</a></li>
+                        <li><a :class="{'active': activeItem === 'video-list'}" href="{% url 'content:video-list' %}">비디오 관리</a></li>
+                        <li><a :class="{'active': activeItem === 'genre-list'}" href="{% url 'content:genre-list' %}">장르 관리</a></li>
+                        <li><a :class="{'active': activeItem === 'actor-list'}" href="{% url 'content:actor-list' %}">배우 관리</a></li>
+                        <li><a :class="{'active': activeItem === 'staff-list'}" href="{% url 'content:staff-list' %}">제작진 관리</a></li>
                     </ul>
                 </li>
                 <li class="menu nav-item">
                     <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'content-review'}" @click="activeMenu === 'elements' ? activeMenu = null : activeMenu = 'content-review'">
                         <div class="flex items-center">
-                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.73167 5.77133L5.66953 9.91436C4.3848 11.6526 3.74244 12.5217 4.09639 13.205C4.10225 13.2164 4.10829 13.2276 4.1145 13.2387C4.48945 13.9117 5.59888 13.9117 7.81775 13.9117C9.05079 13.9117 9.6673 13.9117 10.054 14.2754L10.074 14.2946L13.946 9.72466L13.926 9.70541C13.5474 9.33386 13.5474 8.74151 13.5474 7.55682V7.24712C13.5474 3.96249 13.5474 2.32018 12.6241 2.03721C11.7007 1.75425 10.711 3.09327 8.73167 5.77133Z" fill="currentColor" />
-                                <path opacity="0.3" d="M10.4527 16.4432L10.4527 16.7528C10.4527 20.0374 10.4527 21.6798 11.376 21.9627C12.2994 22.2457 13.2891 20.9067 15.2685 18.2286L18.3306 14.0856C19.6154 12.3474 20.2577 11.4783 19.9038 10.7949C19.8979 10.7836 19.8919 10.7724 19.8857 10.7613C19.5107 10.0883 18.4013 10.0883 16.1824 10.0883C14.9494 10.0883 14.3329 10.0883 13.9462 9.72461L10.0742 14.2946C10.4528 14.6661 10.4527 15.2585 10.4527 16.4432Z" fill="currentColor" />
+                            <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path opacity="0.3" d="M16.25 3.75V16.875C16.25 17.0408 16.1842 17.1997 16.0669 17.3169C15.9497 17.4342 15.7908 17.5 15.625 17.5H4.375C4.20924 17.5 4.05027 17.4342 3.93306 17.3169C3.81585 17.1997 3.75 17.0408 3.75 16.875V3.75C3.75 3.58424 3.81585 3.42527 3.93306 3.30806C4.05027 3.19085 4.20924 3.125 4.375 3.125H7.5C7.09344 3.66547 6.87404 4.32369 6.875 5V5.625H13.125V5C13.126 4.32369 12.9066 3.66547 12.5 3.125H15.625C15.7908 3.125 15.9497 3.19085 16.0669 3.30806C16.1842 3.42527 16.25 3.58424 16.25 3.75Z" fill="currentColor"></path>
+                                <path d="M13.125 11.875C13.125 12.0408 13.0592 12.1997 12.9419 12.317C12.8247 12.4342 12.6658 12.5 12.5 12.5H7.5C7.33424 12.5 7.17527 12.4342 7.05806 12.317C6.94085 12.1997 6.875 12.0408 6.875 11.875C6.875 11.7092 6.94085 11.5503 7.05806 11.4331C7.17527 11.3159 7.33424 11.25 7.5 11.25H12.5C12.6658 11.25 12.8247 11.3159 12.9419 11.4331C13.0592 11.5503 13.125 11.7092 13.125 11.875ZM12.5 8.75001H7.5C7.33424 8.75001 7.17527 8.81586 7.05806 8.93307C6.94085 9.05028 6.875 9.20925 6.875 9.37501C6.875 9.54077 6.94085 9.69974 7.05806 9.81695C7.17527 9.93416 7.33424 10 7.5 10H12.5C12.6658 10 12.8247 9.93416 12.9419 9.81695C13.0592 9.69974 13.125 9.54077 13.125 9.37501C13.125 9.20925 13.0592 9.05028 12.9419 8.93307C12.8247 8.81586 12.6658 8.75001 12.5 8.75001ZM16.875 3.75001V16.875C16.875 17.2065 16.7433 17.5245 16.5089 17.7589C16.2745 17.9933 15.9565 18.125 15.625 18.125H4.375C4.04348 18.125 3.72554 17.9933 3.49112 17.7589C3.2567 17.5245 3.125 17.2065 3.125 16.875V3.75001C3.125 3.41849 3.2567 3.10055 3.49112 2.86613C3.72554 2.63171 4.04348 2.50001 4.375 2.50001H7.20781C7.55899 2.10682 7.98924 1.79224 8.47041 1.57685C8.95158 1.36146 9.47282 1.25012 10 1.25012C10.5272 1.25012 11.0484 1.36146 11.5296 1.57685C12.0108 1.79224 12.441 2.10682 12.7922 2.50001H15.625C15.9565 2.50001 16.2745 2.63171 16.5089 2.86613C16.7433 3.10055 16.875 3.41849 16.875 3.75001ZM7.5 5.00001H12.5C12.5 4.33697 12.2366 3.70108 11.7678 3.23224C11.2989 2.7634 10.663 2.50001 10 2.50001C9.33696 2.50001 8.70107 2.7634 8.23223 3.23224C7.76339 3.70108 7.5 4.33697 7.5 5.00001ZM15.625 3.75001H13.5352C13.6773 4.15143 13.75 4.57416 13.75 5.00001V5.62501C13.75 5.79077 13.6842 5.94974 13.5669 6.06695C13.4497 6.18416 13.2908 6.25001 13.125 6.25001H6.875C6.70924 6.25001 6.55027 6.18416 6.43306 6.06695C6.31585 5.94974 6.25 5.79077 6.25 5.62501V5.00001C6.25001 4.57416 6.32267 4.15143 6.46484 3.75001H4.375V16.875H15.625V3.75001Z" fill="currentColor"></path>
                             </svg>
                             <span class="pl-1.5">리뷰 관리</span>
                         </div>
@@ -120,8 +118,8 @@
                     <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'content-ranking'}" @click="activeMenu === 'elements' ? activeMenu = null : activeMenu = 'content-ranking'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M8.73167 5.77133L5.66953 9.91436C4.3848 11.6526 3.74244 12.5217 4.09639 13.205C4.10225 13.2164 4.10829 13.2276 4.1145 13.2387C4.48945 13.9117 5.59888 13.9117 7.81775 13.9117C9.05079 13.9117 9.6673 13.9117 10.054 14.2754L10.074 14.2946L13.946 9.72466L13.926 9.70541C13.5474 9.33386 13.5474 8.74151 13.5474 7.55682V7.24712C13.5474 3.96249 13.5474 2.32018 12.6241 2.03721C11.7007 1.75425 10.711 3.09327 8.73167 5.77133Z" fill="currentColor" />
-                                <path opacity="0.3" d="M10.4527 16.4432L10.4527 16.7528C10.4527 20.0374 10.4527 21.6798 11.376 21.9627C12.2994 22.2457 13.2891 20.9067 15.2685 18.2286L18.3306 14.0856C19.6154 12.3474 20.2577 11.4783 19.9038 10.7949C19.8979 10.7836 19.8919 10.7724 19.8857 10.7613C19.5107 10.0883 18.4013 10.0883 16.1824 10.0883C14.9494 10.0883 14.3329 10.0883 13.9462 9.72461L10.0742 14.2946C10.4528 14.6661 10.4527 15.2585 10.4527 16.4432Z" fill="currentColor" />
+                                <path opacity="0.3" d="M6.22209 4.60104C6.66665 4.30399 7.13344 4.04635 7.6171 3.82975C8.98898 3.21538 9.67491 2.90819 10.5875 3.4994C11.5 4.0906 11.5 5.0604 11.5 7V8.5C11.5 10.3856 11.5 11.3284 12.0858 11.9142C12.6716 12.5 13.6144 12.5 15.5 12.5H17C18.9396 12.5 19.9094 12.5 20.5006 13.4125C21.0918 14.3251 20.7846 15.011 20.1702 16.3829C19.9536 16.8666 19.696 17.3333 19.399 17.7779C18.3551 19.3402 16.8714 20.5578 15.1355 21.2769C13.3996 21.9959 11.4895 22.184 9.64665 21.8175C7.80383 21.4509 6.11109 20.5461 4.78249 19.2175C3.45389 17.8889 2.5491 16.1962 2.18254 14.3534C1.81598 12.5105 2.00412 10.6004 2.72315 8.8645C3.44218 7.12861 4.65982 5.64491 6.22209 4.60104Z" fill="currentColor"></path>
+                                <path d="M21.446 7.06899C20.6342 5.0083 18.9917 3.36577 16.931 2.55397C15.3895 1.94668 14 3.34315 14 5V9C14 9.55229 14.4477 10 15 10H19C20.6569 10 22.0533 8.61054 21.446 7.06899Z" fill="currentColor"></path>
                             </svg>
                             <span class="pl-1.5">랭킹 관리</span>
                         </div>
@@ -149,8 +147,8 @@
                     <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'user-manage'}" @click="activeMenu === 'socialapps' ? activeMenu = null : activeMenu = 'user-manage'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" clip-rule="evenodd" d="M18 14C18 18.4183 14.4183 22 10 22C8.76449 22 7.5944 21.7199 6.54976 21.2198C6.19071 21.0479 5.78393 20.9876 5.39939 21.0904L4.17335 21.4185C3.20701 21.677 2.32295 20.793 2.58151 19.8267L2.90955 18.6006C3.01245 18.2161 2.95209 17.8093 2.7802 17.4502C2.28008 16.4056 2 15.2355 2 14C2 9.58172 5.58172 6 10 6C14.4183 6 18 9.58172 18 14ZM6.5 15C7.05228 15 7.5 14.5523 7.5 14C7.5 13.4477 7.05228 13 6.5 13C5.94772 13 5.5 13.4477 5.5 14C5.5 14.5523 5.94772 15 6.5 15ZM10 15C10.5523 15 11 14.5523 11 14C11 13.4477 10.5523 13 10 13C9.44772 13 9 13.4477 9 14C9 14.5523 9.44772 15 10 15ZM13.5 15C14.0523 15 14.5 14.5523 14.5 14C14.5 13.4477 14.0523 13 13.5 13C12.9477 13 12.5 13.4477 12.5 14C12.5 14.5523 12.9477 15 13.5 15Z" fill="currentColor" />
-                                <path opacity="0.3" d="M17.9841 14.5084C18.092 14.4638 18.1985 14.4163 18.3033 14.3661C18.5951 14.2264 18.9256 14.1774 19.238 14.261L20.2342 14.5275C21.0193 14.7376 21.7376 14.0193 21.5275 13.2342L21.261 12.238C21.1774 11.9256 21.2264 11.595 21.3661 11.3033C21.7725 10.4545 22 9.50385 22 8.5C22 4.91015 19.0899 2 15.5 2C12.79 2 10.4673 3.6585 9.49158 6.0159C9.6597 6.00535 9.82924 6 10 6C14.4183 6 18 9.58172 18 14C18 14.1708 17.9947 14.3403 17.9841 14.5084Z" fill="currentColor" />
+                                <circle opacity="0.3" cx="12" cy="6" r="4" fill="currentColor"></circle>
+                                <ellipse cx="12" cy="17" rx="7" ry="4" fill="currentColor"></ellipse>
                             </svg>
                             <span class="pl-1.5">회원 목록</span>
                         </div>

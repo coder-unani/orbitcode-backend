@@ -9,6 +9,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("api/", include('app.api.urls'), name='api'),
     path("builder/", include('app.builder.urls'), name='builder'),
-    # path("content/", include('content.urls'), name='content'),
+    path("content/", include('app.content.urls'), name='content'),
     path("dashboard/", include('app.dashboard.urls'), name='dashboard'),
 ]

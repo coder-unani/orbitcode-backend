@@ -72,7 +72,7 @@ class CollectNetflix(LoginRequiredMixin, TemplateView):
         else:
             context['messages'].append({"result": "fail", "message": "저장할 데이터가 없습니다."})
         context['summary'] = {"total": int(save_count) + int(fail_count), "success": save_count, "fail": fail_count}
-        return render(request, template_name="pages/builder/collect/result.html", context=context)
+        return render(request, template_name="pages/common/process-result.html", context=context)
 
 
 class CollectNetflixBoxoffice(LoginRequiredMixin, TemplateView):
@@ -99,8 +99,10 @@ class CollectNetflixBoxoffice(LoginRequiredMixin, TemplateView):
         view_mode = "html"
 
         if parser == "on":
-            Logger.info_log(self.__class__.__name__,
-                     "START. Netflix box office data parsing. parser={}, view_mode={}".format(parser, view_mode))
+            Logger.info_log(
+                self.__class__.__name__,
+                "START. Netflix box office data parsing. parser={}, view_mode={}".format(parser, view_mode)
+            )
 
             if request.GET.get('view_mode'):
                 view_mode = request.GET.get('view_mode')

@@ -1,3 +1,5 @@
+{%  load static %}
+
 <div class="h-[60px] bg-white dark:bg-dark dark:border-gray/20 border-b-2 border-lightgray/10 flex items-center justify-between gap-2.5 px-7">
     <div class="flex-auto flex items-center gap-2.5">
         <div class="lg:hidden">
@@ -204,10 +206,10 @@
         </div>
         <div class="profile z-10" x-data="dropdown" @click.outside="open = false">
             <button type="button" class="flex items-center gap-2.5" @click="toggle()">
-                <img class="h-[38px] w-[38px] rounded-full" src="/images/user.png" alt="Header Avatar">
+                <img class="h-[38px] w-[38px] rounded-full" src="{% static '/images/user.png' %}" alt="Header Avatar">
                 <div class="text-start">
                     <div class="flex items-center gap-1">
-                        <span class="hidden xl:block text-sm font-semibold">William Robbie</span>
+                        <span class="hidden xl:block text-sm font-semibold">Orbitcode</span>
                         <svg width="12" height="13" viewBox="0 0 12 13" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M1.29241 5.20759C0.901881 4.81707 0.90188 4.18391 1.29241 3.79338C1.68293 3.40286 2.31609 3.40286 2.70662 3.79338L5.99951 7.08627L9.2924 3.79338C9.68293 3.40286 10.3161 3.40286 10.7066 3.79338C11.0971 4.18391 11.0971 4.81707 10.7066 5.20759L6.70662 9.2076C6.31609 9.59812 5.68293 9.59812 5.2924 9.2076L1.29241 5.20759Z" fill="currentColor" />
                         </svg>
