@@ -2,6 +2,9 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from bs4 import BeautifulSoup
+
+
 from app.database.models import (
     Video,
     VideoWatch,
@@ -156,4 +159,10 @@ class ApiVideoStaff(APIView):
         pass
 
     def put(self, request, video_id, staff_id):
+        pass
+
+
+class ApiCollectNamuWiki(APIView):
+
+    def get(self, request):
         pass

@@ -5,6 +5,7 @@ from .views import (
     ApiVideoWatch,
     ApiVideoThumbnail,
     ApiVideoGenre,
+    ApiCollectNamuWiki,
 )
 
 # content/video/{video_id}/watch : GET, POST, DELETE, PUT, PATCH
@@ -22,4 +23,6 @@ urlpatterns = [
     path("content/video/<int:video_id>/thumbnail/<int:thumbnail_id>", view=ApiVideoThumbnail.as_view()),
     path("content/video/<int:video_id>/genre", view=ApiVideoGenre.as_view()),
     path("content/video/<int:video_id>/genre/<int:genre_id>", view=ApiVideoGenre.as_view()),
+
+    path("collect/video/namuwiki", view=ApiCollectNamuWiki.as_view()),
 ]
