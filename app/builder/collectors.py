@@ -1,11 +1,12 @@
 from time import sleep
 from urllib.request import urlopen
+
+from bs4 import BeautifulSoup
 from django.conf import settings
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
-from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 
 from app.utils.logger import Logger
 from config.properties import (
@@ -224,7 +225,7 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
             self.selenium_wait(2)
             # 컨텐츠와 랭크 정보를 담을 리스트 초기화
             ranks = []
-            contents = []
+            videos = []
             # 컨텐츠 파싱작업
             content_rows = self.selenium_elements(type="class", value="lolomoRow")
             for content_row in content_rows:
@@ -244,11 +245,11 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
                 # 컨텐츠 갯수만큼 반복
                 for item in content_row_items:
                     # 필수 정보 파싱
-                    content = dict()
+                    video = dict()
                     link = self.selenium_element(type="tag", value="a", target=item)
                     link = self.selenium_attribute(target=link, attr="href")
-                    content['platform_id'] = link.split("?")[0].split("/watch/")[1]
-                    content['watch'] = [{"type": "10", "url": link}]
+                    video['platform_id'] = link.split("?")[0].split("/watch/")[1]
+                    video['watch'] = [{"type": "10", "url": link}]
                     # mostWatched 일 경우 rank 정보 수집
                     if content_row_type == "mostWatched":
                         rank_dict = dict()
@@ -260,7 +261,7 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
                         rank = self.selenium_attribute(target=rank, attr="id").split("-")[1]
                         rank_dict['rank'] = int(rank)
                         rank_dict['platform_code'] = "10"
-                        rank_dict['platform_id'] = str(content['platform_id'])
+                        rank_dict['platform_id'] = str(video['platform_id'])
                         rank_dict['thumbnail'] = self.selenium_attribute(
                             target=self.selenium_element(type="tag", value="img", target=item),
                             attr="src"
@@ -269,16 +270,16 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
                         if rank_dict not in ranks:
                             ranks.append(rank_dict)
                         # 포스터 아까우니까 컨텐츠에도 일단 담음
-                        content['thumbnail'] = {"type": "10", "url": rank_dict['thumbnail'], "extension": "", "size": 0}
+                        video['thumbnail'] = {"type": "10", "url": rank_dict['thumbnail'], "extension": "", "size": 0}
                     # 중복데이터 방지
-                    if content not in contents:
-                        contents.append(content)
+                    if video not in videos:
+                        videos.append(video)
             # rank 순으로 정렬
             ranks = sorted(ranks, key=lambda k: (k['type'], k['rank']))
             # Write Log
             Logger.info_log(self.__class__.__name__, "Most watched contents parsing success")
             # 파싱한 데이터 리턴
-            return contents, ranks
+            return videos, ranks
         except Exception as e:
             # Write Log
             Logger.error_log(self.__class__.__name__, "Failed to most watched contents parsing. {}".format(e))

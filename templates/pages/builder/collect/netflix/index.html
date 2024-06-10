@@ -91,7 +91,6 @@
 
     <form name="frmSearchResult" action="{% url 'builder:collect-netflix' %}" method="post" onsubmit="return false;">
         {% csrf_token %}
-        <input type="hidden" name="video_ids" id="iptSaveVideoIds" value={{video_ids}}>
         {% if videos is not None %}
             <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
                 <h2 class="text-base font-semibold mb-4">검색 결과</h2>
@@ -221,7 +220,7 @@
  <!-- Swiper Slider Js -->
  <script src="/static/js/swiper-bundle.min.js"></script>
  <script>
-    var swiper = new Swiper(".SwiperwithPagination", {
+    const swiper = new Swiper(".SwiperwithPagination", {
         pagination: {
             el: ".swiper-pagination",
         },

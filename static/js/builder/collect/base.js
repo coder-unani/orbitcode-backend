@@ -124,7 +124,7 @@ btnSaveVideos?.addEventListener("click", function (e) {
 
 // 체크박스 전체 선택/해제
 const chkVideoAll = document.querySelector("#chkVideoAll");
-chkVideoAll.addEventListener('click', () => {
+chkVideoAll?.addEventListener('click', () => {
     const checkAllValue = chkVideoAll.checked;
     const checkVideos = document.querySelectorAll("input[name=platform_ids]")
     checkVideos.forEach((checkVideo) => {
