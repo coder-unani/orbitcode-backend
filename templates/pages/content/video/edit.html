@@ -1,11 +1,11 @@
 {% extends 'layouts/main.html' %}
-{% load common %}
 {% load static %}
 
 {% block title %} 컨텐츠 관리::비디오 {% endblock title %}
 
 {% block head %}
-    <script src="js/content/video/edit.js"></script>
+    <script src="{% static 'js/content/video/edit.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 {% endblock head %}
 
 {% block content %}
@@ -154,7 +154,7 @@
                         </form>
                     </div>
                 </div>
-                <!-- 시청 정보 -->
+                <!-- 이미지 정보 -->
                 <div x-show="activeTab === 'thumbnail'" class="flex flex-row mt-[30px] items-start gap-4 relative w-full">
                     <div class="w-full flex flex-col flex-1 rounded-lg overflow-y-auto">
                         <div class="flex items-center gap-5">
@@ -167,13 +167,40 @@
                             </button>
                             <h3 class="text-lg font-semibold">이미지 정보</h3>
                         </div>
-                        <div class="mt-[30px]">
-                            <div class="flex bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 rounded-lg p-5 space-y-4">
-                                {% for thumbnail in object.thumbnail.all %}
-                                    {% if thumbnail.type == '11' %}
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
+                        <div class="mt-[30px] w-full">
+                            <form method="post" class="w-full">
+                                {% csrf_token %}
+                                <input type="hidden" name="edit_type" value="thumbnail">
+                                <input type="hidden" name="thumbnail_create" value="">
+                                <input type="hidden" name="thumbnail_delete" value="">
+                                <div id="thumbnail_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
+                                    {% for thumbnail in object.thumbnail.all %}
+                                        <div id="thumbnail_wrap_{{ thumbnail.id }}" class="flex gap-2.5">
+                                            <input type="hidden" name="thumbnail_origin_{{thumbnail.id}}" value="{{ thumbnail }}">
+                                            <select name="thumbnail_type_{{ thumbnail.id }}" class="form-select w-[100px]" disabled>
+                                                {% if thumbnail.type == '10' %}
+                                                    <option value="10" selected>세로</option>
+                                                {% else %}
+                                                    <option value="10">세로</option>
+                                                {% endif %}
+                                                {% if thumbnail.type == '11' %}
+                                                    <option value="11" selected>가로</option>
+                                                {% else %}
+                                                    <option value="11">가로</option>
+                                                {% endif %}
+                                            </select>
+                                            <input id="thumbnail" type="text" name="thumbnail_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{thumbnail.url}}" readonly />
+                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('thumbnail', {{ thumbnail.id }})">
+                                                -
+                                            </button>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex justify-between items-center mt-[30px] gap-2.5">
+                                    <button type="button" onclick="addElement('thumbnail', THUMBNAIL_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -190,46 +217,50 @@
                             </button>
                             <h3 class="text-lg font-semibold">시청 정보</h3>
                         </div>
-                        <div class="mt-[30px]">
-                            <div id="watchList">
-                                {% for watch in object.watch.all %}
-                                    <div class="flex items-stretch gap-5">
-                                        <input type="hidden" name="edit_type_{{watch.id}}" value="update">
-                                        <select id="watch_type" name="watch_type_{{watch.id}}" class="form-select w-3/12 h-14 rounded-[10px]">
-                                            {% if watch.type == "10" %}
-                                                <option value="10" selected>넷플릭스</option>
-                                            {% else %}
-                                                <option value="10">넷플릭스</option>
-                                            {% endif %}
-                                            {% if watch.type == "11" %}
-                                                <option value="11" selected>디즈니+</option>
-                                            {% else %}
-                                                <option value="11">디즈니+</option>
-                                            {% endif %}
-                                            {% if watch.type == "12" %}
-                                                <option value="12" selected>티빙</option>
-                                            {% else %}
-                                                <option value="12">티빙</option>
-                                            {% endif %}
-                                            {% if watch.type == "13" %}
-                                                <option value="13" selected>웨이브</option>
-                                            {% else %}
-                                                <option value="13">웨이브</option>
-                                            {% endif %}
-                                        </select>
-                                        <input type="text" id="watch_url" name="watch_url_{{watch.id}}" value="{{watch.url}}" class="form-input rounded-[10px] h-14 placeholder:text-dark dark:placeholder:text-white">
-                                        <!-- 루프의 마지막 노드 -->
-                                        {% if forloop.last %}
-                                            <button type="button" id="btnWatchDelete" class="bg-primary text-white rounded-[10px] h-14 w-14 flex justify-center items-center">
-                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<!--                                                    <path d="M12 5C12.5523 5 13 5.44772 13 6V18C13 18.5523 12.5523 19 12 19C11.4477 19 11 18.5523 11 18V6C11 5.44772 11.4477 5 12 5Z" fill="currentColor"></path>-->
-                                                    <path d="M18 12C18.5523 12 19 12.4477 19 13C19 13.5523 18.5523 14 18 14H6C5.44772 14 5 13.5523 5 13C5 12.4477 5.44772 12 6 12H18Z" fill="currentColor"></path>
-                                                </svg>
+                        <div class="mt-[30px] w-full">
+                            <form method="post" class="w-full">
+                                {% csrf_token %}
+                                <input type="hidden" name="edit_type" value="watch">
+                                <input type="hidden" name="watch_create" value="">
+                                <input type="hidden" name="watch_delete" value="">
+                                <div id="watch_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
+                                    {% for watch in object.watch.all %}
+                                        <div id="watch_wrap_{{ watch.id }}" class="flex gap-2.5">
+                                            <input type="hidden" name="watch_origin_{{watch.id}}" value="{{ watch.url }}">
+                                            <select id="watch_type" name="watch_type_{{watch.id}}" class="form-select w-[100px]" disabled>
+                                                {% if watch.type == "10" %}
+                                                    <option value="10" selected>Netflix</option>
+                                                {% else %}
+                                                    <option value="10">Netflix</option>
+                                                {% endif %}
+                                                {% if watch.type == "11" %}
+                                                    <option value="11" selected>Disney+</option>
+                                                {% else %}
+                                                    <option value="11">Disney+</option>
+                                                {% endif %}
+                                                {% if watch.type == "12" %}
+                                                    <option value="12" selected>Tving</option>
+                                                {% else %}
+                                                    <option value="12">Tving</option>
+                                                {% endif %}
+                                                {% if watch.type == "13" %}
+                                                    <option value="13" selected>Wavve</option>
+                                                {% else %}
+                                                    <option value="13">Wavve</option>
+                                                {% endif %}
+                                            </select>
+                                            <input type="text" name="watch_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{watch.url}}" readonly />
+                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('watch', {{ watch.id }})">
+                                                -
                                             </button>
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex justify-between items-center mt-[30px] gap-2.5">
+                                    <button type="button" onclick="addElement('watch', WATCH_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -246,12 +277,25 @@
                             </button>
                             <h3 class="text-lg font-semibold">장르 정보</h3>
                         </div>
-                        <div class="mt-[30px]">
-                            {% if object.genre %}
-                                {% for genre in object.genre.all %}
-                                    {{genre.name}}
-                                {% endfor %}
-                            {% endif %}
+                        <div class="mt-[30px] w-full">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="edit_type" value="genre">
+                                <input type="hidden" name="genre_create" value="">
+                                <input type="hidden" name="genre_delete" value="">
+                                <div id="genre_container" class="grid lg:grid-cols-5 sm:grid-cols-2 gap-5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
+                                    {% for genre in object.genre.all %}
+                                        <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
+                                            <input type="hidden" name="genre_origin_{{genre.id}}" value="{{ genre.name }}">
+                                            <input type="text" name="genre_{{ genre.id }}" class="form-input rounded-lg" value="{{genre.name}}" readonly />
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex justify-between items-center mt-[30px] gap-2.5">
+                                    <button type="button" onclick="addElement('genre')" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -268,12 +312,37 @@
                             </button>
                             <h3 class="text-lg font-semibold">배우 정보</h3>
                         </div>
-                        <div class="mt-[30px]">
-                            {% if object.actor %}
-                                {% for actor in object.actor.all %}
-                                    {{actor.name}}
-                                {% endfor %}
-                            {% endif %}
+                        <div class="mt-[30px] w-full">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="edit_type" value="actor">
+                                <input type="hidden" name="actor_create" value="">
+                                <input type="hidden" name="actor_delete" value="">
+                                <div id="actor_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
+                                    {% for actor in object.actor.all %}
+                                        <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
+                                            <input type="hidden" name="actor_origin_{{actor.id}}" value="{{ actor }}">
+                                            <select name="actor_type_{{ actor.id }}" class="form-select w-[100px]" disabled>
+                                                {% if actor.type == "10" %}
+                                                    <option value="10" selected>주연</option>
+                                                {% else %}
+                                                    <option value="10">주연</option>
+                                                {% endif %}
+                                                {% if actor.type == "11" %}
+                                                    <option value="11" selected>조연</option>
+                                                {% else %}
+                                                    <option value="11">조연</option>
+                                                {% endif %}
+                                            </select>
+                                            <input type="text" name="actor_{{ actor.id }}" class="form-input" value="{{actor.name}}" readonly />
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex justify-between items-center mt-[30px] gap-2.5">
+                                    <button type="button" onclick="addElement('actor', ACTOR_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
@@ -290,12 +359,42 @@
                             </button>
                             <h3 class="text-lg font-semibold">제작진 정보</h3>
                         </div>
-                        <div class="mt-[30px]">
-                            {% if object.staff %}
-                                {% for staff in object.staff.all %}
-                                    {{staff.name}}
-                                {% endfor %}
-                            {% endif %}
+                        <div class="mt-[30px] w-full">
+                            <form method="post">
+                                {% csrf_token %}
+                                <input type="hidden" name="edit_type" value="staff">
+                                <input type="hidden" name="staff_create" value="">
+                                <input type="hidden" name="staff_delete" value="">
+                                <div id="staff_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
+                                    {% for staff in object.staff.all %}
+                                        <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
+                                            <input type="hidden" name="staff_origin_{{staff.id}}" value="{{ staff.name }}">
+                                            <select name="staff_type_{{ staff.id }}" class="form-select w-[100px]" disabled>
+                                                {% if staff.type == "10" %}
+                                                    <option value="10" selected>감독</option>
+                                                {% else %}
+                                                    <option value="10">감독</option>
+                                                {% endif %}
+                                                {% if staff.type == "11" %}
+                                                    <option value="11" selected>작가</option>
+                                                {% else %}
+                                                    <option value="11">작가</option>
+                                                {% endif %}
+                                                {% if staff.type == "12" %}
+                                                    <option value="12" selected>제작</option>
+                                                {% else %}
+                                                    <option value="12">제작</option>
+                                                {% endif %}
+                                            </select>
+                                            <input type="text" name="staff_{{ staff.id }}" class="form-input" value="{{staff.name}}" readonly />
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex justify-between items-center mt-[30px] gap-2.5">
+                                    <button type="button" onclick="addElement('staff', STAFF_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 </div>
