@@ -1,11 +1,13 @@
 import os
-from datetime import datetime
-from urllib.request import urlretrieve
 import uuid
+from urllib.request import urlretrieve
+
 from django.utils.html import escape
+
 
 def html_escape(text):
     return escape(text)
+
 
 def make_filename(name):
     # 파일명에서 확장자 추출
@@ -17,6 +19,7 @@ def make_filename(name):
     # 파일명 반환
     return f"{uuid.uuid4()}.{file_ext}"
 
+
 def save_file_from_url(file, file_path):
     try:
         urlretrieve(file, file_path)
@@ -24,9 +27,11 @@ def save_file_from_url(file, file_path):
     except Exception as e:
         print(e)
         return False
-    
+
+
 def get_file_extension(file_name):
     return file_name.split(".")[-1].lower()
+
 
 def get_file_size(file):
     if os.path.isfile(file):
