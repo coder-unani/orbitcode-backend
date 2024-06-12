@@ -1,6 +1,7 @@
 import os
-import environ
 from pathlib import Path
+
+import environ
 
 # Base directory 설정
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -8,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # ENV 환경변수 설정
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(
-    env_file=os.path.join(BASE_DIR, '.env.development')
+    env_file=os.path.join(BASE_DIR, '.env')
 )
 
 # 사용자 지정 환경변수
@@ -30,6 +31,9 @@ DEBUG = env('DEBUG')
 
 # Host 설정
 ALLOWED_HOSTS = ["*"]
+
+# CSRF Trusted Token
+CSRF_TRUSTED_ORIGINS = ["orbitcode.kr", "localhost"]
 
 # Application definition
 INSTALLED_APPS = [
@@ -132,6 +136,9 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
+
+# Static Root
+STATIC_ROOT = os.path.join(BASE_DIR, ".static/")
 
 # STATIC 경로 설정
 STATICFILES_DIRS = [
