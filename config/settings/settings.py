@@ -30,10 +30,10 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
 # Host 설정
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = env.str('ALLOWED_HOSTS').split(',')
 
 # CSRF Trusted Token
-CSRF_TRUSTED_ORIGINS = ["orbitcode.kr", "localhost"]
+CSRF_TRUSTED_ORIGINS = env.str('CSRF_TRUSTED_ORIGINS').split(',')
 
 # Application definition
 INSTALLED_APPS = [
