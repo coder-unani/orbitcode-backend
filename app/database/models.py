@@ -33,7 +33,6 @@ class Video(models.Model):
     is_confirm = models.BooleanField(default=False)
     # 삭제여부
     is_delete = models.BooleanField(default=False)
-    #
 
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
@@ -47,7 +46,6 @@ class Video(models.Model):
 
 
 class Actor(models.Model):
-    video = models.ManyToManyField(Video, through='VideoActor', related_name="actor")
     # 배우이름
     name = models.CharField(max_length=100, null=False, db_index=True)
     # 배우사진
@@ -57,6 +55,8 @@ class Actor(models.Model):
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
+    # ManyToManyField
+    video = models.ManyToManyField(Video, through='VideoActor', related_name="actor")
 
     def __str__(self):
         return self.name
@@ -66,7 +66,6 @@ class Actor(models.Model):
 
 
 class Staff(models.Model):
-    video = models.ManyToManyField(Video, through='VideoStaff', related_name="staff")
     # 이름
     name = models.CharField(max_length=100, null=False, db_index=True)
     # 프로필 이미지
@@ -76,6 +75,8 @@ class Staff(models.Model):
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
+    # ManyToManyField
+    video = models.ManyToManyField(Video, through='VideoStaff', related_name="staff")
 
     def __str__(self):
         return self.name
@@ -85,13 +86,13 @@ class Staff(models.Model):
 
 
 class Genre(models.Model):
-    video = models.ManyToManyField(Video, through='VideoGenre', related_name="genre")
     # 장르
     name = models.CharField(max_length=50, null=False, db_index=True)
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
-
+    # ManyToManyField
+    video = models.ManyToManyField(Video, through='VideoGenre', related_name="genre")
     def __str__(self):
         return self.name
 
@@ -100,7 +101,7 @@ class Genre(models.Model):
 
 
 class VideoActor(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.CASCADE)
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="actor_list")
     # 출연진
     actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
     # 타입 : 10=main actor, 11=sub actor
@@ -119,7 +120,7 @@ class VideoActor(models.Model):
 
 
 class VideoStaff(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.CASCADE)
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="staff_list")
     # 스태프
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     # 타입 : 10=director, 11=creator
@@ -136,7 +137,7 @@ class VideoStaff(models.Model):
 
 
 class VideoGenre(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.CASCADE)
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="genre_list")
     # 장르
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
     # 생성일, 수정일
@@ -232,11 +233,19 @@ class User(models.Model):
     password = models.CharField(max_length=60)
     nickname = models.CharField(max_length=40, unique=True, null=True)
     profile_image = models.CharField(max_length=100, null=True)
-    profile = models.TextField(null=True)
-    is_agree = models.BooleanField(default=False)
+    profile_text = models.TextField(null=True)
+    birth_year = models.IntegerField(null=True)
+    level = models.IntegerField(default=0)
+    mileage = models.IntegerField(default=0)
+    like_count = models.IntegerField(default=0)
+    review_count = models.IntegerField(default=0)
+    rating_count = models.IntegerField(default=0)
     is_active = models.BooleanField(default=True)
-    is_admin = models.BooleanField(default=False)
     is_block = models.BooleanField(default=False)
+    is_email_verify = models.BooleanField(default=False)
+    is_privacy_agree = models.BooleanField(default=False)
+    is_info_agree = models.BooleanField(default=False)
+    is_ad_agree = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
 
@@ -254,6 +263,8 @@ class VideoLikeLog(models.Model):
     video_id = models.IntegerField(null=False, db_index=True)
     # 비디오 제목
     video_title = models.CharField(max_length=100, null=False)
+    # 좋아요 여부
+    is_like = models.BooleanField(default=False)
     # 사용자 ID
     user_id = models.IntegerField(null=False, db_index=True)
     # 생성일
@@ -263,7 +274,7 @@ class VideoLikeLog(models.Model):
         return self.user_id
 
     class Meta:
-        db_table = "rvvs_video_like_log"
+        db_table = "rvvs_log_video_like"
 
 
 class VideoViewLog(models.Model):
@@ -278,17 +289,19 @@ class VideoViewLog(models.Model):
         return self.user_id
 
     class Meta:
-        db_table = "rvvs_video_view_log"
+        db_table = "rvvs_log_video_view"
 
 
 class UserLoginLog(models.Model):
     status = models.IntegerField(null=False)
+    code = models.CharField(max_length=50, null=True)
     message = models.CharField(max_length=200, null=True)
     path = models.CharField(max_length=200, null=True)
-    ip = models.CharField(max_length=50, null=True)
-    user_id = models.IntegerField(null=True)
+    input_id = models.IntegerField(null=True)
+    client_ip = models.CharField(max_length=50, null=True)
+    client_host = models.CharField(max_length=200, null=True)
     user_agent = models.CharField(max_length=200, null=True)
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
-        db_table = "rvvs_user_login_log"
+        db_table = "rvvs_log_user_login"
