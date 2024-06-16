@@ -170,6 +170,7 @@ class VideoThumbnail(models.Model):
 
     class Meta:
         db_table = "rvvs_video_thumbnail"
+        ordering = ['type']
 
 
 class VideoWatch(models.Model):
@@ -244,8 +245,9 @@ class User(models.Model):
     is_block = models.BooleanField(default=False)
     is_email_verify = models.BooleanField(default=False)
     is_privacy_agree = models.BooleanField(default=False)
-    is_info_agree = models.BooleanField(default=False)
-    is_ad_agree = models.BooleanField(default=False)
+    is_terms_agree = models.BooleanField(default=False)
+    is_age_agree = models.BooleanField(default=False)
+    is_marketing_agree = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
 
@@ -258,7 +260,7 @@ class User(models.Model):
 
 #=======================================================================================================================
 # Log
-class VideoLikeLog(models.Model):
+class VideoLike(models.Model):
     # 비디오 ID
     video_id = models.IntegerField(null=False, db_index=True)
     # 비디오 제목
@@ -269,12 +271,14 @@ class VideoLikeLog(models.Model):
     user_id = models.IntegerField(null=False, db_index=True)
     # 생성일
     created_at = models.DateTimeField(default=timezone.now)
+    # 수정일
+    updated_at = models.DateTimeField(null=True, auto_now=True)
 
     def __str__(self):
         return self.user_id
 
     class Meta:
-        db_table = "rvvs_log_video_like"
+        db_table = "rvvs_video_like"
 
 
 class VideoViewLog(models.Model):
@@ -282,6 +286,8 @@ class VideoViewLog(models.Model):
     video_id = models.IntegerField(null=False, db_index=True)
     # 사용자 ID
     user_id = models.IntegerField(null=True, db_index=True)
+    # client IP
+    client_ip = models.CharField(max_length=50, null=True)
     # 생성일
     created_at = models.DateTimeField(default=timezone.now)
 
@@ -297,7 +303,7 @@ class UserLoginLog(models.Model):
     code = models.CharField(max_length=50, null=True)
     message = models.CharField(max_length=200, null=True)
     path = models.CharField(max_length=200, null=True)
-    input_id = models.IntegerField(null=True)
+    input_id = models.CharField(max_length=200, null=True)
     client_ip = models.CharField(max_length=50, null=True)
     client_host = models.CharField(max_length=200, null=True)
     user_agent = models.CharField(max_length=200, null=True)
