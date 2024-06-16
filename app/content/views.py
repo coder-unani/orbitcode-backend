@@ -11,7 +11,8 @@ from app.utils.s3client import S3Client
 from app.utils.utils import make_filename, save_file_from_url, get_file_extension, get_file_size
 from config.properties import (
     AWS_S3_NETFLIX_THUMBNAIL,
-    LOCAL_NETFLIX_THUMBNAIL
+    LOCAL_NETFLIX_THUMBNAIL,
+    THUMBNAIL_BASE_URL
 )
 
 DJANGO_LOGIN_URL = "/login/"
@@ -30,9 +31,25 @@ class VideoList(LoginRequiredMixin, ListView):
     redirect_field_name = DJANGO_REDIRECT_FIELD_NAME
     model = Video
     template_name = "pages/content/video/list.html"
+    context_object_name = "videos"
 
     def get_queryset(self):
-        return Video.objects.order_by('-created_at')
+        return Video.objects.order_by('-created_at').all()
+
+    def set_thumbnail_urls_and_orientation(self, videos):
+        for video in videos:
+            video.is_vertical = False
+            for thumbnail in video.thumbnail.all():
+                thumbnail.url = THUMBNAIL_BASE_URL + thumbnail.url
+                if thumbnail.type == "10":
+                    video.is_vertical = True
+        return videos
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        videos = self.set_thumbnail_urls_and_orientation(context['videos'])
+        context['videos'] = videos
+        return context
 
 
 class VideoDetail(LoginRequiredMixin, DetailView):
