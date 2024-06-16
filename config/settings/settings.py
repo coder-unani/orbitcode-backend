@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -22,7 +23,7 @@ AWS_BUCKET_NAME = env.str('AWS_BUCKET_NAME')
 AWS_ACCESS_KEY_ID = env.str('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = env.str('AWS_SECRET_ACCESS_KEY')
 
-URL_THUMBNAIL = env.str('URL_THUMBNAIL')
+THUMBNAIL_BASE_URL = env.str('THUMBNAIL_BASE_URL')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
@@ -149,7 +150,51 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # 로그인 성공 시 자동으로 이동할 URL
-LOGIN_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/dashboard/'
 
 # 로그아웃 성공 시 자동으로 이동할 URL
 LOGOUT_REDIRECT_URL = '/login/'
+
+# 로깅 설정
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse',
+        },
+        'require_debug_true': {
+            '()': 'django.utils.log.RequireDebugTrue',
+        },
+    },
+    'formatters': {
+        'test': {
+            'format': u'%(asctime)s [%(levelname)-8s] %(funcName)s - %(message)s [%(pathname)s:%(lineno)d] ',
+            'datefmt': '%Y-%m-%d %H:%M:%S'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'filters': ['require_debug_true'],
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR , 'logs/test.log'),
+            'maxBytes': 1024*1024*5,  # 5 MB
+            'backupCount': 5,
+            'formatter': 'test',
+        },
+    },
+    'loggers': {
+        'django': {
+            'level': 'INFO',
+            'handlers': ['file'],
+            'propagate': False,
+        },
+        'django.db.backends': {
+            'level': 'DEBUG',
+            'handlers': ['file'],
+            'propagate': False,
+        },
+    },
+}
+log = logging.getLogger('django')

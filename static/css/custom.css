@@ -2,6 +2,14 @@
   width: 100px;
 }
 
+.h-\[100px\]{
+  height: 100px;
+}
+
+.h-\[200px\]{
+  height: 200px;
+}
+
 .break-all {
   word-break: break-all;
 }
