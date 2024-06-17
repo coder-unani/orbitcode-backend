@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 from pathlib import Path
 
 import environ
@@ -175,10 +176,10 @@ LOGGING = {
     },
     'handlers': {
         'file': {
-            'level': 'DEBUG',
+            'level': env.str('LOG_LEVEL'),
             'filters': ['require_debug_true'],
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR , 'logs/test.log'),
+            'filename': os.path.join(env.str('LOG_PATH'), f'log-{datetime.today().date()}.log'),
             'maxBytes': 1024*1024*5,  # 5 MB
             'backupCount': 5,
             'formatter': 'test',
