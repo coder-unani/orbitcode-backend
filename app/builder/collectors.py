@@ -10,8 +10,8 @@ from selenium.webdriver.common.keys import Keys
 
 from app.utils.logger import Logger
 from config.properties import (
-    URL_NETFLIX_LOGIN,
-    URL_NETFLIX_CONTENT
+    NETFLIX_LOGIN_URL,
+    NETFLIX_CONTENT_URL
 )
 
 
@@ -203,7 +203,7 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
 
     def get_content_netflix(self, id):
         Logger.info_log(self.__class__.__name__, "Try to import content. id={}".format(id))
-        url = URL_NETFLIX_CONTENT + "/" + id
+        url = NETFLIX_CONTENT_URL + "/" + id
         try:
             with urlopen(url) as response:
                 html = response.read()
@@ -219,7 +219,7 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
         Logger.info_log(self.__class__.__name__, "Try to get most watched contents")
         try:
             # 넷플릭스 로그인
-            self.set_selenium(URL_NETFLIX_LOGIN)
+            self.set_selenium(NETFLIX_LOGIN_URL)
             self.selenium_wait(2)
             self.login_netflix(getattr(settings, "NETFLIX_ID"), getattr(settings, "NETFLIX_PW"))
             self.selenium_wait(2)
@@ -368,3 +368,89 @@ class NetflixParser(BeautyfulSoupParser, SeleniumParser):
                 self.soup_close()
         except Exception as e:
             Logger.error_log(self.__class__.__name__, str(e))
+
+
+class TvingParser(BeautyfulSoupParser, SeleniumParser):
+    def get_content_html(self, content_id):
+        url = NETFLIX_CONTENT_URL + "/" + content_id
+        try:
+            with urlopen(url) as response:
+                html = response.read()
+            # BeautySoup을 이용하여 데이터 파싱
+            content = self.parse_content(html)
+            Logger.info_log(self.__class__.__name__, "Content import success. content={}".format(content))
+            return content
+        except Exception as e:
+            Logger.error_log(self.__class__.__name__, "Failed to import content. {}".format(e))
+            return None
+    def parse_content(self, html):
+        try:
+            self.set_beautyfulsoup(html)
+            schema = self.soup_element(tag="script", attrs={"type": "application/ld+json"})
+            schema = schema.text.strip()
+            schema_to_dict = eval(schema)
+
+            content = dict()
+            # type 추출
+            content['type'] = ""
+            if schema_to_dict['@type'] == "Movie":
+                content['type'] = "10"
+            elif schema_to_dict['@type'] == "TVSeries":
+                content['type'] = "11"
+            content['title'] = schema_to_dict['name']  # title 추출
+            content['synopsis'] = schema_to_dict['description']  # synopsis 추출
+            content['platform_code'] = "10"  # Netflix platform_code
+            content['platform_id'] = schema_to_dict['url'].split("/")[-1]  # platform_id 추출
+            content['notice_age'] = schema_to_dict['contentRating']  # 연령고지 추출
+            # Thumbnail 이미지 추출
+            content['thumbnail'] = [
+                {"type": "11", "url": schema_to_dict['image'], "extension": "", "size": 0}
+            ]
+            # watch url 추출
+            content['watch'] = [
+                {"type": "10", "url": schema_to_dict['url']}
+            ]
+            # 장르 추출
+            content['genre'] = []
+            genres = self.soup_elements(tag="a", classname="item-genres")
+            for genre in genres:
+                content['genre'].append({"name": genre.text.strip()})
+            # 출연진 추출
+            content['actor'] = []
+            actor_count = 0
+            for actor in schema_to_dict['actors']:
+                type = "10"
+                if actor_count > 1:
+                    type = "11"
+                content['actor'].append({"type": type, "name": actor['name'], "role": "", "picture": "", "profile": ""})
+                actor_count += 1
+            # 제작진 초기화
+            content['staff'] = []
+            # 감독 추출
+            for director in schema_to_dict['director']:
+                content['staff'].append({"type": "10", "name": director['name'], "picture": "", "profile": ""})
+            # 제작진 추출
+            for creator in schema_to_dict['creator']:
+                content['staff'].append({"type": "11", "name": creator['name'], "picture": "", "profile": ""})
+            # 파싱 범위 축소
+            self._soup = self.soup_element(tag="div", classname="hero-container")
+            # release 추출
+            content['release'] = self.soup_element(tag="span", classname="item-year")
+            if content['release'] is not None:
+                content['release'] = content['release'].text.strip()
+            # 상영시간 추출
+            content['runtime'] = self.soup_element(
+                tag="span",
+                classname="item-runtime",
+                attrs={"data-uia": "item-runtime"}
+            )
+            if content['runtime'] is not None:
+                content['runtime'] = content['runtime'].text.strip()
+
+            Logger.info_log(self.__class__.__name__, "Netflix content parsing success")
+            return content
+        except Exception as e:
+            Logger.error_log(self.__class__.__name__, "Failed to parse content. {}".format(e))
+            return None
+        finally:
+            self.soup_close()
