@@ -60,6 +60,8 @@
                     <ul x-cloak x-show="activeMenu === 'builder-crawling'" x-collapse class="sub-menu flex flex-col gap-1">
                         <li><a :class="{'active': activeItem === 'netflix'}" href="{% url 'builder:collect-netflix' %}">넷플릭스</a></li>
                         <li><a :class="{'active': activeItem === 'netflix-boxoffice'}" href="{% url 'builder:collect-netflix-boxoffice' %}">넷플릭스 박스오피스</a></li>
+                        <li><a :class="{'active': activeItem === 'tving'}" href="{% url 'builder:collect-tving' %}">티빙</a></li>
+                        <li><a :class="{'active': activeItem === 'tving-boxoffice'}" href="{% url 'builder:collect-tving-boxoffice' %}">티빙 박스오피스</a></li>
                     </ul>
                 </li>
                 <!-- CONTENT -->
