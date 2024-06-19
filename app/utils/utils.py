@@ -12,8 +12,10 @@ def html_escape(text):
 def make_filename(name):
     # 파일명에서 확장자 추출
     file_ext = name.split(".")[-1]
-    # 혹시 파라미터가 붙어있다면 삭제
+    # 파라미터 삭제
     file_ext = file_ext.split("?")[0]
+    # 파라미터 삭제
+    file_ext = file_ext.split("/")[0]
     # 소문자로 변환
     file_ext = file_ext.lower()
     # 파일명 반환

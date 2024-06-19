@@ -12,8 +12,8 @@
 {% block content %}
 
 <div class="flex flex-col gap-5 min-h-[calc(100vh-188px)] sm:min-h-[calc(100vh-204px)]">
-    <h1>넷플릭스 박스오피스</h1>
-    <form name="frmSearchFilter" action="{% url 'builder:collect-netflix-boxoffice' %}" method="get" onsubmit="return false;">
+    <h1>{{ title }}</h1>
+    <form name="frmSearchFilter" method="get" onsubmit="return false;">
         <input type="hidden" name="parser" value="on">
         <div class="relative flex">
             <div class="px-1">
@@ -63,8 +63,9 @@
             {% endif %}
         </div>
     </form>
-    <form name="frmSearchResult" action="{% url 'builder:collect-netflix-boxoffice' %}" method="post" onsubmit="return false;">
+    <form name="frmSearchResult" method="post" onsubmit="return false;">
         {% csrf_token %}
+        <input type="hidden" name="rank" value="{{rank}}">
         {% if videos is not None %}
             <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
                 <h2 class="text-base font-semibold mb-4">검색 결과</h2>

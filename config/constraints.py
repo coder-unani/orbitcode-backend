@@ -1,5 +1,5 @@
 NETFLIX_LOGIN_URL = "https://www.netflix.com/login"
-NETFLIX_CONTENT_URL = "https://www.netflix.com/kr/title"
+NETFLIX_CONTENT_URL = "https://www.netflix.com/kr/title/"
 NETFLIX_BOXOFFICE_URL = "https://www.netflix.com/browse"
 
 TVING_LOGIN_URL = "https://user.tving.com/pc/user/otherLogin.tving?loginType=10&from=pc"

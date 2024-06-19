@@ -115,7 +115,6 @@ def create_video_watch(video, new_watch):
 
 
 def create_video_all(new_content):
-    object_name = "create_content_data"
     try:
         with transaction.atomic():
             video = create_video(new_content)
@@ -129,11 +128,9 @@ def create_video_all(new_content):
                 create_video_watch(video, new_watch)
             for new_thumbnail in new_content['thumbnail']:
                 create_video_thumbnail(video, new_thumbnail)
-            Logger.info_log(object_name, "Created video data. platform_id: {} / id: {}".format(new_content['platform_id'], video.id))
             return video
     except Exception as e:
-        Logger.error_log(object_name, "Video data creation failed. platform_id: {} / {}".format(new_content['platform_id'], e))
-        return False
+        raise e
 
 
 def exist_video(video_id=None, platform_id=None):
@@ -182,8 +179,27 @@ def get_videos():
 
 
 def select_video_by_title(title):
-    videos = Video.objects.filter(title=title).all()
-    return videos
+    try:
+        videos = Video.objects.filter(title=title).all()
+        return videos
+    except Exception as e:
+        return False
+
+
+def get_video_by_id(video_id):
+    try:
+        video = Video.objects.get(id=video_id)
+        return video
+    except Exception as e:
+        raise e
+
+
+def search_videos_by_title(title):
+    try:
+        videos = Video.objects.filter(title=title).all()
+        return videos
+    except Exception as e:
+        return False
 
 
 def select_videos_by_genre(genre):

@@ -114,8 +114,14 @@ btnSearchFilter?.addEventListener("click", function (e) {
 // 저장 버튼 이벤트 리스너
 btnSaveVideos?.addEventListener("click", function (e) {
     e.preventDefault();
-    const arrVideoIds = iptSaveVideoIds.value.split(",");
-    if (arrVideoIds.length === 0) {
+    const checkVideos = document.querySelectorAll("input[name=platform_ids]")
+    let isCheckedVideo = false;
+    checkVideos.forEach((checkVideo) => {
+        if (checkVideo.checked) {
+            isCheckedVideo = true;
+        }
+    });
+    if (!isCheckedVideo) {
         alert("선택된 데이터가 없습니다.");
         return;
     }

@@ -9,7 +9,7 @@ from django.views.generic import TemplateView, ListView, DetailView
 from app.database.models import Video, Genre, Actor, Staff
 from app.utils.s3client import S3Client
 from app.utils.utils import make_filename, save_file_from_url, get_file_extension, get_file_size
-from config.properties import (
+from config.constraints import (
     AWS_S3_NETFLIX_THUMBNAIL,
     LOCAL_NETFLIX_THUMBNAIL,
     THUMBNAIL_BASE_URL
