@@ -161,6 +161,8 @@ class VideoThumbnail(models.Model):
     extension = models.CharField(max_length=10, null=False)
     # 사이즈
     size = models.BigIntegerField(null=True)
+    width = models.IntegerField(null=True)
+    height = models.IntegerField(null=True)
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
