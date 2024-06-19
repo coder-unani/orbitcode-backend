@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Logger:
 
-    LOG_PATH = "data/log/{}_{}_{}.log".format(datetime.now().year, datetime.now().month, datetime.now().day)
+    LOG_PATH = f"/data/log/galaxy/custom-{datetime.today().date()}.log"
 
     @classmethod
     def write_log(cls, log_type, object_name, log_message):
