@@ -15,3 +15,5 @@ node_modules
 
 # User Data
 data/
+/temp.txt
+/temp1.txt
