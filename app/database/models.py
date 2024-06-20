@@ -326,12 +326,14 @@ class VideoLike(models.Model):
 class VideoReview(models.Model):
     video_id = models.IntegerField(null=False, db_index=True)
     user_id = models.IntegerField(null=False, db_index=True)
+    user_nickname = models.CharField(max_length=40, null=True)
+    user_profile_image = models.CharField(max_length=100, null=True)
     title = models.CharField(max_length=200, null=False)
     content = models.TextField(null=True)
     like_count = models.IntegerField(default=0)
     is_spoiler = models.BooleanField(default=False)
     is_private = models.BooleanField(default=False)
-    is_delete = models.BooleanField(default=False)
+    is_block = models.BooleanField(default=False)
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
 
