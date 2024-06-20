@@ -11,7 +11,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from config.constraints import NETFLIX_LOGIN_URL, NETFLIX_CONTENT_URL, TVING_CONTENT_URL
+from config.constraints import NETFLIX_LOGIN_URL, NETFLIX_CONTENT_URL, TVING_LOGIN_URL, TVING_CONTENT_URL
 from config.settings import settings
 
 
@@ -424,4 +424,81 @@ class TvingParser(OTTParser):
 
     @classmethod
     def boxoffice(cls):
-        pass
+        driver = None
+        ranks = list()
+        videos = list()
+        try:
+            # selenium 설정
+            selenium_options = Options()
+            selenium_options.add_experimental_option("detach", True)  # 브라우저 종료 방지
+            # selenium_options.add_argument("--headless")  # 헤드리스 모드 설정
+            selenium_options.add_argument("--no-sandbox")
+            selenium_options.add_argument("--disable-dev-shm-usage")
+            # WebDriver 설정
+            driver = webdriver.Chrome(options=selenium_options)
+            # Tving 로그인 페이지 호출
+            driver.get(TVING_LOGIN_URL)
+            sleep(2)
+            # Tving 로그인
+            driver.find_element(value="a").send_keys(settings.TVING_ID)
+            driver.find_element(value="b").send_keys(settings.TVING_PW)
+            driver.find_element(value="b").send_keys(Keys.RETURN)
+            sleep(2)
+            # profile 선택
+            driver.find_elements(by=By.CLASS_NAME, value="profile-photo-container")[0].click()
+            sleep(2)
+            # body 태그가 로딩될때까지 대기
+            body = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+            # 스크롤 다운 & 업
+            for i in range(8):
+                body.send_keys(Keys.PAGE_DOWN)
+                sleep(2)
+            for i in range(8):
+                body.send_keys(Keys.PAGE_UP)
+                sleep(2)
+
+            contents_wrap = driver.find_element(by=By.CLASS_NAME, value="contents_wrap")
+            content_rows = contents_wrap.find_elements(by=By.CLASS_NAME, value="lists")
+            for content_row in content_rows:
+                # 해당 컨텐츠 ROW로 스크롤 이동
+                driver.execute_script("arguments[0].scrollIntoView();", content_row)
+                sleep(2)
+                # vertical slide 컨텐츠 ROW만 수집
+                try:
+                    content_row.find_element(by=By.CLASS_NAME, value="lists__slides-vertical")
+                except Exception as e:
+                    print(e)
+                    continue
+                # 컨텐츠 ROW 타이틀 수집
+                content_row_title = ""
+                try:
+                    content_row_title = content_row.find_element(by=By.TAG_NAME, value="h3").text
+                except Exception as e:
+                    print(e)
+                # 컨텐츠 ROW 아이템 리스트
+                content_row_items = content_row.find_elements(by=By.CLASS_NAME, value="swiper-slide")
+                for item in content_row_items:
+                    try:
+                        video = dict()
+                        link = item.find_element(by=By.TAG_NAME, value="a").get_attribute("href")
+                        video['platform_id'] = link.split("/")[-1]
+                        if content_row_title == "":
+                            rank = dict()
+                            rank['platform_code'] = "12"
+                            rank['type'] = "all"
+                            rank['rank'] = item.get_attribute("data-swiper-slide-index")
+                            rank['platform_id'] = video['platform_id']
+                            if rank not in ranks:
+                                ranks.append(rank)
+                        if video not in videos:
+                            videos.append(video)
+                    except Exception as e:
+                        print(e)
+                        continue
+            return ranks, videos
+
+        except Exception as e:
+            raise e
+

@@ -209,18 +209,73 @@ class CollectTving(AuthView):
 
 
 class CollectTvingBoxoffice(AuthView):
+    # Template
+    template_name = "pages/builder/collect/boxoffice.html"
+
     def get(self, request, *args, **kwargs):
+        # 화면 출력용 context
         context = dict()
-        context['title'] = "티빙 박스오피스 검색"
-        if request.GET.get('parser') == "on":
+        context['title'] = "넷플릭스 박스오피스 검색"
+        context['parser'] = request.GET.get('parser')
+        context['view_mode'] = request.GET.get('view_mode')
+        # parser가 on일 경우 실행
+        if context['parser'] == "on":
             boxoffice, videos = TvingParser.boxoffice()
             tving_parser: OTTParser = TvingParser()
             builder = VideoBuilder(tving_parser)
-            return
-        return render(request, "pages/builder/collect/boxoffice.html", context)
+            platform_ids = [video['platform_id'] for video in videos]
+            videos = builder.build(platform_ids)
+            builder.close()
+            if videos:
+                context['videos'] = videos
+        return render(request, self.template_name, context)
 
     def post(self, request):
-        pass
+        # rank 데이터
+        ranks = request.POST.getlist('rank')
+        # 저장 할 데이터 platform_id List
+        platform_ids = request.POST.getlist('platform_ids')
+        # 화면 출력용 context
+        context = dict()
+        context['summary'] = dict()
+        context['messages'] = list()
+        s_cnt = 0
+        f_cnt = 0
+        # 비디오 저장 객체 생성
+        s3_image_uploader: ImageUploader = S3ImageUploader()
+        video_store = VideoStore(s3_image_uploader)
+        # platform_ids 기준으로 Loop
+        for platform_id in platform_ids:
+            # platform_id에 해당되는 컨텐츠
+            try:
+                content = eval(request.POST.get('video_' + platform_id))
+                # DB저장
+                result = video_store.store(content)
+                if result:
+                    context['messages'].append({
+                        "result": "success",
+                        "message": "{} 저장에 성공하였습니다.".format(platform_id)
+                    })
+                    s_cnt += 1
+                else:
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": "{} 저장에 실패하였습니다.".format(platform_id)
+                    })
+                    f_cnt += 1
+            except Exception as e:
+                print(e)
+                context['messages'].append({
+                    "result": "fail",
+                    "message": "{} 저장에 실패하였습니다. {}".format(platform_id, e)
+                })
+                f_cnt += 1
+        # VideoStore Close
+        video_store.close()
+        # 화면 출력용 요약 정보
+        context['summary'] = {"total": len(platform_ids), "success": s_cnt, "fail": f_cnt}
+        # 화면 출력
+        return render(request, template_name="pages/common/process-result.html", context=context)
 
 
 
