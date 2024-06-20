@@ -260,13 +260,52 @@ class User(models.Model):
         db_table = "rvvs_user"
 
 
+# 사용자 취향 정의
+class UserFavorite(models.Model):
+    name = models.CharField(max_length=50, null=False)
+    is_display = models.BooleanField(default=True)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "rvvs_user_favorite"
+
+
+# 사용자 취향 리스트
+class UserFavoriteList(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="favorite")
+    favorite = models.ForeignKey(UserFavorite, on_delete=models.CASCADE, related_name="user")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        db_table = "rvvs_user_favorite_list"
+
 #=======================================================================================================================
-# Log
+# Video Rating , Review, Like
+
+
+# 비디오 평점
+class VideoRating(models.Model):
+    video_id = models.IntegerField(null=False, db_index=True)
+    rating = models.IntegerField(default=0)
+    user_id = models.IntegerField(null=False, db_index=True)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(null=True, auto_now=True)
+
+    def __str__(self):
+        return self.rating
+
+    class Meta:
+        db_table = "rvvs_video_rating"
+
+
+# 비디오 좋아요
 class VideoLike(models.Model):
     # 비디오 ID
     video_id = models.IntegerField(null=False, db_index=True)
     # 비디오 제목
     video_title = models.CharField(max_length=100, null=False)
+    # 좋아요 타입
+    like_type = models.CharField(max_length=2, null=False)
     # 좋아요 여부
     is_like = models.BooleanField(default=False)
     # 사용자 ID
@@ -283,6 +322,45 @@ class VideoLike(models.Model):
         db_table = "rvvs_video_like"
 
 
+# 비디오 리뷰
+class VideoReview(models.Model):
+    video_id = models.IntegerField(null=False, db_index=True)
+    user_id = models.IntegerField(null=False, db_index=True)
+    title = models.CharField(max_length=200, null=False)
+    content = models.TextField(null=True)
+    like_count = models.IntegerField(default=0)
+    is_spoiler = models.BooleanField(default=False)
+    is_private = models.BooleanField(default=False)
+    is_delete = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(null=True, auto_now=True)
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        db_table = "rvvs_video_review"
+
+
+# 비디오 리뷰 좋아요
+class VideoReviewLike(models.Model):
+    review_id = models.IntegerField(null=False, db_index=True)
+    user_id = models.IntegerField(null=False, db_index=True)
+    is_like = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(null=True, auto_now=True)
+
+    def __str__(self):
+        return self.user_id
+
+    class Meta:
+        db_table = "rvvs_video_review_like"
+
+#=======================================================================================================================
+# Log
+
+
+# 비디오 조회 로그
 class VideoViewLog(models.Model):
     # 비디오 ID
     video_id = models.IntegerField(null=False, db_index=True)
@@ -300,6 +378,7 @@ class VideoViewLog(models.Model):
         db_table = "rvvs_log_video_view"
 
 
+# 사용자 로그인 로그
 class UserLoginLog(models.Model):
     status = models.IntegerField(null=False)
     code = models.CharField(max_length=50, null=True)
