@@ -215,7 +215,7 @@ class CollectTvingBoxoffice(AuthView):
     def get(self, request, *args, **kwargs):
         # 화면 출력용 context
         context = dict()
-        context['title'] = "넷플릭스 박스오피스 검색"
+        context['title'] = "티빙 박스오피스 검색"
         context['parser'] = request.GET.get('parser')
         context['view_mode'] = request.GET.get('view_mode')
         # parser가 on일 경우 실행
