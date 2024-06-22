@@ -11,7 +11,8 @@
             </button>
         </div>
         <div class="max-w-[180px] md:max-w-[350px] flex-1">
-            <form class="hidden min-[420px]:block w-full">
+            {% block menu-title %} {% endblock %}
+            <!--form class="hidden min-[420px]:block w-full">
                 <div class="relative">
                     <input type="text" id="search" class="form-input ps-10 h-[42px] dark:border-lightgray/20 dark:text-white dark:bg-lightgray/10 border-2 border-gray/10 bg-gray/[8%] rounded-full text-sm text-dark placeholder:text-lightgray/80 focus:ring-0 focus:border-primary/80 focus:outline-0" placeholder="Search..." required="">
                     <button type="button" class="absolute inset-y-0 left-3 flex items-center">
@@ -28,10 +29,10 @@
                         </svg>
                     </button>
                 </div>
-            </form>
+            </form-->
         </div>
     </div>
-    <div class="sm:block hidden flex-auto">
+    <!--div class="sm:block hidden flex-auto">
         <ul class="flex items-center gap-[30px]">
             <li>
                 <a href="/socialapps/inbox" class="flex items-center gap-2.5 text-lightgray hover:text-primary duration-300 text-sm font-semibold">
@@ -62,7 +63,7 @@
                 </a>
             </li>
         </ul>
-    </div>
+    </div-->
     <div class="flex items-center gap-5">
         <div x-data="{ fullScreen: false }">
             <button class="text-lightgray hover:text-primary block" x-bind:class="{ 'hidden': fullScreen, 'block': !fullScreen }" x-on:click="fullScreen = !fullScreen" @click="$store.app.toggleFullScreen()">
@@ -107,7 +108,7 @@
                 </svg>
             </a>
         </div>
-        <div class="notification h-6" x-data="dropdown" @click.outside="open = false">
+        <!--div class="notification h-6" x-data="dropdown" @click.outside="open = false">
             <button type="button" class="text-lightgray hover:text-primary" @click="toggle()">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path opacity="0.3" d="M18.7491 9V9.7041C18.7491 10.5491 18.9903 11.3752 19.4422 12.0782L20.5496 13.8012C21.5612 15.3749 20.789 17.5139 19.0296 18.0116C14.4273 19.3134 9.57274 19.3134 4.97036 18.0116C3.21105 17.5139 2.43882 15.3749 3.45036 13.8012L4.5578 12.0782C5.00972 11.3752 5.25087 10.5491 5.25087 9.7041V9C5.25087 5.13401 8.27256 2 12 2C15.7274 2 18.7491 5.13401 18.7491 9Z" fill="currentColor" />
@@ -203,7 +204,7 @@
                     <a href="javascript:;" class="text-gray font-semibold text-sm hover:text-primary duration-300">View More</a>
                 </div>
             </div>
-        </div>
+        </div-->
         <div class="profile z-10" x-data="dropdown" @click.outside="open = false">
             <button type="button" class="flex items-center gap-2.5" @click="toggle()">
                 <img class="h-[38px] w-[38px] rounded-full" src="{% static '/images/user-orbitcode.png' %}" alt="Header Avatar">
