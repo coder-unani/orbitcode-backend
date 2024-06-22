@@ -1,16 +1,27 @@
 from django.db import models
 from django.utils import timezone
 
+from config.constraints import VIDEO_PLATFORM_CHOICES, VIDEO_TYPE_CHOICES
+
 
 #=======================================================================================================================
 # Video
+
+
 class Video(models.Model):
     # 타입 : 10=movie, 11=series
-    type = models.CharField(max_length=2, null=False, db_index=True)
+    type = models.CharField(
+        max_length=2,
+        choices=VIDEO_TYPE_CHOICES,
+        null=False,
+        db_index=True,
+        verbose_name='Video Type',
+        help_text='비디오 타입 정의: 10=영화, 11=시리즈'
+    )
     # 타이틀
-    title = models.CharField(max_length=100, null=False, db_index=True)
+    title = models.CharField(max_length=100, null=False, db_index=True, verbose_name='Title')
     # 시놉시스
-    synopsis = models.TextField(null=True)
+    synopsis = models.TextField(null=True, verbose_name='Synopsis')
     # 개봉년도
     release = models.CharField(max_length=20, null=True)
     # 상영시간
@@ -25,8 +36,15 @@ class Video(models.Model):
     review_count = models.IntegerField(default=0)
     # 조회수
     view_count = models.IntegerField(default=0)
-    # 플랫폼 코드: 10=netflix, 11=disney+, 12=tving, 13=waave, 14=coupang play, 15=watcha, 50=Theater
-    platform_code = models.CharField(max_length=2, null=False, db_index=True)
+    # 플랫폼 코드
+    platform_code = models.CharField(
+        max_length=2,
+        choices=VIDEO_PLATFORM_CHOICES,
+        null=False,
+        db_index=True,
+        verbose_name='Platform Code',
+        help_text='플랫폼 코드 정의: 10=넷플릭스, 11=디즈니+, 12=티빙, 13=웨이브, 14=쿠팡플레이, 15=왓챠, 50=영화관'
+    )
     # 플랫폼별 ID
     platform_id = models.CharField(max_length=50, null=False)
     # 확인여부
@@ -113,7 +131,7 @@ class VideoActor(models.Model):
     updated_at = models.DateTimeField(null=True, auto_now=True)
 
     def __str__(self):
-        return self.actor
+        return f"{self.type}: {self.actor.name}"
 
     class Meta:
         db_table = "rvvs_video_actor"
@@ -130,7 +148,7 @@ class VideoStaff(models.Model):
     updated_at = models.DateTimeField(null=True, auto_now=True)
 
     def __str__(self):
-        return self.staff
+        return self.staff.name
 
     class Meta:
         db_table = "rvvs_video_staff"
@@ -145,7 +163,7 @@ class VideoGenre(models.Model):
     updated_at = models.DateTimeField(null=True, auto_now=True)
 
     def __str__(self):
-        return self.genre
+        return self.genre.name
 
     class Meta:
         db_table = "rvvs_video_genre"
@@ -394,3 +412,17 @@ class UserLoginLog(models.Model):
 
     class Meta:
         db_table = "rvvs_log_user_login"
+
+
+class BuilderCollection(models.Model):
+    platform_code = models.CharField(max_length=2, null=False)
+    platform_id = models.CharField(max_length=50, null=False)
+    is_collect = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(null=True, auto_now=True)
+
+    def __str__(self):
+        return self.platform_id
+
+    class Meta:
+        db_table = "builder_collection"
