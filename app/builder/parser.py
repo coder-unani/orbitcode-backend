@@ -367,9 +367,11 @@ class TvingParser(OTTParser):
                     content['runtime'] = tag_element.text
                     break
             # 시놉시스 수집
-            # desc = selenium.find_element(By.CSS_SELECTOR, 'meta[name="description"]')
-            # content['synopsis'] = desc.get_attribute('content')
             content['synopsis'] = schema_to_dict['description']
+            synopsis = selenium.find_element(By.CSS_SELECTOR, 'p.ee4wkaf25').text
+            if len(content['synopsis']) < len(synopsis):
+                content['synopsis'] = synopsis
+
             # 장르 수집
             content['genre'] = [{"name": schema_to_dict['genre']}]
             # 배우 수집
@@ -413,6 +415,7 @@ class TvingParser(OTTParser):
                     else:
                         continue
             content['watch'] = [{"type": self.ott_type, "url": selenium.current_url}]
+            print(content)
             # selenium 종료
             selenium.quit()
             return content
