@@ -4,7 +4,6 @@
 {% block title %} 컨텐츠 관리::비디오 {% endblock title %}
 
 {% block head %}
-    <script src="{% static 'js/content/video/edit.js' %}" defer></script>
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 {% endblock head %}
 
@@ -108,16 +107,9 @@
                                     <div class="space-y-4">
                                         <label for="type" class="text-sm">타입</label>
                                         <select id="type" name="type" class="form-select">
-                                            {% if object.type == '10' %}
-                                                <option value="10" selected>영화</option>
-                                            {% else %}
-                                                <option value="10">영화</option>
-                                            {% endif %}
-                                            {% if object.type == '11' %}
-                                                <option value="11" selected>시리즈</option>
-                                            {% else %}
-                                                <option value="11">시리즈</option>
-                                            {% endif %}
+                                            {% for video_type in video_type %}
+                                                <option value="{{ video_type.0 }}" {% if object.type == video_type.0 %} selected {% endif %}>{{ video_type.1 }}</option>
+                                            {% endfor %}
                                         </select>
                                     </div>
                                     <div class="space-y-4 flex-1">
@@ -143,7 +135,11 @@
                                     <label for="is_confirm" class="flex items-center cursor-pointer">
                                         <span class="px-2">관리자 승인</span>
                                         <div class="relative">
-                                            <input type="checkbox" id="is_confirm" name="is_confirm" value="true" class="sr-only">
+                                            {% if object.is_confirm %}
+                                                <input type="checkbox" id="is_confirm" name="is_confirm" value="true" class="sr-only" checked>
+                                            {% else %}
+                                                <input type="checkbox" id="is_confirm" name="is_confirm" value="true" class="sr-only">
+                                            {% endif %}
                                             <div class="block band border border-gray/20 w-[52px] h-[29px] rounded-full"></div>
                                             <div class="dot absolute left-[5px] top-[3.5px] bg-gray/20 w-[22PX] h-[22PX] rounded-full transition dark:bg-gray/60"></div>
                                         </div>
@@ -177,17 +173,10 @@
                                     {% for thumbnail in object.thumbnail.all %}
                                         <div id="thumbnail_wrap_{{ thumbnail.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="thumbnail_origin_{{thumbnail.id}}" value="{{ thumbnail }}">
-                                            <select name="thumbnail_type_{{ thumbnail.id }}" class="form-select w-[100px]" disabled>
-                                                {% if thumbnail.type == '10' %}
-                                                    <option value="10" selected>세로</option>
-                                                {% else %}
-                                                    <option value="10">세로</option>
-                                                {% endif %}
-                                                {% if thumbnail.type == '11' %}
-                                                    <option value="11" selected>가로</option>
-                                                {% else %}
-                                                    <option value="11">가로</option>
-                                                {% endif %}
+                                            <select name="thumbnail_type_{{ thumbnail.id }}" class="form-select w-[200px]" disabled>
+                                                {% for thumbnail_type in video_thumbnail_type %}
+                                                    <option value="{{ thumbnail_type.0 }}" {% if thumbnail.type == thumbnail_type.0 %} selected {% endif %}>{{ thumbnail_type.1 }}</option>
+                                                {% endfor %}
                                             </select>
                                             <input id="thumbnail" type="text" name="thumbnail_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{thumbnail.url}}" readonly />
                                             <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('thumbnail', {{ thumbnail.id }})">
@@ -227,27 +216,10 @@
                                     {% for watch in object.watch.all %}
                                         <div id="watch_wrap_{{ watch.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="watch_origin_{{watch.id}}" value="{{ watch.url }}">
-                                            <select id="watch_type" name="watch_type_{{watch.id}}" class="form-select w-[100px]" disabled>
-                                                {% if watch.type == "10" %}
-                                                    <option value="10" selected>Netflix</option>
-                                                {% else %}
-                                                    <option value="10">Netflix</option>
-                                                {% endif %}
-                                                {% if watch.type == "11" %}
-                                                    <option value="11" selected>Disney+</option>
-                                                {% else %}
-                                                    <option value="11">Disney+</option>
-                                                {% endif %}
-                                                {% if watch.type == "12" %}
-                                                    <option value="12" selected>Tving</option>
-                                                {% else %}
-                                                    <option value="12">Tving</option>
-                                                {% endif %}
-                                                {% if watch.type == "13" %}
-                                                    <option value="13" selected>Wavve</option>
-                                                {% else %}
-                                                    <option value="13">Wavve</option>
-                                                {% endif %}
+                                            <select id="watch_type" name="watch_type_{{watch.id}}" class="form-select w-[200px]" disabled>
+                                                {% for platform in video_platform %}
+                                                    <option value="{{ platform.0 }}" {% if watch.type == platform.0 %} selected {% endif %}>{{ platform.1 }}</option>
+                                                {% endfor %}
                                             </select>
                                             <input type="text" name="watch_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{watch.url}}" readonly />
                                             <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('watch', {{ watch.id }})">
@@ -284,10 +256,10 @@
                                 <input type="hidden" name="genre_create" value="">
                                 <input type="hidden" name="genre_delete" value="">
                                 <div id="genre_container" class="grid lg:grid-cols-5 sm:grid-cols-2 gap-5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for genre in object.genre.all %}
+                                    {% for genre in object.genre_list.all %}
                                         <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
-                                            <input type="hidden" name="genre_origin_{{genre.id}}" value="{{ genre.name }}">
-                                            <input type="text" name="genre_{{ genre.id }}" class="form-input rounded-lg" value="{{genre.name}}" readonly />
+                                            <input type="hidden" name="genre_origin_{{genre.id}}" value="{{ genre }}">
+                                            <input type="text" name="genre_{{ genre.id }}" class="form-input rounded-lg" value="{{genre.genre.name}}" readonly />
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -319,22 +291,15 @@
                                 <input type="hidden" name="actor_create" value="">
                                 <input type="hidden" name="actor_delete" value="">
                                 <div id="actor_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for actor in object.actor.all %}
-                                        <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
+                                    {% for actor in object.actor_list.all %}
+                                        <div id="actor_wrap_{{ actor.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="actor_origin_{{actor.id}}" value="{{ actor }}">
-                                            <select name="actor_type_{{ actor.id }}" class="form-select w-[100px]" disabled>
-                                                {% if actor.type == "10" %}
-                                                    <option value="10" selected>주연</option>
-                                                {% else %}
-                                                    <option value="10">주연</option>
-                                                {% endif %}
-                                                {% if actor.type == "11" %}
-                                                    <option value="11" selected>조연</option>
-                                                {% else %}
-                                                    <option value="11">조연</option>
-                                                {% endif %}
+                                            <select name="actor_type_{{ actor.id }}" class="form-select w-[200px]" disabled>
+                                                {% for actor_type in video_actor_type %}
+                                                    <option value="{{ actor_type.0 }}" {% if actor.type == actor_type.0 %} selected {% endif %}>{{ actor_type.1 }}</option>
+                                                {% endfor %}
                                             </select>
-                                            <input type="text" name="actor_{{ actor.id }}" class="form-input" value="{{actor.name}}" readonly />
+                                            <input type="text" name="actor_{{ actor.id }}" class="form-input" value="{{actor.actor.name}}" readonly />
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -366,27 +331,15 @@
                                 <input type="hidden" name="staff_create" value="">
                                 <input type="hidden" name="staff_delete" value="">
                                 <div id="staff_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for staff in object.staff.all %}
-                                        <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
-                                            <input type="hidden" name="staff_origin_{{staff.id}}" value="{{ staff.name }}">
-                                            <select name="staff_type_{{ staff.id }}" class="form-select w-[100px]" disabled>
-                                                {% if staff.type == "10" %}
-                                                    <option value="10" selected>감독</option>
-                                                {% else %}
-                                                    <option value="10">감독</option>
-                                                {% endif %}
-                                                {% if staff.type == "11" %}
-                                                    <option value="11" selected>작가</option>
-                                                {% else %}
-                                                    <option value="11">작가</option>
-                                                {% endif %}
-                                                {% if staff.type == "12" %}
-                                                    <option value="12" selected>제작</option>
-                                                {% else %}
-                                                    <option value="12">제작</option>
-                                                {% endif %}
+                                    {% for staff in object.staff_list.all %}
+                                        <div id="staff_wrap_{{ staff.id }}" class="flex gap-2.5">
+                                            <input type="hidden" name="staff_origin_{{staff.id}}" value="{{ staff.staff.name }}">
+                                            <select name="staff_type_{{ staff.id }}" class="form-select w-[200px]" disabled>
+                                                {% for staff_type in video_staff_type %}
+                                                    <option value="{{ staff_type.0 }}" {% if staff.type == staff_type.0 %} selected {% endif %}>{{ staff_type.1 }}</option>
+                                                {% endfor %}
                                             </select>
-                                            <input type="text" name="staff_{{ staff.id }}" class="form-input" value="{{staff.name}}" readonly />
+                                            <input type="text" name="staff_{{ staff.id }}" class="form-input" value="{{staff.staff.name}}" readonly />
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -404,12 +357,206 @@
 </div>
 
 <script>
-    document.addEventListener("alpine:init", () => {
-        Alpine.data("email", () => ({
-            isShowChatMenu: false,
-            selectMail: false,
-        }));
+document.addEventListener("alpine:init", () => {
+    Alpine.data("email", () => ({
+        isShowChatMenu: false,
+        selectMail: false,
+    }));
+});
+
+// 사용 가능한 아이디 목록 (항목별 최대 10개)
+const newIds = {
+    "thumbnail": [
+        {"id": "new1", "usage": false},
+        {"id": "new2", "usage": false},
+        {"id": "new3", "usage": false},
+        {"id": "new4", "usage": false},
+        {"id": "new5", "usage": false},
+        {"id": "new6", "usage": false},
+        {"id": "new7", "usage": false},
+        {"id": "new8", "usage": false},
+        {"id": "new9", "usage": false},
+        {"id": "new10", "usage": false}
+    ],
+    "watch": [
+        {"id": "new1", "usage": false},
+        {"id": "new2", "usage": false},
+        {"id": "new3", "usage": false},
+        {"id": "new4", "usage": false},
+        {"id": "new5", "usage": false},
+        {"id": "new6", "usage": false},
+        {"id": "new7", "usage": false},
+        {"id": "new8", "usage": false},
+        {"id": "new9", "usage": false},
+        {"id": "new10", "usage": false}
+    ],
+    "genre": [
+        {"id": "new1", "usage": false},
+        {"id": "new2", "usage": false},
+        {"id": "new3", "usage": false},
+        {"id": "new4", "usage": false},
+        {"id": "new5", "usage": false},
+        {"id": "new6", "usage": false},
+        {"id": "new7", "usage": false},
+        {"id": "new8", "usage": false},
+        {"id": "new9", "usage": false},
+        {"id": "new10", "usage": false}
+    ],
+    "actor": [
+        {"id": "new1", "usage": false},
+        {"id": "new2", "usage": false},
+        {"id": "new3", "usage": false},
+        {"id": "new4", "usage": false},
+        {"id": "new5", "usage": false},
+        {"id": "new6", "usage": false},
+        {"id": "new7", "usage": false},
+        {"id": "new8", "usage": false},
+        {"id": "new9", "usage": false},
+        {"id": "new10", "usage": false}
+    ],
+    "staff": [
+        {"id": "new1", "usage": false},
+        {"id": "new2", "usage": false},
+        {"id": "new3", "usage": false},
+        {"id": "new4", "usage": false},
+        {"id": "new5", "usage": false},
+        {"id": "new6", "usage": false},
+        {"id": "new7", "usage": false},
+        {"id": "new8", "usage": false},
+        {"id": "new9", "usage": false},
+        {"id": "new10", "usage": false}
+    ],
+};
+
+// 썸네일 타입 정의
+
+const THUMBNAIL_TYPE = [
+    {% for thumbnail in video_thumbnail_type %} {"value": "{{ thumbnail.0 }}", "text": "{{ thumbnail.1 }}"}, {% endfor %}
+]
+
+// 시청정보 타입 정의
+const WATCH_TYPE = [
+    {% for platform in video_platform %} {"value": "{{ platform.0 }}", "text": "{{ platform.1 }}"}, {% endfor %}
+];
+
+// 배우 타입 정의
+const ACTOR_TYPE = [
+    {% for actor in video_actor_type %} {"value": "{{ actor.0 }}", "text": "{{ actor.1 }}"}, {% endfor %}
+];
+
+// 스태프 타입 정의
+const STAFF_TYPE = [
+    {% for staff in video_staff_type %} {"value": "{{ staff.0 }}", "text": "{{ staff.1 }}"}, {% endfor %}
+];
+
+// 아이디 발행
+const publishId = (prefix) => {
+    let id = "";
+    for (const item of newIds[prefix]) {
+        if (!item.usage) {
+            id = item.id;
+            item.usage = true;
+            break;
+        }
+    }
+    if (id) {
+        const createIds = document.querySelector(`input[name=${prefix}_create]`);
+        let createIdsArray = [];
+        if (createIds.value.length > 0) {
+            createIdsArray = createIds.value.split(',');
+        }
+        createIdsArray.push(id);
+        createIds.value = createIdsArray.join(',');
+    }
+
+    return id;
+}
+
+// 아이디 사용 중지
+const unpublishId = (prefix, id) => {
+    for (const item of newIds[prefix]) {
+        if (item.id === id) {
+            item.usage = false;
+        }
+    }
+    const createIds = document.querySelector(`input[name=${prefix}_create]`);
+    let createIdsArray = [];
+    if (createIds.value.length > 0) {
+        createIdsArray = createIds.value.split(',');
+    }
+    const index = createIdsArray.indexOf(id);
+    if (index > -1) {
+        createIdsArray.splice(index, 1);
+    }
+    createIds.value = createIdsArray.join(',');
+    return true;
+}
+
+// 엘리멘트 추가
+const addElement = (prefix, options = []) => {
+    const container = document.querySelector(`#${prefix}_container`);
+    const newDiv = document.createElement('div');
+
+    const id = publishId(prefix);
+    if (id === "") {
+        alert(`${prefix}는 최대 ${newIds[prefix].length}개까지 등록 가능합니다.`);
+        return;
+    }
+
+    newDiv.id = `${prefix}_wrap_${id}`;
+    newDiv.classList.add('flex', 'gap-2.5', 'w-full');
+
+    if (options.length > 0) {
+        const select = document.createElement('select');
+        select.name = `${prefix}_type_${id}`;
+        select.classList.add('form-select', 'w-[200px]');
+        options.map((option) => {
+            const opt = document.createElement('option');
+            opt.value = option.value;
+            opt.textContent = option.text;
+            select.appendChild(opt);
+        });
+        newDiv.appendChild(select);
+    }
+
+    const newInput = document.createElement('input');
+    newInput.type = "text";
+    newInput.name = `${prefix}_${id}`;
+    newInput.classList.add('form-input', 'rounded-lg');
+    newDiv.appendChild(newInput);
+
+    const newButton = document.createElement('button');
+    newButton.type = "button";
+    newButton.classList.add(
+        'bg-danger', 'text-white', 'rounded-[10px]', 'h-12', 'w-12', 'flex', 'justify-center', 'items-center'
+    );
+    newButton.textContent = "-";
+    newButton.dataset.id = id;
+    newButton.addEventListener('click', () => {
+        removeElement(prefix, id);
     });
+    newDiv.appendChild(newButton);
+
+    container.appendChild(newDiv);
+}
+
+// 엘리멘트 삭제
+const removeElement = (prefix, id) => {
+    const container = document.querySelector(`#${prefix}_wrap_${id}`);
+    const origin = container.querySelector(`input[name=${prefix}_origin_${id}]`)
+    unpublishId(prefix, id);
+    if (origin !== null && origin !== undefined) {
+        const originId = id;
+        const deleteIds = document.querySelector(`input[name=${prefix}_delete]`);
+        let deleteIdsArray = [];
+        if (deleteIds.value.length > 0) {
+            deleteIdsArray = deleteIds.value.split(',');
+        }
+        deleteIdsArray.push(originId);
+        deleteIds.value = deleteIdsArray.join(',');
+    }
+    container.remove();
+}
 </script>
 
 {% endblock content %}
