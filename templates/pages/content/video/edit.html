@@ -170,7 +170,7 @@
                                 <input type="hidden" name="thumbnail_create" value="">
                                 <input type="hidden" name="thumbnail_delete" value="">
                                 <div id="thumbnail_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for thumbnail in object.thumbnail.all %}
+                                    {% for thumbnail in video_thumbnail_list %}
                                         <div id="thumbnail_wrap_{{ thumbnail.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="thumbnail_origin_{{thumbnail.id}}" value="{{ thumbnail }}">
                                             <select name="thumbnail_type_{{ thumbnail.id }}" class="form-select w-[200px]" disabled>
@@ -186,7 +186,7 @@
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('thumbnail', THUMBNAIL_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('thumbnail', THUMBNAIL_TYPE, ['url'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -213,7 +213,7 @@
                                 <input type="hidden" name="watch_create" value="">
                                 <input type="hidden" name="watch_delete" value="">
                                 <div id="watch_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for watch in object.watch.all %}
+                                    {% for watch in video_watch_list %}
                                         <div id="watch_wrap_{{ watch.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="watch_origin_{{watch.id}}" value="{{ watch.url }}">
                                             <select id="watch_type" name="watch_type_{{watch.id}}" class="form-select w-[200px]" disabled>
@@ -229,7 +229,7 @@
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('watch', WATCH_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('watch', WATCH_TYPE, ['url'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -256,7 +256,7 @@
                                 <input type="hidden" name="genre_create" value="">
                                 <input type="hidden" name="genre_delete" value="">
                                 <div id="genre_container" class="grid lg:grid-cols-5 sm:grid-cols-2 gap-5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for genre in object.genre_list.all %}
+                                    {% for genre in video_genre_list %}
                                         <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="genre_origin_{{genre.id}}" value="{{ genre }}">
                                             <input type="text" name="genre_{{ genre.id }}" class="form-input rounded-lg" value="{{genre.genre.name}}" readonly />
@@ -264,7 +264,7 @@
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('genre')" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('genre', [], ['name'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -291,20 +291,21 @@
                                 <input type="hidden" name="actor_create" value="">
                                 <input type="hidden" name="actor_delete" value="">
                                 <div id="actor_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for actor in object.actor_list.all %}
+                                    {% for actor in video_actor_list %}
                                         <div id="actor_wrap_{{ actor.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="actor_origin_{{actor.id}}" value="{{ actor }}">
-                                            <select name="actor_type_{{ actor.id }}" class="form-select w-[200px]" disabled>
+                                            <select name="actor_type_{{ actor.id }}" class="form-select w-[200px]">
                                                 {% for actor_type in video_actor_type %}
                                                     <option value="{{ actor_type.0 }}" {% if actor.type == actor_type.0 %} selected {% endif %}>{{ actor_type.1 }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <input type="text" name="actor_{{ actor.id }}" class="form-input" value="{{actor.actor.name}}" readonly />
+                                            <input type="text" name="actor_role_{{ actor.id }}" class="form-input" value="{{actor.role}}" />
+                                            <input type="text" name="actor_name_{{ actor.id }}" class="form-input" value="{{actor.actor.name}}" />
                                         </div>
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('actor', ACTOR_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('actor', ACTOR_TYPE, ['role', 'name'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -331,7 +332,7 @@
                                 <input type="hidden" name="staff_create" value="">
                                 <input type="hidden" name="staff_delete" value="">
                                 <div id="staff_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for staff in object.staff_list.all %}
+                                    {% for staff in video_staff_list %}
                                         <div id="staff_wrap_{{ staff.id }}" class="flex gap-2.5">
                                             <input type="hidden" name="staff_origin_{{staff.id}}" value="{{ staff.staff.name }}">
                                             <select name="staff_type_{{ staff.id }}" class="form-select w-[200px]" disabled>
@@ -344,7 +345,7 @@
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('staff', STAFF_TYPE)" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('staff', STAFF_TYPE, ['name'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -493,16 +494,16 @@ const unpublishId = (prefix, id) => {
 }
 
 // 엘리멘트 추가
-const addElement = (prefix, options = []) => {
-    const container = document.querySelector(`#${prefix}_container`);
-    const newDiv = document.createElement('div');
-
+const addElement = (prefix, options = [], input=[]) => {
     const id = publishId(prefix);
     if (id === "") {
         alert(`${prefix}는 최대 ${newIds[prefix].length}개까지 등록 가능합니다.`);
         return;
     }
 
+    const container = document.querySelector(`#${prefix}_container`);
+
+    const newDiv = document.createElement('div');
     newDiv.id = `${prefix}_wrap_${id}`;
     newDiv.classList.add('flex', 'gap-2.5', 'w-full');
 
@@ -519,11 +520,16 @@ const addElement = (prefix, options = []) => {
         newDiv.appendChild(select);
     }
 
-    const newInput = document.createElement('input');
-    newInput.type = "text";
-    newInput.name = `${prefix}_${id}`;
-    newInput.classList.add('form-input', 'rounded-lg');
-    newDiv.appendChild(newInput);
+    if (input.length > 0) {
+        input.map((item) => {
+            const newInput = document.createElement('input');
+            newInput.type = "text";
+            newInput.name = `${prefix}_${item}_${id}`;
+            newInput.classList.add('form-input', 'rounded-lg');
+            newInput.placeholder = item;
+            newDiv.appendChild(newInput);
+        });
+    }
 
     const newButton = document.createElement('button');
     newButton.type = "button";
