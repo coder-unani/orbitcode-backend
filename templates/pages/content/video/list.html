@@ -1,9 +1,14 @@
 {% extends 'layouts/main.html' %}
 {% load static %}
+{% load tags %}
 
-{% block title %}넷플릭스{% endblock title %}
+{% block title %} 비디오 관리 {% endblock title %}
+
+{% block menu-title %} 비디오 관리 {% endblock menu-title %}
 
 {% block head %}
+    <script src="{% static 'js/builder/collect/base.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'css/swiper-bundle.min.css' %}" />
     <link rel="stylesheet" href="{% static 'css/custom.css' %}">
 {% endblock head %}
 
@@ -12,34 +17,204 @@
 <div class="flex flex-col gap-5 min-h-[calc(100vh-188px)] sm:min-h-[calc(100vh-204px)]">
     <h2 class="text-base font-semibold mb-4">비디오 목록</h2>
 
-    {% for video in videos %}
-        <div class="flex flex-col gap-1.5 bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
-            <div class="flex gap-1.5">
-                {%  for thumbnail in video.thumbnail.all %}
-                    <div class="w-[200px] h-[200px] object-cover rounded-lg" style="background: url('https://storage.reviewniverse.net/{{ thumbnail.url }}') no-repeat center center; background-size: contain;"></div>
-                {% endfor %}
+    <div class="flex justify-between items-center gap-1.5">
+        <form method="get" class="flex gap-1.5">
+            <div class="flex justify-start items-center gap-1.5">
+                <div class="relative">
+                    <input type="text" name="q" class="form-input ps-10 w-[280px] h-[42px] dark:border-lightgray/20 dark:text-white dark:bg-lightgray/10 border border-gray/10 bg-gray/[8%] rounded-[10px] text-sm text-dark placeholder:text-lightgray/80 focus:ring-0 focus:border-primary/80 focus:outline-0" placeholder="타이틀 검색..">
+                    <span class="absolute inset-y-0 left-3 flex items-center">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_87_857)">
+                                <circle cx="8.625" cy="8.625" r="7.125" stroke="#267DFF" stroke-width="2" />
+                                <path opacity="0.3" d="M15 15L16.5 16.5" stroke="#267DFF" stroke-width="2" stroke-linecap="round" />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_87_857">
+                                    <rect width="18" height="18" fill="white" />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </span>
+                </div>
+                <select name="cfm" class="form-select h-10 px-5 rounded-[10px] hover:bg-gray/10 border border-gray/10 transition-all duration-300 font-semibold text-xs">
+                    <option value="">전체</option>
+                    {% if cfm == "true" %}
+                        <option value="true" selected>관리자 승인</option>
+                    {% else %}
+                        <option value="true">관리자 승인</option>
+                    {% endif %}
+                    {% if cfm == "false" %}
+                        <option value="false" selected>관리자 미승인</option>
+                    {% else %}
+                        <option value="false">관리자 미승인</option>
+                    {% endif %}
+                </select>
+                <select name="del" class="form-select h-10 px-5 rounded-[10px] hover:bg-gray/10 border border-gray/10 transition-all duration-300 font-semibold text-xs">
+                    <option value="">전체</option>
+                    {% if del == "true" %}
+                        <option value="true" selected>컨텐츠 삭제</option>
+                    {% else %}
+                        <option value="true">컨텐츠 삭제</option>
+                    {% endif %}
+                    {% if del == "false" %}
+                        <option value="false" selected>컨텐츠 미삭제</option>
+                    {% else %}
+                        <option value="false">컨텐츠 미삭제</option>
+                    {% endif %}
+                </select>
             </div>
-            <div class="flex gap-1.5 my-2 text-sm text-gray">
-                {% if not video.is_vertical %} <span class="bg-danger/10 text-danger flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">세로 이미지 없음</span> {% endif %}
-                {% if not video.is_confirm %} <span class="bg-success/10 text-success flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">관리자 승인 필요</span> {% endif %}
+            <div class="flex justify-start items-center gap-1.5">
+                <button type="submit" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-[10px] transition-all duration-300">검색</button>
             </div>
-            <a href="{% url 'content:video-detail' video.id %}">
+        </form>
+        <div class="flex items-center gap-1.5">
+            <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-[10px] transition-all duration-300">전체선택</button>
+            <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-[10px] transition-all duration-300">선택승인</button>
+            <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-[10px] transition-all duration-300">선택삭제</button>
+        </div>
+    </div>
 
-                <h2 class="text-base font-semibold my-2">{{ video.title }}</h2>
-                <div class="grid grid-cols-1">
-                    <div class="space-y-5">
-                        <div>
-                            <p class="font-semibold my-2">{{ video.release }}</p>
-                            <div class="space-y-2 my-2">
-                                <p class="text-gray text-sm">{{ video.synopsis }}</p>
+    <form action="" method="post" class="flex flex-col gap-1.5">
+    {% for video in videos %}
+        <div class="flex gap-1.5 bg-white dark:bg-dark dark:border-gray/20 border border-lightgray/10 p-5 rounded-lg">
+
+            <div class="flex justify-start items-center w-[80px]">
+                <input type="checkbox" id="checkbox{{ video.id }}" class="form-checkbox h-5 w-5 text-primary" />
+                <label for="checkbox{{ video.id }}" class="ml-2 text-sm text-gray">{{ video.id }}</label>
+            </div>
+
+            <div class="w-[200px] h-[200px]">
+                <div class="swiper SwiperwithPagination">
+                    <div class="swiper-wrapper">
+                        {%  for thumbnail in video.thumbnail.all %}
+                            <div class="swiper-slide">
+                                <img src="{{ thumbnail.url|add_base_url }}" alt="slider" class="max-h-96 object-cover rounded-[10px]" />
                             </div>
-                        </div>
+                        {% endfor %}
                     </div>
+                    <div class="swiper-pagination"></div>
+                </div>
+            </div>
+
+            <a href="{% url 'content:video-detail' video.id %}">
+                <div class="flex items-center gap-2.5">
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제목</button>
+                    <div class="flex gap-1.5 px-1 text-gray">
+                        {{ video.title }}
+                        {% if not video.is_vertical %} <span class="bg-danger/10 text-danger flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">세로 이미지 없음</span> {% endif %}
+                        {% if not video.is_confirm %} <span class="bg-success/10 text-success flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">관리자 승인 필요</span> {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-center gap-2.5 mt-1">
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">출시일</button>
+                    <div class="w-[120px] px-1 text-gray">{{ video.release }}</div>
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">상영시간</button>
+                    <div class="w-[120px] px-1 text-gray">{{ video.runtime }}</div>
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">관람등급</button>
+                    <div class="w-[120px] px-1 text-gray">{{ video.notice_age }}</div>
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">장르</button>
+                    {% for genre in video.genre.all %}
+                        <div class="flex items-center space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
+                            <span>{{ genre.name }}</span>
+                            {% if not forloop.last %}
+                                <span class="text-xs">/</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">출연</button>
+                    {% for actor in video.actor.all %}
+                        <div class="flex items-center flex-wrap overflow-hidden max-h-96 space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
+                            <span>{{ actor.name }}</span>
+                            {% if not forloop.last %}
+                                <span class="text-xs">/</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제작</button>
+                    {% for staff in video.staff.all %}
+                        <div class="flex items-center space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
+                            <span>{{ staff.name }}</span>
+                            {% if not forloop.last %}
+                                <span class="text-xs">/</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="flex items-center gap-2.5 mt-1 max-w-[1200px]">
+                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">시놉시스</button>
+                    <div class="text-gray">{{ video.synopsis|truncatechars:100 }}</div>
                 </div>
             </a>
         </div>
     {% endfor %}
+    </form>
+
+    {% if is_paginated %}
+        <div class="pagination">
+            <div class="overflow-scroll">
+                <ul class="flex items-center gap-1 justify-center">
+                    {% if page_obj.has_previous %}
+                    <li>
+                        <a href="?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&cfm={{ cfm|default:'' }}&del={{ del|default:'' }}" class="bg-gray/20 hover:bg-primary hover:text-white duration-300 flex items-center justify-center hover:bg-dark/10 w-7 h-7 rounded-md">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7.29289 10.7071C7.68342 11.0976 8.31658 11.0976 8.70711 10.7071C9.09763 10.3166 9.09763 9.68342 8.70711 9.29289L5.41421 6L8.70711 2.70711C9.09763 2.31658 9.09763 1.68342 8.70711 1.29289C8.31658 0.902369 7.68342 0.902369 7.29289 1.29289L3.29289 5.29289C2.90237 5.68342 2.90237 6.31658 3.29289 6.70711L7.29289 10.7071Z" fill="currentColor"></path>
+                            </svg>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in paginator.page_range %}
+                        {% if num > page_obj.number|add:-5 and num < page_obj.number|add:5 %}
+                            {% if num == page_obj.number %}
+                                <a href="javascript:;" class="bg-gray/20 hover:bg-primary hover:text-white flex items-center justify-center bg-primary text-white w-7 h-7 rounded-md duration-300">{{ num }}</a>
+                            {% else %}
+                                <a href="?page={{ num }}&q={{ q|default:'' }}&cfm={{ cfm|default:'' }}&del={{ del|default:'' }}" class="bg-gray/20 hover:bg-primary hover:text-white flex items-center justify-center hover:bg-dark/10 w-7 h-7 rounded-md duration-300">{{ num }}</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li>
+                            <a href="?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&cfm={{ cfm|default:'' }}&del={{ del|default:'' }}" class="bg-gray/20 hover:bg-primary hover:text-white flex items-center justify-center hover:bg-dark/10 w-7 h-7 rounded-md duration-300">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.70711 1.29289C4.31658 0.902369 3.68342 0.902369 3.29289 1.29289C2.90237 1.68342 2.90237 2.31658 3.29289 2.70711L6.58579 6L3.29289 9.29289C2.90237 9.68342 2.90237 10.3166 3.29289 10.7071C3.68342 11.0976 4.31658 11.0976 4.70711 10.7071L8.70711 6.70711C9.09763 6.31658 9.09763 5.68342 8.70711 5.29289L4.70711 1.29289Z" fill="currentColor"></path>
+                                </svg>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
 
 </div>
+
+ <!-- Swiper Slider Js -->
+ <script src="/static/js/swiper-bundle.min.js"></script>
+ <script>
+    const swiper = new Swiper(".SwiperwithPagination", {
+        pagination: {
+            el: ".swiper-pagination",
+        },
+    });
+
+    function showMore() {
+        const actorsList = document.getElementById('actors-list');
+        actorsList.classList.toggle('max-h-24');
+        actorsList.classList.toggle('overflow-hidden');
+        const showMoreButton = document.getElementById('show-more');
+        if (actorsList.classList.contains('max-h-24')) {
+            showMoreButton.textContent = '더보기';
+        } else {
+            showMoreButton.textContent = '간단히';
+        }
+    }
+</script>
 
 {% endblock content %}

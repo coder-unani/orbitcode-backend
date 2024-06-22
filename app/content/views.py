@@ -1,5 +1,3 @@
-import os
-
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
@@ -7,12 +5,16 @@ from django.urls import reverse
 from django.views.generic import TemplateView, ListView, DetailView
 
 from app.database.models import Video, Genre, Actor, Staff
-from app.utils.s3client import S3Client
-from app.utils.utils import make_filename, save_file_from_url, get_file_extension, get_file_size
+from app.utils.uploader import S3ImageUploader
+from app.utils.utils import make_filename
 from config.constraints import (
-    AWS_S3_NETFLIX_THUMBNAIL,
-    LOCAL_NETFLIX_THUMBNAIL,
-    THUMBNAIL_BASE_URL
+    AWS_S3_VIDEO_THUMBNAIL,
+    THUMBNAIL_BASE_URL,
+    VIDEO_PLATFORM_CHOICES,
+    VIDEO_TYPE_CHOICES,
+    VIDEO_THUMBNAIL_TYPE,
+    VIDEO_ACTOR_TYPE,
+    VIDEO_STAFF_TYPE
 )
 
 DJANGO_LOGIN_URL = "/login/"
@@ -27,6 +29,7 @@ class Index(LoginRequiredMixin, TemplateView):
 
 
 class VideoList(LoginRequiredMixin, ListView):
+    paginate_by = 20
     login_url = DJANGO_LOGIN_URL
     redirect_field_name = DJANGO_REDIRECT_FIELD_NAME
     model = Video
@@ -34,9 +37,38 @@ class VideoList(LoginRequiredMixin, ListView):
     context_object_name = "videos"
 
     def get_queryset(self):
-        return Video.objects.order_by('-created_at').all()
+        queryset = super().get_queryset()
+        keyword = self.request.GET.get('q', '')
+        is_confirm = self.request.GET.get('cfm', '')
+        is_delete = self.request.GET.get('del', '')
+        if keyword:
+            queryset = queryset.filter(title__icontains=keyword)
+        if is_confirm != "" and is_confirm in ["true", "false"]:
+            queryset = queryset.filter(is_confirm=(is_confirm == 'true'))
+        if is_delete != "" and is_delete in ["true", "false"]:
+            queryset = queryset.filter(is_delete=(is_delete == 'true'))
+        return queryset
 
-    def set_thumbnail_urls_and_orientation(self, videos):
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['q'] = self.request.GET.get('q')
+        context['cfm'] = self.request.GET.get('cfm')
+        context['del'] = self.request.GET.get('del')
+        videos = VideoList.set_thumbnail_urls_and_orientation(context['videos'])
+        context['videos'] = videos
+
+        # 페이지네이션 컨텍스트 추가
+        paginator = context['paginator']
+        page_obj = context['page_obj']
+        is_paginated = context['is_paginated']
+        context['paginator'] = paginator
+        context['page_obj'] = page_obj
+        context['is_paginated'] = is_paginated
+
+        return context
+
+    @classmethod
+    def set_thumbnail_urls_and_orientation(cls, videos):
         for video in videos:
             video.is_vertical = False
             for thumbnail in video.thumbnail.all():
@@ -44,12 +76,6 @@ class VideoList(LoginRequiredMixin, ListView):
                 if thumbnail.type == "10":
                     video.is_vertical = True
         return videos
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        videos = self.set_thumbnail_urls_and_orientation(context['videos'])
-        context['videos'] = videos
-        return context
 
 
 class VideoDetail(LoginRequiredMixin, DetailView):
@@ -64,6 +90,16 @@ class VideoEdit(LoginRequiredMixin, DetailView):
     redirect_field_name = DJANGO_REDIRECT_FIELD_NAME
     model = Video
     template_name = "pages/content/video/edit.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['video_platform'] = VIDEO_PLATFORM_CHOICES
+        context['video_type'] = VIDEO_TYPE_CHOICES
+        context['video_thumbnail_type'] = VIDEO_THUMBNAIL_TYPE
+        context['video_actor_type'] = VIDEO_ACTOR_TYPE
+        context['video_staff_type'] = VIDEO_STAFF_TYPE
+
+        return context
 
     def post(self, request, *args, **kwargs):
         edit_type = request.POST.get('edit_type')
@@ -102,8 +138,9 @@ class VideoEdit(LoginRequiredMixin, DetailView):
             if thumbnail_create:
                 # 생성요청 썸네일 리스트
                 thumbnail_create_list = thumbnail_create.split(',')
-                # S3 클라이언트 생성
-                s3client = S3Client()
+                # S3 이미지업로더 생성
+                uploader = S3ImageUploader()
+
                 # 생성요청 썸네일 리스트 Loop
                 for thumbnail_id in thumbnail_create_list:
                     # 썸네일 정보 가져오기
@@ -112,28 +149,25 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                     try:
                         # 썸네일 저장
                         file_name = make_filename(thumbnail_url)
-                        file_path = os.path.join(LOCAL_NETFLIX_THUMBNAIL, file_name)
-                        print(file_path)
-                        if not save_file_from_url(thumbnail_url, file_path):
-                            continue
-                        # 썸네일 S3 업로드
-                        if not s3client.upload_file(file_path, AWS_S3_NETFLIX_THUMBNAIL):
-                            continue
+                        # 썸네일 S3 업로드 경로 생성
+                        s3_path = f"{AWS_S3_VIDEO_THUMBNAIL}{video.platform_code}/{video.platform_id}{video.id}{file_name}"
+                        result = uploader.upload_from_url(thumbnail_url, s3_path)
+                        if not result:
+                            raise Exception("Failed to upload the thumbnail")
                         # S3 업로드 성공 시 DB에 썸네일 정보 저장
-                        thumbnail_url = os.path.join(AWS_S3_NETFLIX_THUMBNAIL, file_name)
-                        thumbnail_extension = get_file_extension(file_name)
-                        thumbnail_size = get_file_size(file_path)
                         thumbnail = video.thumbnail.create(
                             type=thumbnail_type,
-                            url=thumbnail_url,
-                            extension=thumbnail_extension,
-                            size=thumbnail_size
+                            url=result['url'],
+                            extension=result['extension'],
+                            size=result['size'],
+                            width=result['width'],
+                            height=result['height']
                         )
                         thumbnail.save()
                     except Exception as e:
                         print(e)
-                # S3 클라이언트 종료
-                s3client.close()
+                # S3 이미지업로더 종료
+                uploader.close()
             # 썸네일 삭제 요청 확인
             if thumbnail_delete:
                 # 생성요청 썸네일 리스트
