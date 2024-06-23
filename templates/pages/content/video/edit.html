@@ -560,7 +560,9 @@ const removeElement = (prefix, id) => {
         if (deleteIds.value.length > 0) {
             deleteIdsArray = deleteIds.value.split(',');
         }
-        deleteIdsArray.push(id);
+        if (id.indexOf('new') === -1) {
+            deleteIdsArray.push(id)
+        }
         deleteIds.value = deleteIdsArray.join(',');
     }
     container.remove();
