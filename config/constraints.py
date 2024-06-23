@@ -39,8 +39,8 @@ VIDEO_PLATFORM_CHOICES = [
 ]
 
 VIDEO_THUMBNAIL_TYPE = [
-    ('10', '포스터(세로)'),
-    ('11', '스틸컷(가로)'),
+    ('10', '대표 이미지'),
+    ('11', '스틸컷'),
 ]
 
 VIDEO_ACTOR_TYPE = [

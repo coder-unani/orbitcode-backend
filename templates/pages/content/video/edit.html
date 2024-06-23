@@ -172,12 +172,12 @@
                                 <div id="thumbnail_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
                                     {% for thumbnail in video_thumbnail_list %}
                                         <div id="thumbnail_wrap_{{ thumbnail.id }}" class="flex gap-2.5">
-                                            <select name="thumbnail_type_{{ thumbnail.id }}" class="form-select w-[200px]" disabled>
+                                            <select name="thumbnail_type_{{ thumbnail.id }}" class="form-select w-[200px]">
                                                 {% for thumbnail_type in video_thumbnail_type %}
                                                     <option value="{{ thumbnail_type.0 }}" {% if thumbnail.type == thumbnail_type.0 %} selected {% endif %}>{{ thumbnail_type.1 }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <input id="thumbnail" type="text" name="thumbnail_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{thumbnail.url}}" readonly />
+                                            <input id="thumbnail" type="text" name="thumbnail_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{thumbnail.url}}" />
                                             <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('thumbnail', {{ thumbnail.id }})">
                                                 -
                                             </button>
