@@ -1,6 +1,7 @@
 from django.db import transaction
 
-from app.database.queryset.video import create_video_all, get_video_by_id, search_videos_by_title
+from app.database.models import Genre, VideoGenre
+from app.database.queryset.video import create_video_all, search_videos_by_title
 from app.utils.utils import make_filename
 from config.constraints import AWS_S3_VIDEO_THUMBNAIL
 
@@ -20,13 +21,15 @@ class VideoStore:
             video['title']
         )
         if verified == "NOT_EXIST_CONTENT":
+            print("NOT_EXIST_CONTENT")
             self.create_video(video)
             return True
         elif verified == "EXIST_SIMILAR_CONTENT":
-            self.add_video_watch(video)
-            self.add_video_thumbnail(video)
+            print("EXIST_SIMILAR_CONTENT")
+            self.update_exist_video(video)
             return True
         elif verified == "EXIST_EXACTLY_CONTENT":
+            print("EXIST_EXACTLY_CONTENT")
             return False
         else:
             return False
@@ -62,23 +65,61 @@ class VideoStore:
         except Exception as e:
             raise e
 
-    def add_video_watch(self, video):
-        get_video = get_video_by_id(video.id)
-        if not get_video:
-            return False
-        for watch in video.watch.all():
-            get_video.watch.add(watch).save()
-
-    def add_video_thumbnail(self, video):
-        get_video = get_video_by_id(video.id)
-        if not get_video:
-            return False
-        for thumbnail in video.thumbnail.all():
-            image_filename = make_filename(thumbnail.url)
-            s3_path = f"{AWS_S3_VIDEO_THUMBNAIL}{video.type}/"
-            s3_path += f"{video.type}-{video.id}-{image_filename}"
-            upload_result = self.uploader.upload_from_url(thumbnail.url, s3_path)
-            get_video.thumbnail.add(upload_result).save()
+    def update_exist_video(self, video):
+        try:
+            # 타이틀로 비디오 검색
+            get_videos = search_videos_by_title(video['title'])
+            if not get_videos:
+                return False
+            # 검색된 비디오가 있으면 첫번째 비디오 선택
+            get_video = get_videos.first()
+            # 업데이트 여부
+            is_updated = False
+            # 시청정보 업데이트
+            for watch in video['watch']:
+                if get_video.watch.filter(type=watch['type']).exists():
+                    # 이미 업데이트 한 이력이 있으면 is_updated 변수 업데이트 후 컨티뉴
+                    is_updated = True
+                    continue
+                get_video.watch.create(
+                    type=watch['type'],
+                    url=watch['url']
+                )
+            # 썸네일 업데이트
+            for thumbnail in video['thumbnail']:
+                # 이미 업데이트 한 이력이 있으면 컨티뉴
+                if is_updated:
+                    continue
+                # 이미지 파일명 생성
+                # TODO: 이미지 파일명 생성 로직을 utils로 이동
+                image_filename = make_filename(thumbnail['url'])
+                s3_path = f"{AWS_S3_VIDEO_THUMBNAIL}{video['platform_code']}/"
+                s3_path += f"{video['platform_id']}-{get_video.id}-{image_filename}"
+                upload_result = self.uploader.upload_from_url(thumbnail['url'], s3_path)
+                get_video.thumbnail.create(
+                    type=thumbnail['type'],
+                    url=upload_result['url'],
+                    extension=upload_result['extension'],
+                    size=upload_result['size'],
+                    width=upload_result['width'],
+                    height=upload_result['height']
+                )
+            # 장르 정보 업데이트
+            for genre in video['genre']:
+                if get_video.genre.filter(name=genre['name']).exists():
+                    continue
+                # 장르 생성 또는 가져오기
+                new_genre, created = Genre.objects.get_or_create(
+                    name=genre['name']
+                )
+                # 비디오 장르 생성
+                VideoGenre.objects.create(
+                    video=get_video,
+                    genre=new_genre
+                )
+            return True
+        except Exception as e:
+            raise e
 
     @classmethod
     def verify_video_in_db(cls, platform_code, platform_id, title):
