@@ -141,7 +141,12 @@
                                     <td>
                                         <div class="flex items-center gap-2.5">
                                             <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제목</button>
-                                            <div class="px-1 text-gray">{{video.title}}</div>
+                                            <div class="plex gap-1.5 justify-center items-center px-1 text-gray">
+                                                {{video.title}}
+                                                {% if video.is_db %}
+                                                    <span class="text-xs bg-primary text-white rounded-md px-1">DB있음</span>
+                                                {% endif %}
+                                            </div>
                                         </div>
                                         <div class="flex items-center gap-2.5 mt-1">
                                             <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">출시일</button>
