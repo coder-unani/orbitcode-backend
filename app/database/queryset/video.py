@@ -9,7 +9,6 @@ from app.database.models import (
     Staff,
     Genre,
 )
-from app.utils.logger import Logger
 
 
 def create_video(new_video):
@@ -142,36 +141,28 @@ def exist_video(video_id=None, platform_id=None):
             video = Video.objects.filter(platform_id=platform_id)
 
         if video.exists():
-            Logger.info_log("exist_video", "Already exist. {} / {}".format(video_id, platform_id))
             return True
         else:
             return False
     except Exception as e:
-        Logger.error_log("exist_video", "Failed to check video existence: {}".format(e))
-        return False
+        raise e
 
 
 def select_video_by_videoid(video_id):
     try:
         video = Video.objects.get(id=video_id),
-        Logger.info_log("get_video", "Video search successful with ID: {}".format(id))
         return video
     
     except Exception as e:
-        Logger.error_log("get_video", "Video retrieval failed with ID: {} / {}".format(id, e))
-        return None
+        raise e
 
 
 def select_video_by_platformid(platform_id):
     try:
-        video = Video.objects.get(platform_id=platform_id)
+        video = Video.objects.filter(platform_id=platform_id)
         return video
     except Exception as e:
-        Logger.error_log(
-            "get_video_by_platform_id",
-            "Video retrieval failed with platform_id: {} / {}".format(platform_id, e)
-        )
-        return None
+        raise e
 
 
 def get_videos():
@@ -183,12 +174,22 @@ def select_video_by_title(title):
         videos = Video.objects.filter(title=title).all()
         return videos
     except Exception as e:
-        return False
+        raise e
 
 
 def get_video_by_id(video_id):
     try:
         video = Video.objects.get(id=video_id)
+        return video
+    except Exception as e:
+        raise e
+
+
+def get_video_by_platform_id(platform_id):
+    try:
+        print(platform_id)
+        video = Video.objects.get(platform_id=platform_id)
+
         return video
     except Exception as e:
         raise e
