@@ -1,4 +1,7 @@
+from django.forms.models import model_to_dict
+
 from app.builder.parser import OTTParser
+from app.database.models import Video
 
 
 class VideoBuilder:
@@ -22,6 +25,11 @@ class VideoBuilder:
         return videos
 
     def search_video(self, search_id):
+        get_videos = Video.objects.filter(platform_id=search_id)
+        if get_videos.exists():
+            get_video = model_to_dict(get_videos.first())
+            get_video['is_db'] = True
+            return get_video
         parsed_content = self.parser.parse(search_id)
         return parsed_content
 
@@ -34,6 +42,8 @@ class VideoBuilder:
                 search_ids = [search_ids]
         for search_id in search_ids:
             video = self.search_video(search_id)
+            if not video.get('is_db'):
+                video['is_db'] = False
             videos.append(video)
         return videos
 
