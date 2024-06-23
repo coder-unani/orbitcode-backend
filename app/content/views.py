@@ -37,7 +37,7 @@ class VideoList(LoginRequiredMixin, ListView):
     context_object_name = "videos"
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by('-created_at')
+        queryset = super().get_queryset().order_by('id')
         keyword = self.request.GET.get('q', '')
         is_confirm = self.request.GET.get('cfm', '')
         is_delete = self.request.GET.get('del', '')
