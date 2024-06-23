@@ -70,11 +70,11 @@ class VideoList(LoginRequiredMixin, ListView):
     @classmethod
     def set_thumbnail_urls_and_orientation(cls, videos):
         for video in videos:
-            video.is_vertical = False
+            video.is_mainimage = False
             for thumbnail in video.thumbnail.all():
                 thumbnail.url = THUMBNAIL_BASE_URL + thumbnail.url
                 if thumbnail.type == "10":
-                    video.is_vertical = True
+                    video.is_mainimage = True
         return videos
 
 
