@@ -4,7 +4,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView, ListView, DetailView
 
-from app.database.models import Video, Genre, VideoGenre, Actor, VideoActor, Staff, VideoStaff
+from app.database.models import Video, Genre, VideoGenre, Actor, VideoActor, Staff, VideoStaff, CountryCode
 from app.utils.uploader import S3ImageUploader
 from app.utils.utils import make_filename
 from config.constraints import (
@@ -104,6 +104,7 @@ class VideoEdit(LoginRequiredMixin, DetailView):
         context['video_staff_list'] = video.staff_list.all().order_by('type')
         context['video_thumbnail_list'] = video.thumbnail.all().order_by('type')
         context['video_watch_list'] = video.watch.all().order_by('type')
+        context['country_code_list'] = CountryCode.objects.all()
         return context
 
     def post(self, request, *args, **kwargs):
@@ -136,6 +137,18 @@ class VideoEdit(LoginRequiredMixin, DetailView):
             notice_age = request.POST.get('notice_age')
             if notice_age:
                 video.notice_age = notice_age
+            # 제작사
+            production = request.POST.get('production')
+            if production:
+                video.production = production
+            # 제작국가
+            country = request.POST.get('country')
+            if country:
+                video.country = country
+            # 시놉시스
+            synopsis = request.POST.get('synopsis')
+            if synopsis:
+                video.synopsis = synopsis
             # 관리자 확인
             is_confirm = request.POST.get('is_confirm')
             if is_confirm:

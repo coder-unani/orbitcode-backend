@@ -28,6 +28,10 @@ class Video(models.Model):
     runtime = models.CharField(max_length=20, null=True)
     # 연령고지
     notice_age = models.CharField(max_length=20, null=True)
+    # 제작국가
+    country = models.CharField(max_length=2, null=True)
+    # 제작사
+    production = models.CharField(max_length=100, null=True)
     # 평점
     rating = models.FloatField(default=0.0, db_index=True)
     # 좋아요 수
@@ -426,3 +430,21 @@ class BuilderCollection(models.Model):
 
     class Meta:
         db_table = "builder_collection"
+
+#=======================================================================================================================
+# 기타
+
+
+class CountryCode(models.Model):
+    code = models.CharField(max_length=2, primary_key=True)
+    name_en = models.CharField(max_length=100)
+    name_ko = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'country_code'
+        verbose_name = 'Country Code'
+        verbose_name_plural = 'Country Code'
+
+    def __str__(self):
+        return f"{self.name_en} ({self.name_ko})"
+    

@@ -124,6 +124,19 @@
                                         <label for="notice_age" class="text-sm">관람등급</label>
                                         <input id="notice_age" type="text" name="notice_age" class="form-input rounded-lg" value="{{object.notice_age}}">
                                     </div>
+                                    <div class="space-y-4 flex-1">
+                                        <label for="production" class="text-sm">제작사</label>
+                                        <input id="production" type="text" name="production" class="form-input rounded-lg" value="{{object.production}}">
+                                    </div>
+                                    <div class="space-y-4 flex-1">
+                                        <label for="country" class="text-sm">국가</label>
+                                        <select id="country" name="country" class="form-select">
+                                            <option value="">선택</option>
+                                            {% for country in country_code_list %}
+                                                <option value="{{ country.code }}" {% if object.country == country.code %} selected {% endif %}>{{ country.name_ko }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
                                 </div>
                                 <div class="space-y-4 mt-5">
                                     <label for="synopsis" class="text-sm">시놉시스</label>
@@ -177,7 +190,7 @@
                                                     <option value="{{ thumbnail_type.0 }}" {% if thumbnail.type == thumbnail_type.0 %} selected {% endif %}>{{ thumbnail_type.1 }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <input id="thumbnail" type="text" name="thumbnail_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{thumbnail.url}}" />
+                                            <input id="thumbnail" type="text" name="thumbnail_url_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{thumbnail.url}}" />
                                             <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('thumbnail', {{ thumbnail.id }})">
                                                 -
                                             </button>
