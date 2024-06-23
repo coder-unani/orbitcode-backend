@@ -101,7 +101,7 @@
                     <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제목</button>
                     <div class="flex gap-1.5 px-1 text-gray">
                         {{ video.title }}
-                        {% if not video.is_vertical %} <span class="bg-danger/10 text-danger flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">세로 이미지 없음</span> {% endif %}
+                        {% if not video.is_mainimage %} <span class="bg-danger/10 text-danger flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">대표 이미지 없음</span> {% endif %}
                         {% if not video.is_confirm %} <span class="bg-success/10 text-success flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">관리자 승인 필요</span> {% endif %}
                     </div>
                 </div>
