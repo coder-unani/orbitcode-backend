@@ -1,5 +1,6 @@
 {% extends 'layouts/main.html' %}
 {% load static %}
+{% load tags %}
 
 {% block title %}오르빗코드::배우 목록{% endblock title %}
 
@@ -45,11 +46,14 @@
             {% for actor in object_list %}
                 <div class="flex gap-1.5 bg-white dark:bg-dark dark:border-gray/20 border border-lightgray/10 p-5 rounded-lg">
                     <div class="w-20 h-20 flex-shrink-0">
-                        {% if actor.picture %}
-                        <img src="{{ actor.picture }}" alt="{{ actor.name }}" class="w-full h-full object-cover rounded-lg">
-                        {% else %}
-                        <img src="{% static 'images/no-people.png' %}" alt="{{ actor.name }}" class="w-full h-full object-cover rounded-lg">
-                        {% endif %}
+                        <img
+                            id="actor-picture-{{ actor.id }}"
+                            src="{{ actor.picture|default_people_image }}"
+                            class="w-full h-full object-cover rounded-lg cursor-pointer"
+                            alt="{{ actor.name }}"
+                            onclick="document.getElementById('file-input-{{ actor.id }}').click()"
+                        >
+                        <input type="file" id="file-input-{{ actor.id }}" class="hidden" onchange="handleFileUpload(event, {{ actor.id }})">
                     </div>
                     <div class="flex flex-col flex-auto gap-1.5 justify-center items-start">
                         <div class="text-lg font-semibold text-base dark:text-gray-200 hover:underline">{{ actor.name }} #{{ actor.id }}</div>
@@ -60,6 +64,9 @@
                                 배우 소개가 없습니다.
                             {% endif %}
                         </p>
+                        <a href="/content/video?aid={{ actor.id }}" class="font-semibold text-base dark:text-gray-200 hover:underline">
+                            참여 작품 보기
+                        </a>
                     </div>
                 </div>
             {% endfor %}
@@ -109,4 +116,46 @@
     {% endif %}
 </div>
 
+<script>
+async function handleFileUpload(event, actorId) {
+    const fileInput = event.target;
+    const file = fileInput.files[0];
+    const csrfToken = "{{ csrf_token }}";
+    console.log(file);
+
+    if (file) {
+        try {
+            // 가상의 파일 업로드 API 호출 예제
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('actor_id', actorId);
+
+            const response = await fetch('/api/uploads/actors/pictures', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                },
+                body: formData,
+            });
+
+            if (response.status !== 200) {
+                // 파일 입력 필드 초기화
+                fileInput.value = '';
+                throw new Error('Upload failed');
+            }
+            console.log(response.status)
+            const data = await response.json();
+            // 업로드 성공 시 이미지 src 변경
+            const imgElement = document.querySelector(`#actor-picture-${actorId}`);
+            imgElement.src = "https://storage.reviewniverse.net/" + data.url;  // 서버에서 반환한 새로운 이미지 URL
+        } catch (error) {
+            console.log('Error uploading file:', error);
+
+            // 업로드 실패 시 파일 입력 필드 초기화
+            fileInput.value = '';
+            alert('파일 업로드에 실패했습니다.');
+        }
+    }
+}
+</script>
 {% endblock content %}
