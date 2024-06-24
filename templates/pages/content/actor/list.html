@@ -1,14 +1,112 @@
 {% extends 'layouts/main.html' %}
 {% load static %}
 
-{% block title %}넷플릭스{% endblock title %}
+{% block title %}오르빗코드::배우 목록{% endblock title %}
 
 {% block content %}
 
 <div class="flex flex-col gap-5 min-h-[calc(100vh-188px)] sm:min-h-[calc(100vh-204px)]">
     <h2 class="text-base font-semibold mb-4">배우 목록</h2>
 
+    <div class="flex justify-between items-center gap-1.5">
+        <form method="get" class="flex gap-1.5">
+            <div class="flex justify-start items-center gap-1.5">
+                <div class="relative">
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-input ps-10 w-[280px] h-[42px] dark:border-lightgray/20 dark:text-white dark:bg-lightgray/10 border border-gray/10 bg-gray/[8%] rounded-[10px] text-sm text-dark placeholder:text-lightgray/80 focus:ring-0 focus:border-primary/80 focus:outline-0"
+                        value="{{ q }}"
+                        placeholder="배우 이름 검색.."
+                    >
+                    <span class="absolute inset-y-0 left-3 flex items-center">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g clip-path="url(#clip0_87_857)">
+                                <circle cx="8.625" cy="8.625" r="7.125" stroke="#267DFF" stroke-width="2" />
+                                <path opacity="0.3" d="M15 15L16.5 16.5" stroke="#267DFF" stroke-width="2" stroke-linecap="round" />
+                            </g>
+                            <defs>
+                                <clipPath id="clip0_87_857">
+                                    <rect width="18" height="18" fill="white" />
+                                </clipPath>
+                            </defs>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+            <div class="flex justify-start items-center gap-1.5">
+                <button type="submit" class="btn w-[100px] bg-primary text-white hover:bg-primary/[0.85] border border-gray/10 rounded-[10px] transition-all duration-300">검색</button>
+            </div>
+        </form>
+    </div>
 
+    {% if object_list.count > 0 %}
+        <div class="grid gap-1.5 mb-8 rounded-lg shadow-sm md:mb-12 md:grid-cols-3">
+            {% for actor in object_list %}
+                <div class="flex gap-1.5 bg-white dark:bg-dark dark:border-gray/20 border border-lightgray/10 p-5 rounded-lg">
+                    <div class="w-20 h-20 flex-shrink-0">
+                        {% if actor.picture %}
+                        <img src="{{ actor.picture }}" alt="{{ actor.name }}" class="w-full h-full object-cover rounded-lg">
+                        {% else %}
+                        <img src="{% static 'images/no-people.png' %}" alt="{{ actor.name }}" class="w-full h-full object-cover rounded-lg">
+                        {% endif %}
+                    </div>
+                    <div class="flex flex-col flex-auto gap-1.5 justify-center items-start">
+                        <div class="text-lg font-semibold text-base dark:text-gray-200 hover:underline">{{ actor.name }}</div>
+                        <p class="text-sm text-gray dark:text-gray/50">
+                            {% if actor.profile %}
+                                {{ actor.profile }}
+                            {% else %}
+                                배우 소개가 없습니다.
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="flex items-center justify-center w-full h-full py-10 text-gray/50 dark:text-gray/60">
+            등록된 배우가 없습니다.
+        </div>
+    {% endif %}
+
+    {% if is_paginated %}
+        <div class="pagination">
+            <div class="overflow-scroll">
+                <ul class="flex items-center gap-1 justify-center">
+                    {% if page_obj.has_previous %}
+                    <li>
+                        <a href="?page={{ page_obj.previous_page_number }}&q={{ q|default:'' }}&cfm={{ cfm|default:'' }}&del={{ del|default:'' }}" class="bg-gray/20 hover:bg-primary hover:text-white duration-300 flex items-center justify-center hover:bg-dark/10 w-7 h-7 rounded-md">
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M7.29289 10.7071C7.68342 11.0976 8.31658 11.0976 8.70711 10.7071C9.09763 10.3166 9.09763 9.68342 8.70711 9.29289L5.41421 6L8.70711 2.70711C9.09763 2.31658 9.09763 1.68342 8.70711 1.29289C8.31658 0.902369 7.68342 0.902369 7.29289 1.29289L3.29289 5.29289C2.90237 5.68342 2.90237 6.31658 3.29289 6.70711L7.29289 10.7071Z" fill="currentColor"></path>
+                            </svg>
+                        </a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in paginator.page_range %}
+                        {% if num > page_obj.number|add:-5 and num < page_obj.number|add:5 %}
+                            {% if num == page_obj.number %}
+                                <a href="javascript:;" class="bg-gray/20 hover:bg-primary hover:text-white flex items-center justify-center bg-primary text-white w-7 h-7 rounded-md duration-300">{{ num }}</a>
+                            {% else %}
+                                <a href="?page={{ num }}&q={{ q|default:'' }}&cfm={{ cfm|default:'' }}&del={{ del|default:'' }}" class="bg-gray/20 hover:bg-primary hover:text-white flex items-center justify-center hover:bg-dark/10 w-7 h-7 rounded-md duration-300">{{ num }}</a>
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li>
+                            <a href="?page={{ page_obj.next_page_number }}&q={{ q|default:'' }}&cfm={{ cfm|default:'' }}&del={{ del|default:'' }}" class="bg-gray/20 hover:bg-primary hover:text-white flex items-center justify-center hover:bg-dark/10 w-7 h-7 rounded-md duration-300">
+                                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M4.70711 1.29289C4.31658 0.902369 3.68342 0.902369 3.29289 1.29289C2.90237 1.68342 2.90237 2.31658 3.29289 2.70711L6.58579 6L3.29289 9.29289C2.90237 9.68342 2.90237 10.3166 3.29289 10.7071C3.68342 11.0976 4.31658 11.0976 4.70711 10.7071L8.70711 6.70711C9.09763 6.31658 9.09763 5.68342 8.70711 5.29289L4.70711 1.29289Z" fill="currentColor"></path>
+                                </svg>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
 {% endblock content %}
