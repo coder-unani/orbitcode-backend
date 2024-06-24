@@ -6,5 +6,5 @@ app_name = "dashboard"
 
 
 urlpatterns = [
-    path("", view=views.index, name="index"),
+    path("", view=views.Dashboard.as_view(), name="index"),
 ]
