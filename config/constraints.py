@@ -14,28 +14,19 @@ LOCAL_NETFLIX_THUMBNAIL = LOCAL_DATA_PATH + AWS_S3_NETFLIX_THUMBNAIL
 
 THUMBNAIL_BASE_URL = "https://storage.reviewniverse.net/"
 
-VIDEO_TYPE_MOVIE = '10'
-VIDEO_TYPE_SERIES = '11'
-VIDEO_TYPE_CHOICES = [
-    (VIDEO_TYPE_MOVIE, '영화'),
-    (VIDEO_TYPE_SERIES, '시리즈'),
+VIDEO_TYPE = [
+    ('10', '영화'),
+    ('11', '시리즈'),
 ]
 
-VIDEO_PLATFORM_NETFLIX = '10'
-VIDEO_PLATFORM_DISNEY_PLUS = '11'
-VIDEO_PLATFORM_TVING = '12'
-VIDEO_PLATFORM_WAAVE = '13'
-VIDEO_PLATFORM_COUPANG_PLAY = '14'
-VIDEO_PLATFORM_WATCHA = '15'
-VIDEO_PLATFORM_THEATER = '50'
-VIDEO_PLATFORM_CHOICES = [
-    (VIDEO_PLATFORM_NETFLIX, '넷플릭스'),
-    (VIDEO_PLATFORM_DISNEY_PLUS, '디즈니플러스'),
-    (VIDEO_PLATFORM_TVING, '티빙'),
-    (VIDEO_PLATFORM_WAAVE, '웨이브'),
-    (VIDEO_PLATFORM_COUPANG_PLAY, '쿠팡플레이'),
-    (VIDEO_PLATFORM_WATCHA, '왓챠'),
-    (VIDEO_PLATFORM_THEATER, '극장'),
+VIDEO_PLATFORM_CODE = [
+    ('10', '넷플릭스'),
+    ('11', '디즈니플러스'),
+    ('12', '티빙'),
+    ('13', '웨이브'),
+    ('14', '쿠팡플레이'),
+    ('15', '왓챠'),
+    ('50', '극장'),
 ]
 
 VIDEO_THUMBNAIL_TYPE = [
@@ -52,6 +43,7 @@ VIDEO_ACTOR_TYPE = [
     ('15', '특별출연'),
     ('16', '카메오'),
     ('17', '우정출연'),
+    ('18', '성우'),
 ]
 
 VIDEO_STAFF_TYPE = [

@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-from config.constraints import VIDEO_PLATFORM_CHOICES, VIDEO_TYPE_CHOICES
+from config.constraints import VIDEO_TYPE, VIDEO_PLATFORM_CODE, VIDEO_ACTOR_TYPE, VIDEO_STAFF_TYPE, VIDEO_THUMBNAIL_TYPE
 
 
 #=======================================================================================================================
@@ -12,7 +12,7 @@ class Video(models.Model):
     # 타입 : 10=movie, 11=series
     type = models.CharField(
         max_length=2,
-        choices=VIDEO_TYPE_CHOICES,
+        choices=VIDEO_TYPE,
         null=False,
         db_index=True,
         verbose_name='Video Type',
@@ -43,7 +43,7 @@ class Video(models.Model):
     # 플랫폼 코드
     platform_code = models.CharField(
         max_length=2,
-        choices=VIDEO_PLATFORM_CHOICES,
+        choices=VIDEO_PLATFORM_CODE,
         null=False,
         db_index=True,
         verbose_name='Platform Code',
@@ -127,7 +127,15 @@ class VideoActor(models.Model):
     # 출연진
     actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
     # 타입 : 10=main actor, 11=sub actor
-    type = models.CharField(max_length=2, null=False)
+    # type = models.CharField(max_length=2, null=False)
+    type = models.CharField(
+        max_length=2,
+        choices=VIDEO_ACTOR_TYPE,
+        null=False,
+        db_index=True,
+        verbose_name='Actor Type',
+        help_text='배우 타입 정의: 10=주연, 11=조연, 12=단역, 13=출연, 14=나레이션, 15=특별출연, 16=카메오, 17=우정출연, 18=성우'
+    )
     # 역할
     role = models.CharField(max_length=100, null=True)
     # 생성일, 수정일
@@ -146,7 +154,15 @@ class VideoStaff(models.Model):
     # 스태프
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     # 타입 : 10=director, 11=creator
-    type = models.CharField(max_length=2, null=False)
+    # type = models.CharField(max_length=2, null=False)
+    type = models.CharField(
+        max_length=2,
+        choices=VIDEO_STAFF_TYPE,
+        null=False,
+        db_index=True,
+        verbose_name='Staff Type',
+        help_text='제작진 타입 정의: 10=감독, 11=작가, 12=제작, 13=프로듀서, 14=연출, 15=기획, 16=각본, 17=원작, 18=음악, 19=미술, 20=촬영, 21=편집, 22=특수효과, 23=의상, 24=분장, 25=조명'
+    )
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
@@ -175,8 +191,15 @@ class VideoGenre(models.Model):
 
 class VideoThumbnail(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="thumbnail")
-    # 타입 : 10=poster, 11=thumbnail
-    type = models.CharField(max_length=2, null=False)
+    # 타입
+    type = models.CharField(
+        max_length=2,
+        choices=VIDEO_THUMBNAIL_TYPE,
+        null=False,
+        db_index=True,
+        verbose_name='Thumbnail Type',
+        help_text='썸네일 타입 정의: 10=대표 이미지, 11=스틸컷'
+    )
     # 썸네일 URL
     url = models.CharField(max_length=1000, null=False)
     # 확장자
@@ -199,8 +222,15 @@ class VideoThumbnail(models.Model):
 
 class VideoWatch(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="watch")
-    # 타입: 10=main contents, 11=trailer
-    type = models.CharField(max_length=2, null=False)
+    # 타입
+    type = models.CharField(
+        max_length=2,
+        choices=VIDEO_PLATFORM_CODE,
+        null=False,
+        db_index=True,
+        verbose_name='Watch Type',
+        help_text='시청정보 타입. = Video Platform Code'
+    )
     # 시청 URL
     url = models.CharField(max_length=100, null=False)
     # 생성일, 수정일
@@ -352,6 +382,7 @@ class VideoReview(models.Model):
     user_profile_image = models.CharField(max_length=100, null=True)
     title = models.CharField(max_length=200, null=False)
     content = models.TextField(null=True)
+    rating = models.IntegerField(null=True)
     like_count = models.IntegerField(default=0)
     is_spoiler = models.BooleanField(default=False)
     is_private = models.BooleanField(default=False)
@@ -447,4 +478,3 @@ class CountryCode(models.Model):
 
     def __str__(self):
         return f"{self.name_en} ({self.name_ko})"
-    
