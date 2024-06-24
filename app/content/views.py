@@ -9,13 +9,13 @@ from app.utils.uploader import S3ImageUploader
 from app.utils.utils import make_filename
 from config.constraints import (
     AWS_S3_VIDEO_THUMBNAIL,
-    THUMBNAIL_BASE_URL,
     VIDEO_TYPE,
     VIDEO_PLATFORM_CODE,
     VIDEO_THUMBNAIL_TYPE,
     VIDEO_ACTOR_TYPE,
     VIDEO_STAFF_TYPE
 )
+from config.settings.settings import AWS_S3_BASE_URL
 
 DJANGO_LOGIN_URL = "/login/"
 DJANGO_REDIRECT_FIELD_NAME = "next"
@@ -39,10 +39,19 @@ class VideoList(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().order_by('id')
         keyword = self.request.GET.get('q', '')
+        gid = self.request.GET.get('gid', '')
+        aid = self.request.GET.get('aid', '')
+        sid = self.request.GET.get('sid', '')
         is_confirm = self.request.GET.get('cfm', '')
         is_delete = self.request.GET.get('del', '')
         if keyword:
             queryset = queryset.filter(title__icontains=keyword)
+        if gid:
+            queryset = queryset.filter(genre_list__genre_id=gid)
+        if aid:
+            queryset = queryset.filter(actor_list__actor_id=aid)
+        if sid:
+            queryset = queryset.filter(staff_list__staff_id=sid)
         if is_confirm != "" and is_confirm in ["true", "false"]:
             queryset = queryset.filter(is_confirm=(is_confirm == 'true'))
         if is_delete != "" and is_delete in ["true", "false"]:
@@ -51,9 +60,9 @@ class VideoList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['q'] = self.request.GET.get('q')
-        context['cfm'] = self.request.GET.get('cfm')
-        context['del'] = self.request.GET.get('del')
+        context['q'] = self.request.GET.get('q', '')
+        context['cfm'] = self.request.GET.get('cfm', '')
+        context['del'] = self.request.GET.get('del', '')
         videos = VideoList.set_thumbnail_urls_and_orientation(context['videos'])
         context['videos'] = videos
 
@@ -72,7 +81,7 @@ class VideoList(LoginRequiredMixin, ListView):
         for video in videos:
             video.is_mainimage = False
             for thumbnail in video.thumbnail.all():
-                thumbnail.url = THUMBNAIL_BASE_URL + thumbnail.url
+                thumbnail.url = AWS_S3_BASE_URL + thumbnail.url
                 if thumbnail.type == "10":
                     video.is_mainimage = True
         return videos
@@ -480,7 +489,7 @@ class ActorList(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['q'] = self.request.GET.get('q')
+        context['q'] = self.request.GET.get('q', '')
         return context
 
 
