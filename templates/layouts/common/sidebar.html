@@ -36,14 +36,13 @@
                         </div>
                     </a>
                     <ul x-cloak x-show="activeMenu === 'dashboard'" x-collapse class="sub-menu flex flex-col gap-1">
-                        <li><a :class="{'active': activeItem === 'analysis'}" href="/static">Analysis</a></li>
-                        <li><a :class="{'active': activeItem === 'ecommerce'}" href="/app/dashboard/ecommerce">eCommerce</a></li>
+                        <li><a :class="{'active': activeItem === 'analysis'}" href="{% url 'dashboard:index' %}">Overview</a></li>
                     </ul>
                 </li>
                 <!-- BUILDER -->
                 <h2 class="pt-3.5 pb-2.5 text-gray text-xs">BUILDER</h2>
                 <li class="menu nav-item">
-                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'builder-crawling'}" @click="activeMenu === 'socialapps' ? activeMenu = null : activeMenu = 'builder-crawling'">
+                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'collect'}" @click="activeMenu === 'collect' ? activeMenu = null : activeMenu = 'collect'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path opacity="0.2" d="M17.5001 2.5C17.9603 2.5 18.3334 2.8731 18.3334 3.33333V16.6667C18.3334 17.1269 17.9603 17.5 17.5001 17.5H2.50008C2.03985 17.5 1.66675 17.1269 1.66675 16.6667V3.33333C1.66675 2.8731 2.03985 2.5 2.50008 2.5H17.5001Z" fill="currentColor"></path>
@@ -51,13 +50,13 @@
                             </svg>
                             <span class="pl-1.5">데이터 수집</span>
                         </div>
-                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'builder'}">
+                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'collect'}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
                                 <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
                             </svg>
                         </div>
                     </a>
-                    <ul x-cloak x-show="activeMenu === 'builder-crawling'" x-collapse class="sub-menu flex flex-col gap-1">
+                    <ul x-cloak x-show="activeMenu === 'collect'" x-collapse class="sub-menu flex flex-col gap-1">
                         <li><a :class="{'active': activeItem === 'netflix'}" href="{% url 'builder:collect-netflix' %}">넷플릭스</a></li>
                         <li><a :class="{'active': activeItem === 'netflix-boxoffice'}" href="{% url 'builder:collect-netflix-boxoffice' %}">넷플릭스 박스오피스</a></li>
                         <li><a :class="{'active': activeItem === 'tving'}" href="{% url 'builder:collect-tving' %}">티빙</a></li>
@@ -67,7 +66,7 @@
                 <!-- CONTENT -->
                 <h2 class="pt-3.5 pb-2.5 text-gray text-xs">CONTENT</h2>
                 <li class="menu nav-item">
-                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'content-video'}" @click="activeMenu === 'content-video' ? activeMenu = null : activeMenu = 'content-video'">
+                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'video'}" @click="activeMenu === 'video' ? activeMenu = null : activeMenu = 'video'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M8.42229 20.618C10.1779 21.5393 11.0557 22 12 22V12L2.63802 7.07264C2.62423 7.09479 2.6107 7.11716 2.5974 7.13974C2 8.15425 2 9.41667 2 11.9415V12.0585C2 14.5833 2 15.8458 2.5974 16.8603C3.19479 17.8748 4.27063 18.4393 6.42229 19.5685L8.42229 20.618Z" fill="currentColor" />
@@ -76,13 +75,13 @@
                             </svg>
                             <span class="pl-1.5">비디오 관리</span>
                         </div>
-                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'content-video'}">
+                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'video'}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
                                 <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
                             </svg>
                         </div>
                     </a>
-                    <ul x-cloak x-show="activeMenu === 'content-video'" x-collapse class="sub-menu flex flex-col gap-1">
+                    <ul x-cloak x-show="activeMenu === 'video'" x-collapse class="sub-menu flex flex-col gap-1">
                         <li><a :class="{'active': activeItem === 'video-list'}" href="{% url 'content:video-list' %}">비디오 관리</a></li>
                         <li><a :class="{'active': activeItem === 'genre-list'}" href="{% url 'content:genre-list' %}">장르 관리</a></li>
                         <li><a :class="{'active': activeItem === 'actor-list'}" href="{% url 'content:actor-list' %}">배우 관리</a></li>
@@ -90,7 +89,7 @@
                     </ul>
                 </li>
                 <li class="menu nav-item">
-                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'content-review'}" @click="activeMenu === 'elements' ? activeMenu = null : activeMenu = 'content-review'">
+                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'review'}" @click="activeMenu === 'review' ? activeMenu = null : activeMenu = 'review'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path opacity="0.3" d="M16.25 3.75V16.875C16.25 17.0408 16.1842 17.1997 16.0669 17.3169C15.9497 17.4342 15.7908 17.5 15.625 17.5H4.375C4.20924 17.5 4.05027 17.4342 3.93306 17.3169C3.81585 17.1997 3.75 17.0408 3.75 16.875V3.75C3.75 3.58424 3.81585 3.42527 3.93306 3.30806C4.05027 3.19085 4.20924 3.125 4.375 3.125H7.5C7.09344 3.66547 6.87404 4.32369 6.875 5V5.625H13.125V5C13.126 4.32369 12.9066 3.66547 12.5 3.125H15.625C15.7908 3.125 15.9497 3.19085 16.0669 3.30806C16.1842 3.42527 16.25 3.58424 16.25 3.75Z" fill="currentColor"></path>
@@ -98,13 +97,13 @@
                             </svg>
                             <span class="pl-1.5">리뷰 관리</span>
                         </div>
-                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'content-review'}">
+                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'review'}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
                                 <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
                             </svg>
                         </div>
                     </a>
-                    <ul x-cloak x-show="activeMenu === 'content-review'" x-collapse class="sub-menu flex flex-col gap-1">
+                    <ul x-cloak x-show="activeMenu === 'review'" x-collapse class="sub-menu flex flex-col gap-1">
                         <li><a :class="{'active': activeItem === 'alerts'}" href="/elements/alerts">Alert</a></li>
                         <li><a :class="{'active': activeItem === 'avatar'}" href="/elements/avatar">Avatar</a></li>
                         <li><a :class="{'active': activeItem === 'buttons'}" href="/elements/buttons">Buttons</a></li>
@@ -117,7 +116,7 @@
                     </ul>
                 </li>
                 <li class="menu nav-item">
-                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'content-ranking'}" @click="activeMenu === 'elements' ? activeMenu = null : activeMenu = 'content-ranking'">
+                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'ranking'}" @click="activeMenu === 'ranking' ? activeMenu = null : activeMenu = 'ranking'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path opacity="0.3" d="M6.22209 4.60104C6.66665 4.30399 7.13344 4.04635 7.6171 3.82975C8.98898 3.21538 9.67491 2.90819 10.5875 3.4994C11.5 4.0906 11.5 5.0604 11.5 7V8.5C11.5 10.3856 11.5 11.3284 12.0858 11.9142C12.6716 12.5 13.6144 12.5 15.5 12.5H17C18.9396 12.5 19.9094 12.5 20.5006 13.4125C21.0918 14.3251 20.7846 15.011 20.1702 16.3829C19.9536 16.8666 19.696 17.3333 19.399 17.7779C18.3551 19.3402 16.8714 20.5578 15.1355 21.2769C13.3996 21.9959 11.4895 22.184 9.64665 21.8175C7.80383 21.4509 6.11109 20.5461 4.78249 19.2175C3.45389 17.8889 2.5491 16.1962 2.18254 14.3534C1.81598 12.5105 2.00412 10.6004 2.72315 8.8645C3.44218 7.12861 4.65982 5.64491 6.22209 4.60104Z" fill="currentColor"></path>
@@ -125,13 +124,13 @@
                             </svg>
                             <span class="pl-1.5">랭킹 관리</span>
                         </div>
-                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'content-ranking'}">
+                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'ranking'}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
                                 <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
                             </svg>
                         </div>
                     </a>
-                    <ul x-cloak x-show="activeMenu === 'content-ranking'" x-collapse class="sub-menu flex flex-col gap-1">
+                    <ul x-cloak x-show="activeMenu === 'ranking'" x-collapse class="sub-menu flex flex-col gap-1">
                         <li><a :class="{'active': activeItem === 'alerts'}" href="/elements/alerts">Alert</a></li>
                         <li><a :class="{'active': activeItem === 'avatar'}" href="/elements/avatar">Avatar</a></li>
                         <li><a :class="{'active': activeItem === 'buttons'}" href="/elements/buttons">Buttons</a></li>
@@ -146,7 +145,7 @@
                 <!-- USER -->
                 <h2 class="pt-3.5 pb-2.5 text-gray text-xs">USER</h2>
                 <li class="menu nav-item">
-                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'user-manage'}" @click="activeMenu === 'socialapps' ? activeMenu = null : activeMenu = 'user-manage'">
+                    <a href="javaScript:;" class="nav-link group items-center justify-between" :class="{'active' : activeMenu === 'user'}" @click="activeMenu === 'user' ? activeMenu = null : activeMenu = 'user'">
                         <div class="flex items-center">
                             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <circle opacity="0.3" cx="12" cy="6" r="4" fill="currentColor"></circle>
@@ -154,13 +153,13 @@
                             </svg>
                             <span class="pl-1.5">회원 목록</span>
                         </div>
-                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'user-manage'}">
+                        <div class="w-4 h-4 flex items-center justify-center dropdown-icon" :class="{'!rotate-180' : activeMenu === 'user'}">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-6 h-6">
                                 <path d="M11.9997 13.1714L16.9495 8.22168L18.3637 9.63589L11.9997 15.9999L5.63574 9.63589L7.04996 8.22168L11.9997 13.1714Z" fill="currentColor"></path>
                             </svg>
                         </div>
                     </a>
-                    <ul x-cloak x-show="activeMenu === 'user-manage'" x-collapse class="sub-menu flex flex-col gap-1">
+                    <ul x-cloak x-show="activeMenu === 'user'" x-collapse class="sub-menu flex flex-col gap-1">
                         <li><a :class="{'active': activeItem === 'compose'}" href="/socialapps/compose">넷플릭스</a></li>
                         <li><a :class="{'active': activeItem === 'inbox'}" href="/socialapps/inbox">넷플릭스 박스오피스</a></li>
                         <li><a :class="{'active': activeItem === 'chat'}" href="/socialapps/chat">Chat</a></li>
