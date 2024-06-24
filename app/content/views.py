@@ -10,8 +10,8 @@ from app.utils.utils import make_filename
 from config.constraints import (
     AWS_S3_VIDEO_THUMBNAIL,
     THUMBNAIL_BASE_URL,
-    VIDEO_PLATFORM_CHOICES,
-    VIDEO_TYPE_CHOICES,
+    VIDEO_TYPE,
+    VIDEO_PLATFORM_CODE,
     VIDEO_THUMBNAIL_TYPE,
     VIDEO_ACTOR_TYPE,
     VIDEO_STAFF_TYPE
@@ -94,9 +94,10 @@ class VideoEdit(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         video = self.get_object()
-        context['video_platform'] = VIDEO_PLATFORM_CHOICES
-        context['video_type'] = VIDEO_TYPE_CHOICES
+        context['video_platform'] = VIDEO_PLATFORM_CODE
+        context['video_type'] = VIDEO_TYPE
         context['video_thumbnail_type'] = VIDEO_THUMBNAIL_TYPE
+        context['video_watch_type'] = VIDEO_PLATFORM_CODE
         context['video_actor_type'] = VIDEO_ACTOR_TYPE
         context['video_staff_type'] = VIDEO_STAFF_TYPE
         context['video_genre_list'] = video.genre_list.all().order_by('id')
@@ -449,21 +450,55 @@ class VideoEdit(LoginRequiredMixin, DetailView):
 
 
 class GenreList(LoginRequiredMixin, ListView):
+    paginate_by = 50
     login_url = DJANGO_LOGIN_URL
     redirect_field_name = DJANGO_REDIRECT_FIELD_NAME
     model = Genre
     template_name = "pages/content/genre/list.html"
 
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('name')
+        keyword = self.request.GET.get('q', '')
+        if keyword:
+            queryset = queryset.filter(name__icontains=keyword)
+        return queryset
+
 
 class ActorList(LoginRequiredMixin, ListView):
+    paginate_by = 50
     login_url = DJANGO_LOGIN_URL
     redirect_field_name = DJANGO_REDIRECT_FIELD_NAME
     model = Actor
     template_name = "pages/content/actor/list.html"
 
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('name')
+        keyword = self.request.GET.get('q', '')
+        if keyword:
+            queryset = queryset.filter(name__icontains=keyword)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['q'] = self.request.GET.get('q')
+        return context
+
 
 class StaffList(LoginRequiredMixin, ListView):
+    paginate_by = 50
     login_url = DJANGO_LOGIN_URL
     redirect_field_name = DJANGO_REDIRECT_FIELD_NAME
     model = Staff
     template_name = "pages/content/staff/list.html"
+
+    def get_queryset(self):
+        queryset = super().get_queryset().order_by('name')
+        keyword = self.request.GET.get('q', '')
+        if keyword:
+            queryset = queryset.filter(name__icontains=keyword)
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['q'] = self.request.GET.get('q')
+        return context
