@@ -9,10 +9,10 @@ TVING_BOXOFFICE_URL = "https://www.tving.com/boxoffice"
 AWS_S3_VIDEO_THUMBNAIL = "video/thumbnail/"
 AWS_S3_NETFLIX_THUMBNAIL = AWS_S3_VIDEO_THUMBNAIL + "netflix/"
 
+AWS_S3_PATH_VIDEO_ACTOR = "video/actor/"
+
 LOCAL_DATA_PATH = "data/"
 LOCAL_NETFLIX_THUMBNAIL = LOCAL_DATA_PATH + AWS_S3_NETFLIX_THUMBNAIL
-
-THUMBNAIL_BASE_URL = "https://storage.reviewniverse.net/"
 
 VIDEO_TYPE = [
     ('10', '영화'),
@@ -63,4 +63,5 @@ VIDEO_STAFF_TYPE = [
     ('23', '의상'),
     ('24', '분장'),
     ('25', '조명'),
+    ('26', '극본'),
 ]
