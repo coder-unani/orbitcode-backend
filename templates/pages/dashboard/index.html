@@ -7,9 +7,9 @@
         <div>
             <ul class="font-semibold text-lightgray flex items-center gap-4 sm:gap-[30px] gap-y-4 whitespace-nowrap overflow-auto">
                 <li>
-                    <a href="/ecommerce" class="hover:text-dark duration-300 dark:hover:text-white">Overview</a>
+                    <a href="{% url 'dashboard:index' %}" class="hover:text-dark duration-300 dark:hover:text-white">Overview</a>
                 </li>
-                <li>
+                <!--li>
                     <a href="/orderlist" class="hover:text-dark duration-300 dark:hover:text-white">Order List</a>
                 </li>
                 <li>
@@ -17,7 +17,7 @@
                 </li>
                 <li>
                     <a href="/payment" class="text-dark dark:text-white duration-300">Payments</a>
-                </li>
+                </li-->
             </ul>
         </div>
     </div>
@@ -35,15 +35,8 @@
                 </div>
                 <div class="flex items-end gap-3">
                     <div class="flex-1">
-                        <h4 class="text-lightgray text-sm">Total Earnings</h4>
-                        <p class="font-bold text-lg mt-1.5">$98,457.20</p>
-                    </div>
-                    <div>
-                        <span class="flex items-center text-gray bg-gray/10 rounded-full py-1 px-2 gap-1 text-xs font-semibold">3.47%
-                            <svg width="10" height="10" class="inline-block" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M5.73684 9.21053C5.73684 9.64654 5.38338 10 4.94737 10C4.51135 10 4.15789 9.64654 4.15789 9.21053L4.15789 2.69543L2.34772 4.50561C2.03941 4.81392 1.53954 4.81392 1.23123 4.50561C0.922923 4.1973 0.922923 3.69743 1.23123 3.38913L4.38913 0.231232C4.53718 0.0831764 4.73799 -1.83028e-08 4.94737 0C5.15675 1.83066e-08 5.35756 0.0831765 5.50561 0.231232L8.66351 3.38913C8.97181 3.69743 8.97181 4.1973 8.66351 4.50561C8.3552 4.81392 7.85533 4.81392 7.54702 4.50561L5.73684 2.69543V9.21053Z" fill="currentColor" />
-                            </svg>
-                        </span>
+                        <h4 class="text-lightgray text-sm">전체 비디오 수</h4>
+                        <p class="font-bold text-lg mt-1.5">{{ total_video }} (관리자 승인 필요 : {{ total_video_confirm_false }})</p>
                     </div>
                 </div>
             </div>
@@ -61,16 +54,16 @@
                 </div>
                 <div class="flex items-end gap-3">
                     <div class="flex-1">
-                        <h4 class="text-lightgray text-sm">Customers</h4>
-                        <p class="font-bold text-lg mt-1.5">$2,982.54</p>
+                        <h4 class="text-lightgray text-sm">전체 배우 수</h4>
+                        <p class="font-bold text-lg mt-1.5">{{ total_actor }}</p>
                     </div>
-                    <div>
+                    <!--div>
                         <span class="flex items-center text-gray bg-gray/10 rounded-full py-1 px-2 gap-1 text-xs font-semibold">9.69%
                             <svg width="10" height="10" class="inline-block" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5.73684 9.21053C5.73684 9.64654 5.38338 10 4.94737 10C4.51135 10 4.15789 9.64654 4.15789 9.21053L4.15789 2.69543L2.34772 4.50561C2.03941 4.81392 1.53954 4.81392 1.23123 4.50561C0.922923 4.1973 0.922923 3.69743 1.23123 3.38913L4.38913 0.231232C4.53718 0.0831764 4.73799 -1.83028e-08 4.94737 0C5.15675 1.83066e-08 5.35756 0.0831765 5.50561 0.231232L8.66351 3.38913C8.97181 3.69743 8.97181 4.1973 8.66351 4.50561C8.3552 4.81392 7.85533 4.81392 7.54702 4.50561L5.73684 2.69543V9.21053Z" fill="currentColor" />
                             </svg>
                         </span>
-                    </div>
+                    </div-->
                 </div>
             </div>
         </div>
@@ -86,16 +79,16 @@
                 </div>
                 <div class="flex items-end gap-3">
                     <div class="flex-1">
-                        <h4 class="text-lightgray text-sm">Orders</h4>
-                        <p class="font-bold text-lg mt-1.5">48982.54</p>
+                        <h4 class="text-lightgray text-sm">전체 스텝 수</h4>
+                        <p class="font-bold text-lg mt-1.5">{{ total_staff }}</p>
                     </div>
-                    <div>
+                    <!--div>
                         <span class="flex items-center text-gray bg-gray/10 rounded-full py-1 px-2 gap-1 text-xs font-semibold">2.58%
                             <svg width="10" height="10" class="inline-block rotate-180" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5.73684 9.21053C5.73684 9.64654 5.38338 10 4.94737 10C4.51135 10 4.15789 9.64654 4.15789 9.21053L4.15789 2.69543L2.34772 4.50561C2.03941 4.81392 1.53954 4.81392 1.23123 4.50561C0.922923 4.1973 0.922923 3.69743 1.23123 3.38913L4.38913 0.231232C4.53718 0.0831764 4.73799 -1.83028e-08 4.94737 0C5.15675 1.83066e-08 5.35756 0.0831765 5.50561 0.231232L8.66351 3.38913C8.97181 3.69743 8.97181 4.1973 8.66351 4.50561C8.3552 4.81392 7.85533 4.81392 7.54702 4.50561L5.73684 2.69543V9.21053Z" fill="currentColor" />
                             </svg>
                         </span>
-                    </div>
+                    </div-->
                 </div>
             </div>
         </div>
@@ -111,40 +104,104 @@
                 </div>
                 <div class="flex items-end gap-3">
                     <div class="flex-1">
-                        <h4 class="text-lightgray text-sm">Available Balance</h4>
-                        <p class="font-bold text-lg mt-1.5">$98,457.20</p>
+                        <h4 class="text-lightgray text-sm">전체 유저 수</h4>
+                        <p class="font-bold text-lg mt-1.5">{{ total_user }}</p>
                     </div>
-                    <div>
+                    <!--div>
                         <span class="flex items-center text-gray bg-gray/10 rounded-full py-1 px-2 gap-1 text-xs font-semibold">4.23%
                             <svg width="10" height="10" class="inline-block" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M5.73684 9.21053C5.73684 9.64654 5.38338 10 4.94737 10C4.51135 10 4.15789 9.64654 4.15789 9.21053L4.15789 2.69543L2.34772 4.50561C2.03941 4.81392 1.53954 4.81392 1.23123 4.50561C0.922923 4.1973 0.922923 3.69743 1.23123 3.38913L4.38913 0.231232C4.53718 0.0831764 4.73799 -1.83028e-08 4.94737 0C5.15675 1.83066e-08 5.35756 0.0831765 5.50561 0.231232L8.66351 3.38913C8.97181 3.69743 8.97181 4.1973 8.66351 4.50561C8.3552 4.81392 7.85533 4.81392 7.54702 4.50561L5.73684 2.69543V9.21053Z" fill="currentColor" />
                             </svg>
                         </span>
-                    </div>
+                    </div-->
                 </div>
             </div>
         </div>
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
-            <div class="mb-[30px] flex items-center flex-wrap">
-                <h2 class="flex-1 font-semibold">Working Capital</h2>
-                <div>
-                    <select id="selectDays" class="form-select h-8 rounded-full border-none font-semibold text-xs">
-                        <option>Last 7 days</option>
-                        <option>Last 30 days</option>
-                        <option>Last 90 days</option>
-                    </select>
-                </div>
+    <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="shrink-0 h-[50px] w-[50px] flex items-center justify-center bg-purple/10 rounded-full text-purple">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.8916 9.61431C4.8916 9.21193 5.21525 8.88574 5.61449 8.88574H9.46991C9.86916 8.88574 10.1928 9.21193 10.1928 9.61431C10.1928 10.0167 9.86916 10.3429 9.46991 10.3429H5.61449C5.21525 10.3429 4.8916 10.0167 4.8916 9.61431Z" fill="currentColor" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1884 10.0038C21.1262 9.99995 21.0584 9.99998 20.9881 10L20.9706 10H18.2149C15.9435 10 14 11.7361 14 14C14 16.2639 15.9435 18 18.2149 18H20.9706L20.9881 18C21.0584 18 21.1262 18 21.1884 17.9962C22.111 17.9397 22.927 17.2386 22.9956 16.2594C23.0001 16.1952 23 16.126 23 16.0619L23 16.0444V11.9556L23 11.9381C23 11.874 23.0001 11.8048 22.9956 11.7406C22.927 10.7614 22.111 10.0603 21.1884 10.0038ZM17.9706 15.0667C18.5554 15.0667 19.0294 14.5891 19.0294 14C19.0294 13.4109 18.5554 12.9333 17.9706 12.9333C17.3858 12.9333 16.9118 13.4109 16.9118 14C16.9118 14.5891 17.3858 15.0667 17.9706 15.0667Z" fill="currentColor" />
+                    <path opacity="0.3" d="M21.1394 10.0015C21.1394 8.82091 21.0965 7.55447 20.3418 6.64658C20.2689 6.55894 20.1914 6.47384 20.1088 6.39124C19.3604 5.64288 18.4114 5.31076 17.239 5.15314C16.0998 4.99997 14.6442 4.99999 12.8064 5H10.6936C8.85583 4.99999 7.40019 4.99997 6.26098 5.15314C5.08856 5.31076 4.13961 5.64288 3.39124 6.39124C2.64288 7.13961 2.31076 8.08856 2.15314 9.26098C1.99997 10.4002 1.99999 11.8558 2 13.6936V13.8064C1.99999 15.6442 1.99997 17.0998 2.15314 18.239C2.31076 19.4114 2.64288 20.3604 3.39124 21.1088C4.13961 21.8571 5.08856 22.1892 6.26098 22.3469C7.40018 22.5 8.8558 22.5 10.6935 22.5H12.8064C14.6442 22.5 16.0998 22.5 17.239 22.3469C18.4114 22.1892 19.3604 21.8571 20.1088 21.1088C20.3133 20.9042 20.487 20.6844 20.6346 20.4486C21.0851 19.7291 21.1394 18.8473 21.1394 17.9985C21.0912 18 21.0404 18 20.9882 18L18.2149 18C15.9435 18 14 16.2639 14 14C14 11.7361 15.9435 10 18.2149 10L20.9881 10C21.0403 9.99999 21.0912 9.99997 21.1394 10.0015Z" fill="currentColor" />
+                    <path d="M10.1015 2.57211L8 3.99253L6.26672 5.15237C7.40508 4.99997 8.85892 4.99999 10.6936 5H12.8064C14.6442 4.99998 16.0998 4.99997 17.239 5.15314C17.4682 5.18394 17.6888 5.22142 17.9011 5.26737L16 4L13.8875 2.57211C12.7589 1.8093 11.23 1.8093 10.1015 2.57211Z" fill="currentColor" />
+                </svg>
             </div>
-            <div id="capital"></div>
-        </div>
-        <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
-            <h2 class="mb-[30px] font-semibold">Project vs Action</h2>
-            <div id="projectvsaction"></div>
+            <div class="flex items-end gap-3">
+                <div class="flex-1">
+                    <h4 class="text-lightgray text-sm">전체 평점 수</h4>
+                    <p class="font-bold text-lg mt-1.5">{{ total_rating }}</p>
+                </div>
+                <!--div>
+                    <span class="flex items-center text-gray bg-gray/10 rounded-full py-1 px-2 gap-1 text-xs font-semibold">4.23%
+                        <svg width="10" height="10" class="inline-block" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.73684 9.21053C5.73684 9.64654 5.38338 10 4.94737 10C4.51135 10 4.15789 9.64654 4.15789 9.21053L4.15789 2.69543L2.34772 4.50561C2.03941 4.81392 1.53954 4.81392 1.23123 4.50561C0.922923 4.1973 0.922923 3.69743 1.23123 3.38913L4.38913 0.231232C4.53718 0.0831764 4.73799 -1.83028e-08 4.94737 0C5.15675 1.83066e-08 5.35756 0.0831765 5.50561 0.231232L8.66351 3.38913C8.97181 3.69743 8.97181 4.1973 8.66351 4.50561C8.3552 4.81392 7.85533 4.81392 7.54702 4.50561L5.73684 2.69543V9.21053Z" fill="currentColor" />
+                        </svg>
+                    </span>
+                </div-->
+            </div>
         </div>
     </div>
-    <div class="grid grid-cols-1 gap-5">
+    <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="shrink-0 h-[50px] w-[50px] flex items-center justify-center bg-purple/10 rounded-full text-purple">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.8916 9.61431C4.8916 9.21193 5.21525 8.88574 5.61449 8.88574H9.46991C9.86916 8.88574 10.1928 9.21193 10.1928 9.61431C10.1928 10.0167 9.86916 10.3429 9.46991 10.3429H5.61449C5.21525 10.3429 4.8916 10.0167 4.8916 9.61431Z" fill="currentColor" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1884 10.0038C21.1262 9.99995 21.0584 9.99998 20.9881 10L20.9706 10H18.2149C15.9435 10 14 11.7361 14 14C14 16.2639 15.9435 18 18.2149 18H20.9706L20.9881 18C21.0584 18 21.1262 18 21.1884 17.9962C22.111 17.9397 22.927 17.2386 22.9956 16.2594C23.0001 16.1952 23 16.126 23 16.0619L23 16.0444V11.9556L23 11.9381C23 11.874 23.0001 11.8048 22.9956 11.7406C22.927 10.7614 22.111 10.0603 21.1884 10.0038ZM17.9706 15.0667C18.5554 15.0667 19.0294 14.5891 19.0294 14C19.0294 13.4109 18.5554 12.9333 17.9706 12.9333C17.3858 12.9333 16.9118 13.4109 16.9118 14C16.9118 14.5891 17.3858 15.0667 17.9706 15.0667Z" fill="currentColor" />
+                    <path opacity="0.3" d="M21.1394 10.0015C21.1394 8.82091 21.0965 7.55447 20.3418 6.64658C20.2689 6.55894 20.1914 6.47384 20.1088 6.39124C19.3604 5.64288 18.4114 5.31076 17.239 5.15314C16.0998 4.99997 14.6442 4.99999 12.8064 5H10.6936C8.85583 4.99999 7.40019 4.99997 6.26098 5.15314C5.08856 5.31076 4.13961 5.64288 3.39124 6.39124C2.64288 7.13961 2.31076 8.08856 2.15314 9.26098C1.99997 10.4002 1.99999 11.8558 2 13.6936V13.8064C1.99999 15.6442 1.99997 17.0998 2.15314 18.239C2.31076 19.4114 2.64288 20.3604 3.39124 21.1088C4.13961 21.8571 5.08856 22.1892 6.26098 22.3469C7.40018 22.5 8.8558 22.5 10.6935 22.5H12.8064C14.6442 22.5 16.0998 22.5 17.239 22.3469C18.4114 22.1892 19.3604 21.8571 20.1088 21.1088C20.3133 20.9042 20.487 20.6844 20.6346 20.4486C21.0851 19.7291 21.1394 18.8473 21.1394 17.9985C21.0912 18 21.0404 18 20.9882 18L18.2149 18C15.9435 18 14 16.2639 14 14C14 11.7361 15.9435 10 18.2149 10L20.9881 10C21.0403 9.99999 21.0912 9.99997 21.1394 10.0015Z" fill="currentColor" />
+                    <path d="M10.1015 2.57211L8 3.99253L6.26672 5.15237C7.40508 4.99997 8.85892 4.99999 10.6936 5H12.8064C14.6442 4.99998 16.0998 4.99997 17.239 5.15314C17.4682 5.18394 17.6888 5.22142 17.9011 5.26737L16 4L13.8875 2.57211C12.7589 1.8093 11.23 1.8093 10.1015 2.57211Z" fill="currentColor" />
+                </svg>
+            </div>
+            <div class="flex items-end gap-5">
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <h4 class="text-lightgray text-sm">전체 비디오 조회수</h4>
+                    <p class="font-bold text-lg mt-1.5">{{ total_video_read }}</p>
+                </div>
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <h4 class="text-lightgray text-sm">오늘 비디오 조회수</h4>
+                    <p class="font-bold text-lg mt-1.5">{{ today_video_read }}</p>
+                </div>
+                <!--div>
+                    <span class="flex items-center text-gray bg-gray/10 rounded-full py-1 px-2 gap-1 text-xs font-semibold">4.23%
+                        <svg width="10" height="10" class="inline-block" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.73684 9.21053C5.73684 9.64654 5.38338 10 4.94737 10C4.51135 10 4.15789 9.64654 4.15789 9.21053L4.15789 2.69543L2.34772 4.50561C2.03941 4.81392 1.53954 4.81392 1.23123 4.50561C0.922923 4.1973 0.922923 3.69743 1.23123 3.38913L4.38913 0.231232C4.53718 0.0831764 4.73799 -1.83028e-08 4.94737 0C5.15675 1.83066e-08 5.35756 0.0831765 5.50561 0.231232L8.66351 3.38913C8.97181 3.69743 8.97181 4.1973 8.66351 4.50561C8.3552 4.81392 7.85533 4.81392 7.54702 4.50561L5.73684 2.69543V9.21053Z" fill="currentColor" />
+                        </svg>
+                    </span>
+                </div-->
+            </div>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
+        <div class="flex items-center gap-2.5 flex-wrap">
+            <div class="shrink-0 h-[50px] w-[50px] flex items-center justify-center bg-purple/10 rounded-full text-purple">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4.8916 9.61431C4.8916 9.21193 5.21525 8.88574 5.61449 8.88574H9.46991C9.86916 8.88574 10.1928 9.21193 10.1928 9.61431C10.1928 10.0167 9.86916 10.3429 9.46991 10.3429H5.61449C5.21525 10.3429 4.8916 10.0167 4.8916 9.61431Z" fill="currentColor" />
+                    <path fill-rule="evenodd" clip-rule="evenodd" d="M21.1884 10.0038C21.1262 9.99995 21.0584 9.99998 20.9881 10L20.9706 10H18.2149C15.9435 10 14 11.7361 14 14C14 16.2639 15.9435 18 18.2149 18H20.9706L20.9881 18C21.0584 18 21.1262 18 21.1884 17.9962C22.111 17.9397 22.927 17.2386 22.9956 16.2594C23.0001 16.1952 23 16.126 23 16.0619L23 16.0444V11.9556L23 11.9381C23 11.874 23.0001 11.8048 22.9956 11.7406C22.927 10.7614 22.111 10.0603 21.1884 10.0038ZM17.9706 15.0667C18.5554 15.0667 19.0294 14.5891 19.0294 14C19.0294 13.4109 18.5554 12.9333 17.9706 12.9333C17.3858 12.9333 16.9118 13.4109 16.9118 14C16.9118 14.5891 17.3858 15.0667 17.9706 15.0667Z" fill="currentColor" />
+                    <path opacity="0.3" d="M21.1394 10.0015C21.1394 8.82091 21.0965 7.55447 20.3418 6.64658C20.2689 6.55894 20.1914 6.47384 20.1088 6.39124C19.3604 5.64288 18.4114 5.31076 17.239 5.15314C16.0998 4.99997 14.6442 4.99999 12.8064 5H10.6936C8.85583 4.99999 7.40019 4.99997 6.26098 5.15314C5.08856 5.31076 4.13961 5.64288 3.39124 6.39124C2.64288 7.13961 2.31076 8.08856 2.15314 9.26098C1.99997 10.4002 1.99999 11.8558 2 13.6936V13.8064C1.99999 15.6442 1.99997 17.0998 2.15314 18.239C2.31076 19.4114 2.64288 20.3604 3.39124 21.1088C4.13961 21.8571 5.08856 22.1892 6.26098 22.3469C7.40018 22.5 8.8558 22.5 10.6935 22.5H12.8064C14.6442 22.5 16.0998 22.5 17.239 22.3469C18.4114 22.1892 19.3604 21.8571 20.1088 21.1088C20.3133 20.9042 20.487 20.6844 20.6346 20.4486C21.0851 19.7291 21.1394 18.8473 21.1394 17.9985C21.0912 18 21.0404 18 20.9882 18L18.2149 18C15.9435 18 14 16.2639 14 14C14 11.7361 15.9435 10 18.2149 10L20.9881 10C21.0403 9.99999 21.0912 9.99997 21.1394 10.0015Z" fill="currentColor" />
+                    <path d="M10.1015 2.57211L8 3.99253L6.26672 5.15237C7.40508 4.99997 8.85892 4.99999 10.6936 5H12.8064C14.6442 4.99998 16.0998 4.99997 17.239 5.15314C17.4682 5.18394 17.6888 5.22142 17.9011 5.26737L16 4L13.8875 2.57211C12.7589 1.8093 11.23 1.8093 10.1015 2.57211Z" fill="currentColor" />
+                </svg>
+            </div>
+            <div class="flex items-end gap-3">
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <h4 class="text-lightgray text-sm">전체 리뷰 작성수</h4>
+                    <p class="font-bold text-lg mt-1.5">{{ total_write_review }}</p>
+                </div>
+                <div class="flex-1 flex flex-col justify-center items-center">
+                    <h4 class="text-lightgray text-sm">오늘 리뷰 작성수</h4>
+                    <p class="font-bold text-lg mt-1.5">{{ today_write_review }}</p>
+                </div>
+                <!--div>
+                    <span class="flex items-center text-gray bg-gray/10 rounded-full py-1 px-2 gap-1 text-xs font-semibold">4.23%
+                        <svg width="10" height="10" class="inline-block" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5.73684 9.21053C5.73684 9.64654 5.38338 10 4.94737 10C4.51135 10 4.15789 9.64654 4.15789 9.21053L4.15789 2.69543L2.34772 4.50561C2.03941 4.81392 1.53954 4.81392 1.23123 4.50561C0.922923 4.1973 0.922923 3.69743 1.23123 3.38913L4.38913 0.231232C4.53718 0.0831764 4.73799 -1.83028e-08 4.94737 0C5.15675 1.83066e-08 5.35756 0.0831765 5.50561 0.231232L8.66351 3.38913C8.97181 3.69743 8.97181 4.1973 8.66351 4.50561C8.3552 4.81392 7.85533 4.81392 7.54702 4.50561L5.73684 2.69543V9.21053Z" fill="currentColor" />
+                        </svg>
+                    </span>
+                </div-->
+            </div>
+        </div>
+    </div>
+    <!--div class="grid grid-cols-1 gap-5">
         <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 p-5 rounded-lg">
             <h2 class="mb-[30px] font-semibold">Order List</h2>
             <div class="overflow-auto">
@@ -238,7 +295,7 @@
                 </table>
             </div>
         </div>
-    </div>
+    </div-->
 </div>
 
  <!-- ApexCharts js -->
