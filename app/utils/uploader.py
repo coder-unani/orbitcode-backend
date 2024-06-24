@@ -1,5 +1,3 @@
-import os
-import uuid
 from abc import ABC, abstractmethod
 from io import BytesIO
 
@@ -44,30 +42,25 @@ class S3ImageUploader(ImageUploader):
             self.uploader = uploader
         # S3 Bucket 설정
         self.bucket = bucket
-    # 파일 경로에서 이미지 다운로드 후 S3 업로드
-    def upload_from_file(self, file_path, s3_path):
+    # 파일에서 이미지 생성 및 S3 업로드
+    def upload_from_file(self, file, s3_path):
         try:
             # 파일 오픈
-            with open(file_path, 'rb') as image_file:
-                # Pillow 사용하여 이미지 가져옴
-                with Image.open(image_file) as image:
-                    image_format = image.format
-                    image_width, image_height = image.size
-                    # Reset the buffer's current position to the beginning
-                    image_file.seek(0)
-                    image_filename = f"{uuid.uuid4()}.{image_format.lower()}"
-                    # S3에 이미지 업로드
-                    if not self.upload(image_file, s3_path + image_filename):
-                        return None
-            # 이미지 정보 리턴
-            return {
-                "url": s3_path,
-                "extension": image_format,
-                "width": image_width,
-                "height": image_height,
-                "size": os.path.getsize(file_path)
-            }
-            # 이미지 파일명, 확장자, 사이즈 리턴
+            with Image.open(file) as image:
+                image_format = image.format
+                image_width, image_height = image.size
+                # Reset the buffer's current position to the beginning
+                file.seek(0)
+                # S3에 이미지 업로드
+                self.upload(file, s3_path)
+                # 이미지 파일명, 확장자, 사이즈 리턴
+                return {
+                    "url": s3_path,
+                    "extension": image_format,
+                    "width": image_width,
+                    "height": image_height,
+                    "size": 0
+                }
         except Exception as e:
             print(f"Failed to process the image: {e}")
             return None
