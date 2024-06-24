@@ -1,20 +1,11 @@
-from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from bs4 import BeautifulSoup
-
-
-from app.database.models import (
-    Video,
-    VideoWatch,
-    VideoThumbnail
-)
-from .serializers import (
-    VideoWatchSerializer,
-    VideoThumbnailSerializer,
-    GenreSerializer
-)
+from app.database.models import Actor
+from app.utils.uploader import S3ImageUploader
+from app.utils.utils import make_filename
+from config.constraints import AWS_S3_PATH_VIDEO_ACTOR
+from .serializers import FileUploadSerializer
 
 
 # Create your views here.
@@ -24,145 +15,26 @@ class Index(APIView):
         return Response("Hello, world!")
 
 
-class ApiVideoWatch(APIView):
+class ActorPictureUpload(APIView):
 
-    def get(self, request, video_id, watch_id=None):
-        video = Video.objects.get(id=video_id)
-        if not video:
-            return Response("Video not found")
-        watch = video.watch.all()
-        serializer = VideoWatchSerializer(watch, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, video_id):
-        video_watch = request.data
-        video_watch.update({"video": video_id})
-        serializer = VideoWatchSerializer(data=video_watch)
-        if not serializer.is_valid():
-            return Response(serializer.errors)
-        serializer.save()
-        return Response(serializer.data)
-
-    def delete(self, request, video_id, watch_id):
-        video_watch = VideoWatch.objects.get(id=watch_id)
-        video_watch.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def put(self, request, video_id, watch_id):
-        video_watch = VideoWatch.objects.get(id=watch_id)
-        if not video_watch:
-            return Response("Watch data not found")
-        video_watch_data = request.data
-        serializer = VideoWatchSerializer(video_watch, data=video_watch_data)
-        if not serializer.is_valid():
-            return Response(serializer.errors)
-        serializer.save()
-        return Response(serializer.data)
-
-
-class ApiVideoThumbnail(APIView):
-
-    def get(self, request, video_id, thumbnail_id=None):
-        video = Video.objects.get(id=video_id)
-        if not video:
-            return Response("Video not found")
-        watch = video.thumbnail.all()
-        serializer = VideoThumbnailSerializer(watch, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, video_id):
-        video_thumbnail = request.data
-        video_thumbnail.update({"video": video_id})
-        serializer = VideoThumbnailSerializer(data=video_thumbnail)
-        if not serializer.is_valid():
-            return Response(serializer.errors)
-        serializer.save()
-        return Response(serializer.data)
-
-    def delete(self, request, video_id, thumbnail_id):
-        video_thumbnail = VideoThumbnail.objects.get(id=thumbnail_id)
-        video_thumbnail.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def put(self, request, video_id, thumbnail_id):
-        video_thumbnail = VideoThumbnail.objects.get(id=thumbnail_id)
-        if not video_thumbnail:
-            return Response("Watch data not found")
-        video_thumbnail_data = request.data
-        serializer = VideoThumbnailSerializer(video_thumbnail, data=video_thumbnail_data)
-        if not serializer.is_valid():
-            return Response(serializer.errors)
-        serializer.save()
-        return Response(serializer.data)
-
-
-class ApiVideoGenre(APIView):
-
-    def get(self, request, video_id, thumbnail_id=None):
-        video = Video.objects.get(id=video_id)
-        if not video:
-            return Response("Video not found")
-        genre = video.genre.all()
-        serializer = GenreSerializer(genre, many=True)
-        return Response(serializer.data)
-
-    def post(self, request, video_id):
-        video_thumbnail = request.data
-        video_thumbnail.update({"video": video_id})
-        serializer = VideoThumbnailSerializer(data=video_thumbnail)
-        if not serializer.is_valid():
-            return Response(serializer.errors)
-        serializer.save()
-        return Response(serializer.data)
-
-    def delete(self, request, video_id, thumbnail_id):
-        video_thumbnail = VideoThumbnail.objects.get(id=thumbnail_id)
-        video_thumbnail.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    def put(self, request, video_id, thumbnail_id):
-        video_thumbnail = VideoThumbnail.objects.get(id=thumbnail_id)
-        if not video_thumbnail:
-            return Response("Watch data not found")
-        video_thumbnail_data = request.data
-        serializer = VideoThumbnailSerializer(video_thumbnail, data=video_thumbnail_data)
-        if not serializer.is_valid():
-            return Response(serializer.errors)
-        serializer.save()
-        return Response(serializer.data)
-
-
-class ApiVideoActor(APIView):
-
-    def get(self, request, video_id, actor_id=None):
-        pass
-
-    def post(self, request, video_id):
-        pass
-
-    def delete(self, request, video_id, actor_id):
-        pass
-
-    def put(self, request, video_id, actor_id):
-        pass
-
-
-class ApiVideoStaff(APIView):
-
-    def get(self, request, video_id, staff_id=None):
-        pass
-
-    def post(self, request, video_id):
-        pass
-
-    def delete(self, request, video_id, staff_id):
-        pass
-
-    def put(self, request, video_id, staff_id):
-        pass
-
-
-class ApiCollectNamuWiki(APIView):
-
-    def get(self, request):
-        pass
+    def post(self, request, *args, **kwargs):
+        serializer = FileUploadSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                file = serializer.validated_data['file']
+                actor_id = serializer.validated_data['actor_id']
+                file_name = make_filename(file.name)
+                print(file.name)
+                print(file_name)
+                s3_path = AWS_S3_PATH_VIDEO_ACTOR + actor_id + "/" + file_name
+                uploader = S3ImageUploader()
+                result = uploader.upload_from_file(file, s3_path)
+                if result is None:
+                    return Response("Failed to upload the image", status=400)
+                Actor.objects.filter(id=actor_id).update(picture=result['url'])
+                return Response(result, status=200)
+            except Exception as e:
+                print(e)
+                return Response("Failed to upload the image", status=400)
+        else:
+            return Response("Failed to upload the image", status=400)
