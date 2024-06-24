@@ -21,7 +21,13 @@
         <form method="get" class="flex gap-1.5">
             <div class="flex justify-start items-center gap-1.5">
                 <div class="relative">
-                    <input type="text" name="q" class="form-input ps-10 w-[280px] h-[42px] dark:border-lightgray/20 dark:text-white dark:bg-lightgray/10 border border-gray/10 bg-gray/[8%] rounded-[10px] text-sm text-dark placeholder:text-lightgray/80 focus:ring-0 focus:border-primary/80 focus:outline-0" placeholder="타이틀 검색..">
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-input ps-10 w-[280px] h-[42px] dark:border-lightgray/20 dark:text-white dark:bg-lightgray/10 border border-gray/10 bg-gray/[8%] rounded-[10px] text-sm text-dark placeholder:text-lightgray/80 focus:ring-0 focus:border-primary/80 focus:outline-0"
+                        value="{{ q }}"
+                        placeholder="타이틀 검색.."
+                    >
                     <span class="absolute inset-y-0 left-3 flex items-center">
                         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <g clip-path="url(#clip0_87_857)">
@@ -64,7 +70,7 @@
                 </select>
             </div>
             <div class="flex justify-start items-center gap-1.5">
-                <button type="submit" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-[10px] transition-all duration-300">검색</button>
+                <button type="submit" class="btn w-[100px] bg-primary text-white hover:bg-primary/[0.85] border border-gray/10 rounded-[10px] transition-all duration-300">검색</button>
             </div>
         </form>
         <div class="flex items-center gap-1.5">
@@ -74,86 +80,92 @@
         </div>
     </div>
 
-    <form action="" method="post" class="flex flex-col gap-1.5">
-    {% for video in videos %}
-        <div class="flex gap-1.5 bg-white dark:bg-dark dark:border-gray/20 border border-lightgray/10 p-5 rounded-lg">
+    {% if videos.count > 0 %}
+        <form action="" method="post" class="flex flex-col gap-1.5">
+        {% for video in videos %}
+            <div class="flex gap-1.5 bg-white dark:bg-dark dark:border-gray/20 border border-lightgray/10 p-5 rounded-lg">
 
-            <div class="flex justify-start items-center w-[80px]">
-                <input type="checkbox" id="checkbox{{ video.id }}" class="form-checkbox h-5 w-5 text-primary" />
-                <label for="checkbox{{ video.id }}" class="ml-2 text-sm text-gray">{{ video.id }}</label>
-            </div>
+                <div class="flex justify-start items-center w-[80px]">
+                    <input type="checkbox" id="checkbox{{ video.id }}" class="form-checkbox h-5 w-5 text-primary" />
+                    <label for="checkbox{{ video.id }}" class="ml-2 text-sm text-gray">{{ video.id }}</label>
+                </div>
 
-            <div class="w-[200px] h-[200px]">
-                <div class="swiper SwiperwithPagination">
-                    <div class="swiper-wrapper">
-                        {%  for thumbnail in video.thumbnail.all %}
-                            <div class="swiper-slide">
-                                <img src="{{ thumbnail.url|add_base_url }}" alt="slider" class="max-h-96 object-cover rounded-[10px]" />
+                <div class="w-[200px] h-[200px]">
+                    <div class="swiper SwiperwithPagination">
+                        <div class="swiper-wrapper">
+                            {%  for thumbnail in video.thumbnail.all %}
+                                <div class="swiper-slide">
+                                    <img src="{{ thumbnail.url|add_base_url }}" alt="slider" class="max-h-96 object-cover rounded-[10px]" />
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="swiper-pagination"></div>
+                    </div>
+                </div>
+
+                <a href="{% url 'content:video-detail' video.id %}">
+                    <div class="flex items-center gap-2.5">
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제목</button>
+                        <div class="flex gap-1.5 px-1 text-gray">
+                            {{ video.title }}
+                            {% if not video.is_mainimage %} <span class="bg-danger/10 text-danger flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">대표 이미지 없음</span> {% endif %}
+                            {% if not video.is_confirm %} <span class="bg-success/10 text-success flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">관리자 승인 필요</span> {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2.5 mt-1">
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">출시일</button>
+                        <div class="w-[120px] px-1 text-gray">{{ video.release }}</div>
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">상영시간</button>
+                        <div class="w-[120px] px-1 text-gray">{{ video.runtime }}</div>
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">관람등급</button>
+                        <div class="w-[120px] px-1 text-gray">{{ video.notice_age }}</div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">장르</button>
+                        {% for genre in video.genre.all %}
+                            <div class="flex items-center space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
+                                <span>{{ genre.name }}</span>
+                                {% if not forloop.last %}
+                                    <span class="text-xs">/</span>
+                                {% endif %}
                             </div>
                         {% endfor %}
                     </div>
-                    <div class="swiper-pagination"></div>
-                </div>
-            </div>
-
-            <a href="{% url 'content:video-detail' video.id %}">
-                <div class="flex items-center gap-2.5">
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제목</button>
-                    <div class="flex gap-1.5 px-1 text-gray">
-                        {{ video.title }}
-                        {% if not video.is_mainimage %} <span class="bg-danger/10 text-danger flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">대표 이미지 없음</span> {% endif %}
-                        {% if not video.is_confirm %} <span class="bg-success/10 text-success flex items-center gap-1 rounded-full py-1 px-2.5 text-xs">관리자 승인 필요</span> {% endif %}
+                    <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">출연</button>
+                        {% for actor in video.actor.all %}
+                            <div class="flex items-center flex-wrap overflow-hidden max-h-96 space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
+                                <span>{{ actor.name }}</span>
+                                {% if not forloop.last %}
+                                    <span class="text-xs">/</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
                     </div>
-                </div>
-                <div class="flex items-center gap-2.5 mt-1">
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">출시일</button>
-                    <div class="w-[120px] px-1 text-gray">{{ video.release }}</div>
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">상영시간</button>
-                    <div class="w-[120px] px-1 text-gray">{{ video.runtime }}</div>
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">관람등급</button>
-                    <div class="w-[120px] px-1 text-gray">{{ video.notice_age }}</div>
-                </div>
-                <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">장르</button>
-                    {% for genre in video.genre.all %}
-                        <div class="flex items-center space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
-                            <span>{{ genre.name }}</span>
-                            {% if not forloop.last %}
-                                <span class="text-xs">/</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">출연</button>
-                    {% for actor in video.actor.all %}
-                        <div class="flex items-center flex-wrap overflow-hidden max-h-96 space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
-                            <span>{{ actor.name }}</span>
-                            {% if not forloop.last %}
-                                <span class="text-xs">/</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제작</button>
-                    {% for staff in video.staff.all %}
-                        <div class="flex items-center space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
-                            <span>{{ staff.name }}</span>
-                            {% if not forloop.last %}
-                                <span class="text-xs">/</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-                <div class="flex items-center gap-2.5 mt-1 max-w-[1200px]">
-                    <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">시놉시스</button>
-                    <div class="text-gray">{{ video.synopsis|truncatechars:100 }}</div>
-                </div>
-            </a>
+                    <div class="flex flex-wrap items-center gap-2.5 mt-1 max-w-[1200px]">
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">제작</button>
+                        {% for staff in video.staff.all %}
+                            <div class="flex items-center space-x-2.5 text-gray hover:text-dark dark:hover:text-white duration-300">
+                                <span>{{ staff.name }}</span>
+                                {% if not forloop.last %}
+                                    <span class="text-xs">/</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="flex items-center gap-2.5 mt-1 max-w-[1200px]">
+                        <button type="button" class="btn w-[100px] hover:bg-gray/10 border border-gray/10 rounded-full transition-all duration-300">시놉시스</button>
+                        <div class="text-gray">{{ video.synopsis|truncatechars:100 }}</div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+        </form>
+    {% else %}
+        <div class="flex items-center justify-center w-full h-full py-10 text-gray/50 dark:text-gray/60">
+            등록된 비디오가 없습니다.
         </div>
-    {% endfor %}
-    </form>
+    {% endif %}
 
     {% if is_paginated %}
         <div class="pagination">
@@ -194,27 +206,5 @@
     {% endif %}
 
 </div>
-
- <!-- Swiper Slider Js -->
- <script src="/static/js/swiper-bundle.min.js"></script>
- <script>
-    const swiper = new Swiper(".SwiperwithPagination", {
-        pagination: {
-            el: ".swiper-pagination",
-        },
-    });
-
-    function showMore() {
-        const actorsList = document.getElementById('actors-list');
-        actorsList.classList.toggle('max-h-24');
-        actorsList.classList.toggle('overflow-hidden');
-        const showMoreButton = document.getElementById('show-more');
-        if (actorsList.classList.contains('max-h-24')) {
-            showMoreButton.textContent = '더보기';
-        } else {
-            showMoreButton.textContent = '간단히';
-        }
-    }
-</script>
 
 {% endblock content %}
