@@ -43,23 +43,38 @@ class S3ImageUploader(ImageUploader):
         # S3 Bucket 설정
         self.bucket = bucket
     # 파일에서 이미지 생성 및 S3 업로드
-    def upload_from_file(self, file, s3_path):
+    def upload_from_file(self, file, s3_path, resize_width=None):
         try:
             # 파일 오픈
             with Image.open(file) as image:
                 image_format = image.format
                 image_width, image_height = image.size
-                # Reset the buffer's current position to the beginning
-                file.seek(0)
-                # S3에 이미지 업로드
-                self.upload(file, s3_path)
+                # 이미지 리사이즈
+                if resize_width:
+                    # 이미지 리사이즈
+                    image = self.resize_image(image, resize_width)
+                    # 리사이즈된 이미지 정보 가져오기
+                    image_width = image.width
+                    image_height = image.height
+                # 리사이즈된 이미지를 BytesIO 형태로 저장
+                with BytesIO() as buffer:
+                    # 리사이즈된 이미지 저장
+                    image.save(buffer, format=image_format)
+                    # 버퍼 처음 위치로 재설정
+                    buffer.seek(0)
+                    # 이미지 사이즈 가져오기
+                    image_size = len(buffer.read())
+                    # 버퍼 처음 위치로 재설정
+                    buffer.seek(0)
+                    # S3에 이미지 업로드
+                    self.upload(buffer, s3_path)
                 # 이미지 파일명, 확장자, 사이즈 리턴
                 return {
                     "url": s3_path,
                     "extension": image_format,
                     "width": image_width,
                     "height": image_height,
-                    "size": 0
+                    "size": image_size
                 }
         except Exception as e:
             print(f"Failed to process the image: {e}")
@@ -95,17 +110,22 @@ class S3ImageUploader(ImageUploader):
         except Exception as e:
             print(f"Failed to process the image: {e}")
             return None
+
     # 이미지 S3 업로드
     def upload(self, image, s3_path):
         try:
-            print(image)
-            print(s3_path)
-            print(self.bucket)
             self.uploader.upload_fileobj(image, self.bucket, s3_path)
             print(f"Image uploaded to {self.bucket}/{s3_path}")
         except Exception as e:
             print(f"Failed to upload the image to S3: {e}")
             raise e
+
+    # 이미지 리사이즈
+    def resize_image(self, image, width):
+        aspect_ratio = image.height / image.width
+        height = int(width * aspect_ratio)
+        return image.resize((width, height), Image.Resampling.LANCZOS)
+
     # S3 클라이언트 종료
     def close(self):
         self.uploader.close()
