@@ -1,14 +1,18 @@
 from django.forms.models import model_to_dict
 
 from app.builder.parser import OTTParser
-from app.database.models import Video
+from app.database.queryset.video import search_video_by_platform
 
 
 class VideoBuilder:
     def __init__(self, parser):
         self.parser: OTTParser = parser
 
-    def build(self, ids):
+    def build(self, ext_id):
+        video = self.search_video(ext_id)
+        return video
+
+    def build_all(self, ids):
         if type(ids) is str:
             if ids.find(",") > 0:
                 search_ids = ids.split(",")
@@ -25,12 +29,19 @@ class VideoBuilder:
         return videos
 
     def search_video(self, search_id):
-        get_videos = Video.objects.filter(platform_id=search_id)
-        if get_videos.exists():
-            get_video = model_to_dict(get_videos.first())
-            get_video['is_db'] = True
-            return get_video
+        get_video = search_video_by_platform(self.parser.ott_code, search_id)
+        if get_video:
+            get_video_dict = model_to_dict(get_video)
+            # 디스플레이 참고용 변수 is_db 추가
+            # if get_video_dict.get('created_at'):
+            #     get_video_dict['created_at'] = format_datetime_to_str(get_video_dict['created_at'])
+            # if get_video_dict.get('updated_at'):
+            #     get_video_dict['updated_at'] = format_datetime_to_str(get_video_dict['updated_at'])
+            get_video_dict['is_db'] = True
+            return get_video_dict
         parsed_content = self.parser.parse(search_id)
+        # 디스플레이 참고용 변수 is_db 추가
+        parsed_content['is_db'] = False
         return parsed_content
 
     def search_videos(self, search_ids):
@@ -42,8 +53,6 @@ class VideoBuilder:
                 search_ids = [search_ids]
         for search_id in search_ids:
             video = self.search_video(search_id)
-            if not video.get('is_db'):
-                video['is_db'] = False
             videos.append(video)
         return videos
 

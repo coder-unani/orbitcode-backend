@@ -89,14 +89,14 @@
                                 {% else %}
                                 <tr class="text-left border-b border-gray/10">
                                 {% endif %}
-                                    <input type="hidden" name="video_{{video.platform_id}}" value="{{video}}">
+                                    <input type="hidden" name="video_{{ video.platform.0.ext_id }}" value="{{ video }}">
                                     <!-- 체크박스 -->
                                     <td>
                                         <input
                                             type="checkbox"
-                                            name="platform_ids"
+                                            name="ext_ids"
                                             class="form-checkbox"
-                                            value="{{video.platform_id}}"
+                                            value="{{ video.platform.0.ext_id }}"
                                         />
                                     </td>
                                     <!-- 썸네일 -->
@@ -166,15 +166,15 @@
                                     </td>
                                     <!-- 비디오 타입 -->
                                     <td>
-                                        {% if video.type == "10" %}
+                                        {% if video.code == "10" %}
                                             <button type="button" class="btn border text-danger border-transparent rounded-md transition-all duration-300 hover:text-white hover:bg-danger bg-danger/10">Movie</button>
-                                        {% elif video.type == "11" %}
+                                        {% elif video.code == "11" %}
                                             <button type="button" class="btn border text-success border-transparent rounded-md transition-all duration-300 hover:text-white hover:bg-success bg-success/10">Series</button>
                                         {% endif %}
                                     </td>
                                     <!-- 보러가기 -->
                                     <td>
-                                        <a href="{{video.watch.0.url}}" target="_blank" class="btn flex items-center gap-2 bg-primary border border-primary rounded-md text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">
+                                        <a href="{{video.platform.0.url}}" target="_blank" class="btn flex items-center gap-2 bg-primary border border-primary rounded-md text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">
                                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <path d="M12 21L21 12M12 21L3 12M12 21L12 3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                             </svg>

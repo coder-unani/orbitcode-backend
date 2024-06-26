@@ -9,3 +9,8 @@ class ActorPictureUploadSerializer(serializers.Serializer):
 class StaffPictureUploadSerializer(serializers.Serializer):
     file = serializers.FileField()
     staff_id = serializers.CharField()
+
+
+class VideoThumbnailUploadSerializer(serializers.Serializer):
+    file = serializers.FileField()
+    video_id = serializers.CharField()

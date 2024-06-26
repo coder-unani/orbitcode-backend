@@ -1,5 +1,6 @@
 {% extends 'layouts/main.html' %}
 {% load static %}
+{% load tags %}
 
 {% block title %} 컨텐츠 관리::비디오 {% endblock title %}
 
@@ -11,7 +12,7 @@
 
 <div class="flex flex-col gap-5 min-h-[calc(100vh-188px)] sm:min-h-[calc(100vh-204px)]">
     <div class="grid grid-cols-1 gap-4 flex-1" x-data="email">
-        <div class="flex gap-5 items-stretch relative overflow-hidden" x-data="{activeTab:'profile'}">
+        <div class="flex gap-5 items-stretch relative overflow-hidden" x-data="{activeTab:'thumbnail'}">
             <div class="bg-white dark:bg-dark dark:border-gray/20 border-2 border-lightgray/10 rounded-lg p-5 absolute w-[240px] z-20 flex-none -left-[410px] xl:static overflow-hidden overflow-y-auto h-[calc(100vh-188px)] sm:h-[calc(100vh-204px)]" :class="isShowChatMenu && '!left-0'">
                 <div class="flex flex-col space-y-5">
                     <button class="flex duration-300 p-5 bg-primary text-white text-sm/none font-semibold items-center gap-3 rounded-lg">
@@ -21,7 +22,7 @@
                         이미지 정보
                     </button>
                     <button @click="activeTab = 'watch'" :class="activeTab === 'watch' ? 'bg-primary text-white' : 'bg-gray/[8%] text-gray hover:bg-primary hover:text-white'" class="flex duration-300 p-5 text-sm/none font-semibold items-center gap-3 rounded-lg">
-                        시청 정보
+                        시청 플랫폼 정보
                     </button>
                     <button @click="activeTab = 'genre'" :class="activeTab === 'genre' ? 'bg-primary text-white' : 'bg-gray/[8%] text-gray hover:bg-primary hover:text-white'" class="flex duration-300 p-5 text-sm/none font-semibold items-center gap-3 rounded-lg">
                         장르 정보
@@ -60,7 +61,6 @@
                                     <div class="flex justify-between items-center gap-5 flex-wrap">
                                         <div class="flex gap-5">
                                             <span class="text-gray">ID : {{object.id}}</span>
-                                            <span class="text-gray">PID : {{object.platform_id}}</span>
                                         </div>
                                         <div class="flex gap-5">
                                             <span class="text-gray">{{object.rating}}</span>
@@ -106,27 +106,23 @@
                                     </div>
                                     <div class="space-y-4">
                                         <label for="type" class="text-sm">타입</label>
-                                        <select id="type" name="type" class="form-select">
-                                            {% for video_type in video_type %}
-                                                <option value="{{ video_type.0 }}" {% if object.type == video_type.0 %} selected {% endif %}>{{ video_type.1 }}</option>
+                                        <select id="type" name="code" class="form-select">
+                                            {% for code in video_code %}
+                                                <option value="{{ code.0 }}" {% if object.code == code.0 %} selected {% endif %}>{{ code.1 }}</option>
                                             {% endfor %}
                                         </select>
                                     </div>
                                     <div class="space-y-4 flex-1">
                                         <label for="release" class="text-sm">출시일</label>
-                                        <input id="release" type="text" name="release" class="form-input rounded-lg" value="{{object.release}}">
+                                        <input id="release" type="text" name="release" class="form-input rounded-lg" value="{{ object.release }}">
                                     </div>
                                     <div class="space-y-4 flex-1">
                                         <label for="runtime" class="text-sm">상영시간</label>
-                                        <input id="runtime" type="text" name="runtime" class="form-input rounded-lg" value="{{object.runtime}}">
+                                        <input id="runtime" type="text" name="runtime" class="form-input rounded-lg" value="{{ object.runtime }}">
                                     </div>
                                     <div class="space-y-4 flex-1">
                                         <label for="notice_age" class="text-sm">관람등급</label>
-                                        <input id="notice_age" type="text" name="notice_age" class="form-input rounded-lg" value="{{object.notice_age}}">
-                                    </div>
-                                    <div class="space-y-4 flex-1">
-                                        <label for="production" class="text-sm">제작사</label>
-                                        <input id="production" type="text" name="production" class="form-input rounded-lg" value="{{object.production}}">
+                                        <input id="notice_age" type="text" name="notice_age" class="form-input rounded-lg" value="{{ object.notice_age }}">
                                     </div>
                                     <div class="space-y-4 flex-1">
                                         <label for="country" class="text-sm">국가</label>
@@ -177,7 +173,7 @@
                             <h3 class="text-lg font-semibold">이미지 정보</h3>
                         </div>
                         <div class="mt-[30px] w-full">
-                            <form method="post" class="w-full">
+                            <form method="post" class="w-full" enctype="multipart/form-data">
                                 {% csrf_token %}
                                 <input type="hidden" name="edit_type" value="thumbnail">
                                 <input type="hidden" name="thumbnail_create" value="">
@@ -185,20 +181,36 @@
                                 <div id="thumbnail_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
                                     {% for thumbnail in video_thumbnail_list %}
                                         <div id="thumbnail_wrap_{{ thumbnail.id }}" class="flex gap-2.5">
-                                            <select name="thumbnail_type_{{ thumbnail.id }}" class="form-select w-[200px]">
-                                                {% for thumbnail_type in video_thumbnail_type %}
-                                                    <option value="{{ thumbnail_type.0 }}" {% if thumbnail.type == thumbnail_type.0 %} selected {% endif %}>{{ thumbnail_type.1 }}</option>
-                                                {% endfor %}
-                                            </select>
-                                            <input id="thumbnail" type="text" name="thumbnail_url_{{ thumbnail.id }}" class="form-input rounded-lg" value="{{thumbnail.url}}" />
-                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('thumbnail', {{ thumbnail.id }})">
-                                                -
-                                            </button>
+                                            <div class="flex justify-start w-[200px] h-[200px] overflow-hidden border border-gray/20 p-1">
+                                                <img id="thumbnail_preview_{{ thumbnail.id }}" src="{{ thumbnail.url|add_base_url }}" class="w-full h-full" style="object-fit: contain;"/>
+                                            </div>
+                                            <div class="flex-auto flex flex-col gap-1.5">
+                                                <select name="thumbnail_code_{{ thumbnail.id }}" class="form-select w-[200px]">
+                                                    {% for code in video_thumbnail_code %}
+                                                        <option value="{{ code.0 }}" {% if thumbnail.code == code.0 %} selected {% endif %}>{{ code.1 }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                                <input id="thumbnail" type="text" name="thumbnail_url_{{ thumbnail.id }}" class="form-input" value="{{thumbnail.url}}" readonly/>
+                                                <div class="flex gap-1.5">
+                                                    <div class="rounded px-3 py-1 bg-primary/10 text-primary text-sm border border-primary/60 flex items-center gap-1">
+                                                        {{ thumbnail.extension }}
+                                                    </div>
+                                                    <div class="rounded px-3 py-1 bg-purple/10 text-purple text-sm border border-purple/60 flex items-center gap-1">
+                                                        {{ thumbnail.width }}x{{ thumbnail.height }}
+                                                    </div>
+                                                    <div class="rounded px-3 py-1 bg-success/10 text-success text-sm border border-success/60 flex items-center gap-1">
+                                                        {{ thumbnail.size|file_size_format }}
+                                                    </div>
+                                                </div>
+                                                <div class="flex gap-2.5">
+                                                    <button type="button" class="btn w-[100px] bg-danger text-white text-sm hover:bg-danger/[0.85] border border-gray/10 rounded-[10px] transition-all duration-300" onclick="removeElement('thumbnail', '{{ thumbnail.id }}')">삭 제</button>
+                                                </div>
+                                            </div>
                                         </div>
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('thumbnail', THUMBNAIL_TYPE, ['url'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addThumbnailElement('{{ object.id }}')" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -221,26 +233,26 @@
                         <div class="mt-[30px] w-full">
                             <form method="post" class="w-full">
                                 {% csrf_token %}
-                                <input type="hidden" name="edit_type" value="watch">
-                                <input type="hidden" name="watch_create" value="">
-                                <input type="hidden" name="watch_delete" value="">
-                                <div id="watch_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
-                                    {% for watch in video_watch_list %}
-                                        <div id="watch_wrap_{{ watch.id }}" class="flex gap-2.5">
-                                            <select id="watch_type" name="watch_type_{{watch.id}}" class="form-select w-[200px]">
-                                                {% for platform in video_platform %}
-                                                    <option value="{{ platform.0 }}" {% if watch.type == platform.0 %} selected {% endif %}>{{ platform.1 }}</option>
+                                <input type="hidden" name="edit_type" value="platform">
+                                <input type="hidden" name="platform_create" value="">
+                                <input type="hidden" name="platform_delete" value="">
+                                <div id="platform_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
+                                    {% for platform in video_platform_list %}
+                                        <div id="platform_wrap_{{ platform.id }}" class="flex gap-2.5">
+                                            <select id="platform_code" name="platform_code_{{platform.id}}" class="form-select w-[200px]" disabled>
+                                                {% for code in video_platform_code %}
+                                                    <option value="{{ code.0 }}" {% if platform.code == code.0 %} selected {% endif %}>{{ code.1 }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <input type="text" name="watch_url_{{ watch.id }}" class="form-input rounded-lg" value="{{watch.url}}" />
-                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('watch', {{ watch.id }})">
+                                            <input type="text" name="platform_url_{{ platform.id }}" class="form-input rounded-lg" value="{{ platform.url }}" readonly/>
+                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('platform', '{{ platform.id }}')">
                                                 -
                                             </button>
                                         </div>
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('watch', WATCH_TYPE, ['url'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('platform', PLATFORM_CODE, ['url'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -266,18 +278,19 @@
                                 <input type="hidden" name="edit_type" value="genre">
                                 <input type="hidden" name="genre_create" value="">
                                 <input type="hidden" name="genre_delete" value="">
-                                <div id="genre_container" class="grid lg:grid-cols-5 sm:grid-cols-2 gap-5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
+                                <div id="genre_container" class="grid lg:grid-cols-3 sm:grid-cols-2 gap-5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
                                     {% for genre in video_genre_list %}
                                         <div id="genre_wrap_{{ genre.id }}" class="flex gap-2.5">
-                                            <input type="text" name="genre_{{ genre.id }}" class="form-input rounded-lg" value="{{genre.genre.name}}" readonly />
-                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('genre', {{ genre.id }})">
+                                            <input type="text" name="genre_name_{{ genre.id }}" class="form-input rounded-lg" value="{{genre.genre.name}}" readonly/>
+                                            <input type="number" name="genre_sort_{{ genre.id }}" class="form-input" value="{{ genre.sort }}" />
+                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('genre', '{{ genre.id }}')">
                                                 -
                                             </button>
                                         </div>
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('genre', [], ['name'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('genre', [], ['name', 'sort'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -306,21 +319,22 @@
                                 <div id="actor_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
                                     {% for actor in video_actor_list %}
                                         <div id="actor_wrap_{{ actor.id }}" class="flex gap-2.5">
-                                            <select name="actor_type_{{ actor.id }}" class="form-select w-[200px]">
-                                                {% for actor_type in video_actor_type %}
-                                                    <option value="{{ actor_type.0 }}" {% if actor.type == actor_type.0 %} selected {% endif %}>{{ actor_type.1 }}</option>
+                                            <select name="actor_code_{{ actor.id }}" class="form-select w-[200px]">
+                                                {% for actor_code in video_actor_code %}
+                                                    <option value="{{ actor_code.0 }}" {% if actor.code == actor_code.0 %} selected {% endif %}>{{ actor_code.1 }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <input type="text" name="actor_role_{{ actor.id }}" class="form-input" value="{{actor.role}}" />
-                                            <input type="text" name="actor_name_{{ actor.id }}" class="form-input" value="{{actor.actor.name}}" />
-                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('actor', {{ actor.id }})">
+                                            <input type="text" name="actor_role_{{ actor.id }}" class="form-input" value="{{ actor.role }}" />
+                                            <input type="text" name="actor_name_{{ actor.id }}" class="form-input" value="{{ actor.actor.name }}" readonly/>
+                                            <input type="number" name="actor_sort_{{ actor.id }}" class="form-input" value="{{ actor.sort }}" />
+                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('actor', '{{ actor.id }}')">
                                                 -
                                             </button>
                                         </div>
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('actor', ACTOR_TYPE, ['role', 'name'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('actor', ACTOR_CODE, ['role', 'name', 'sort'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -349,20 +363,21 @@
                                 <div id="staff_container" class="flex flex-col gap-2.5 bg-white dark:bg-dark dark:border-gray/20 rounded-lg">
                                     {% for staff in video_staff_list %}
                                         <div id="staff_wrap_{{ staff.id }}" class="flex gap-2.5">
-                                            <select name="staff_type_{{ staff.id }}" class="form-select w-[200px]">
-                                                {% for staff_type in video_staff_type %}
-                                                    <option value="{{ staff_type.0 }}" {% if staff.type == staff_type.0 %} selected {% endif %}>{{ staff_type.1 }}</option>
+                                            <select name="staff_code_{{ staff.id }}" class="form-select w-[200px]">
+                                                {% for staff_code in video_staff_code %}
+                                                    <option value="{{ staff_code.0 }}" {% if staff.code == staff_code.0 %} selected {% endif %}>{{ staff_code.1 }}</option>
                                                 {% endfor %}
                                             </select>
-                                            <input type="text" name="staff_name_{{ staff.id }}" class="form-input" value="{{staff.staff.name}}" />
-                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('staff', {{ staff.id }})">
+                                            <input type="text" name="staff_name_{{ staff.id }}" class="form-input" value="{{ staff.staff.name }}" readonly/>
+                                            <input type="number" name="staff_sort_{{ staff.id }}" class="form-input" value="{{ staff.sort }}"/>
+                                            <button type="button" class="bg-danger text-white rounded-[10px] h-12 w-12 flex justify-center items-center" onclick="removeElement('staff', '{{ staff.id }}')">
                                                 -
                                             </button>
                                         </div>
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('staff', STAFF_TYPE, ['name'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <button type="button" onclick="addElement('staff', STAFF_CODE, ['name', 'sort'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
@@ -396,7 +411,7 @@ const newIds = {
         {"id": "new9", "usage": false},
         {"id": "new10", "usage": false}
     ],
-    "watch": [
+    "platform": [
         {"id": "new1", "usage": false},
         {"id": "new2", "usage": false},
         {"id": "new3", "usage": false},
@@ -448,23 +463,23 @@ const newIds = {
 
 // 썸네일 타입 정의
 
-const THUMBNAIL_TYPE = [
-    {% for thumbnail in video_thumbnail_type %} {"value": "{{ thumbnail.0 }}", "text": "{{ thumbnail.1 }}"}, {% endfor %}
+const THUMBNAIL_CODE = [
+    {% for thumbnail in video_thumbnail_code %} {"value": "{{ thumbnail.0 }}", "text": "{{ thumbnail.1 }}"}, {% endfor %}
 ]
 
 // 시청정보 타입 정의
-const WATCH_TYPE = [
-    {% for platform in video_platform %} {"value": "{{ platform.0 }}", "text": "{{ platform.1 }}"}, {% endfor %}
+const PLATFORM_CODE = [
+    {% for platform in video_platform_code %} {"value": "{{ platform.0 }}", "text": "{{ platform.1 }}"}, {% endfor %}
 ];
 
 // 배우 타입 정의
-const ACTOR_TYPE = [
-    {% for actor in video_actor_type %} {"value": "{{ actor.0 }}", "text": "{{ actor.1 }}"}, {% endfor %}
+const ACTOR_CODE = [
+    {% for actor in video_actor_code %} {"value": "{{ actor.0 }}", "text": "{{ actor.1 }}"}, {% endfor %}
 ];
 
 // 스태프 타입 정의
-const STAFF_TYPE = [
-    {% for staff in video_staff_type %} {"value": "{{ staff.0 }}", "text": "{{ staff.1 }}"}, {% endfor %}
+const STAFF_CODE = [
+    {% for staff in video_staff_code %} {"value": "{{ staff.0 }}", "text": "{{ staff.1 }}"}, {% endfor %}
 ];
 
 // 아이디 발행
@@ -510,6 +525,123 @@ const unpublishId = (prefix, id) => {
     return true;
 }
 
+// 썸네일 파일 선택시 미리보기 등 화면가이드 출력
+function handelFile(event, thumbnailId) {
+    const uploadType = document.querySelectorAll(`input[name="thumbnail_upload_type_${thumbnailId}"]`);
+    const imagePreview = document.querySelector(`#thumbnail_preview_${thumbnailId}`);
+    const imageUrl = document.querySelector(`#thumbnail_url_${thumbnailId}`);
+    const imageExt = document.querySelector(`#thumbnail_ext_${thumbnailId}`);
+    const imageWH = document.querySelector(`#thumbnail_wh_${thumbnailId}`);
+    const imageSize = document.querySelector(`#thumbnail_size_${thumbnailId}`);
+
+    const fileInput = event.target;
+    const file = fileInput.files[0];
+
+    uploadType.forEach((type) => {
+        type.checked = type.value === "file";
+    });
+
+    if (file && file.type.startsWith('image/')) {
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
+            imagePreview.src = e.target.result;
+
+            const img = new Image();
+            img.src = e.target.result;
+
+            img.onload = function () {
+                const fileSize = (file.size / 1024).toFixed(2) + ' KB';
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const width = img.width;
+                const height = img.height;
+
+                imageUrl.value = file.name;
+                imageExt.textContent = fileExtension;
+                imageWH.textContent = `${width}x${height}`;
+                imageSize.textContent = fileSize;
+            };
+        };
+
+        reader.readAsDataURL(file);
+    }
+}
+
+// 썸네일 업로드 타입 토글
+function toggleUploadType(event, thumbnailId) {
+    const uploadType = document.querySelector(`input[name="thumbnail_upload_type_${thumbnailId}"]:checked`).value;
+    const thumbnailFile = document.querySelector(`#thumbnail_file_${thumbnailId}`);
+    const thumbnailPreview = document.querySelector(`#thumbnail_preview_${thumbnailId}`);
+    const thumbnailUrl = document.querySelector(`#thumbnail_url_${thumbnailId}`);
+    const thumbnailExt = document.querySelector(`#thumbnail_ext_${thumbnailId}`);
+    const thumbnailWH = document.querySelector(`#thumbnail_wh_${thumbnailId}`);
+    const thumbnailSize = document.querySelector(`#thumbnail_size_${thumbnailId}`);
+
+    if (uploadType === "url") {
+        thumbnailUrl.removeAttribute('readonly');
+        thumbnailFile.value = "";
+    } else if (uploadType === "file") {
+        thumbnailUrl.setAttribute('readonly', 'readonly');
+    }
+
+    thumbnailPreview.src = "/static/images/no-image-200x200.jpg";
+    thumbnailUrl.value = "";
+    thumbnailExt.textContent = "Extension";
+    thumbnailWH.textContent = "WxH";
+    thumbnailSize.textContent = "Size";
+}
+
+// 썸네일 엘리먼트 추가
+const addThumbnailElement = (video_id) => {
+    const newId = publishId('thumbnail');
+    if (newId === "") {
+        alert('썸네일은 최대 10개까지 등록 가능합니다.');
+        return;
+    }
+
+    const container = document.querySelector('#thumbnail_container');
+
+    let thumbnailCode = ""
+    THUMBNAIL_CODE.map((thumbnail) => {
+        thumbnailCode += `<option value="${thumbnail.value}">${thumbnail.text}</option>`;
+    });
+
+    const newThumbnail = `
+        <div id="thumbnail_wrap_${newId}" class="flex gap-2.5">
+            <div class="flex justify-start w-[200px] h-[200px] overflow-hidden border border-gray/20 p-1">
+                <img id="thumbnail_preview_${newId}" src="{% static 'images/no-image-200x200.jpg' %}" alt="Thumbnail Image" class="w-full h-full" style="object-fit: contain;" />
+                <input type="file" id="thumbnail_file_${newId}" name="thumbnail_file_${newId}" class="hidden" onchange="handelFile(event, '${newId}')">
+            </div>
+            <div class="flex-auto flex flex-col gap-1.5">
+                <div class="flex gap-2.5 justify-start items-center">
+                    <select name="thumbnail_code_${newId}" class="form-select w-[200px]">
+                        ${thumbnailCode}
+                    </select>
+                    <input type="radio" name="thumbnail_upload_type_${newId}" value="url" onchange="toggleUploadType(event, '${newId}')" checked> URL
+                    <input type="radio" name="thumbnail_upload_type_${newId}" value="file" onchange="toggleUploadType(event, '${newId}')"> FILE
+                </div>
+                <input id="thumbnail_url_${newId}" type="text" name="thumbnail_url_${newId}" class="form-input" value=""/>
+                <div class="flex gap-1.5">
+                    <div id="thumbnail_ext_${newId}" class="rounded px-3 py-1 bg-primary/10 text-primary text-sm border border-primary/60 flex items-center gap-1">
+                        Extension
+                    </div>
+                    <div id="thumbnail_wh_${newId}" class="rounded px-3 py-1 bg-purple/10 text-purple text-sm border border-purple/60 flex items-center gap-1">
+                        WxH
+                    </div>
+                    <div id="thumbnail_size_${newId}" class="rounded px-3 py-1 bg-success/10 text-success text-sm border border-success/60 flex items-center gap-1">
+                        Size
+                    </div>
+                </div>
+                <div class="flex gap-2.5">
+                    <button type="button" class="btn w-[100px] bg-primary text-white text-sm hover:bg-primary/[0.85] border border-gray/10 rounded-[10px] transition-all duration-300" onclick="document.getElementById('thumbnail_file_${newId}').click()">파일 선택</button>
+                    <button type="button" class="btn w-[100px] bg-danger text-white text-sm hover:bg-danger/[0.85] border border-gray/10 rounded-[10px] transition-all duration-300" onclick="removeElement('thumbnail', '${newId}')">삭 제</button>
+                </div>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', newThumbnail);
+}
+
 // 엘리멘트 추가
 const addElement = (prefix, options = [], input=[]) => {
     const id = publishId(prefix);
@@ -526,11 +658,15 @@ const addElement = (prefix, options = [], input=[]) => {
 
     if (options.length > 0) {
         const select = document.createElement('select');
-        select.name = `${prefix}_type_${id}`;
+        select.name = `${prefix}_code_${id}`;
         select.classList.add('form-select', 'w-[200px]');
+        const opt = document.createElement('option');
+        opt.value = "";
+        opt.textContent = "선택";
+        select.appendChild(opt);
         options.map((option) => {
             const opt = document.createElement('option');
-            opt.value = option.value;
+            opt.value = `${option.value}`;
             opt.textContent = option.text;
             select.appendChild(opt);
         });
@@ -540,7 +676,11 @@ const addElement = (prefix, options = [], input=[]) => {
     if (input.length > 0) {
         input.map((item) => {
             const newInput = document.createElement('input');
-            newInput.type = "text";
+            if (item == "sort") {
+                newInput.type = "number";
+            } else {
+                newInput.type = "text";
+            }
             newInput.name = `${prefix}_${item}_${id}`;
             newInput.classList.add('form-input', 'rounded-lg');
             newInput.placeholder = item;
@@ -556,7 +696,7 @@ const addElement = (prefix, options = [], input=[]) => {
     newButton.textContent = "-";
     newButton.dataset.id = id;
     newButton.addEventListener('click', () => {
-        removeElement(prefix, id);
+        removeElement(`${prefix}`, `${id}`);
     });
     newDiv.appendChild(newButton);
 
@@ -567,17 +707,18 @@ const addElement = (prefix, options = [], input=[]) => {
 const removeElement = (prefix, id) => {
     const container = document.querySelector(`#${prefix}_wrap_${id}`);
     unpublishId(prefix, id);
-    if (origin !== null && origin !== undefined) {
-        const deleteIds = document.querySelector(`input[name=${prefix}_delete]`);
-        let deleteIdsArray = [];
-        if (deleteIds.value.length > 0) {
-            deleteIdsArray = deleteIds.value.split(',');
-        }
-        if (id.indexOf('new') === -1) {
-            deleteIdsArray.push(id)
-        }
-        deleteIds.value = deleteIdsArray.join(',');
+
+    const deleteIds = document.querySelector(`input[name=${prefix}_delete]`);
+    let deleteIdsArray = [];
+    if (deleteIds.value.length > 0) {
+        deleteIdsArray = deleteIds.value.split(',');
     }
+
+    if (id.indexOf('new') === -1) {
+        deleteIdsArray.push(id)
+    }
+
+    deleteIds.value = deleteIdsArray.join(',');
     container.remove();
 }
 </script>

@@ -158,8 +158,8 @@ class BeautyfulSoupParser:
 
 
 class OTTParser(ABC):
-    def __init__(self, ott_type=None, ott_content_url=None):
-        self.ott_type = ott_type
+    def __init__(self, ott_code=None, ott_content_url=None):
+        self.ott_code = ott_code
         self.ott_content_url = ott_content_url
     @abstractmethod
     def parse(self, content_id):
@@ -171,7 +171,7 @@ class NetflixParser(OTTParser):
         super().__init__("10", NETFLIX_CONTENT_URL)
 
     def parse(self, content_id):
-        selenium = None
+        soup = None
         try:
             content = dict()
             response = requests.get(self.ott_content_url + content_id)
@@ -179,54 +179,61 @@ class NetflixParser(OTTParser):
             soup = BeautifulSoup(response.text, 'html.parser')
             schema = soup.find("script", attrs={"type": "application/ld+json"})
             schema_to_dict = eval(schema.text.strip())
-            content['type'] = schema_to_dict['@type'] == "Movie" and "10" or "11"
-            content['platform_code'] = self.ott_type
-            content['platform_id'] = content_id
+            # 컨텐츠 코드
+            content['code'] = schema_to_dict['@type'] == "Movie" and "10" or "11"
+            # 제목
             content['title'] = schema_to_dict['name']
+            # 시놉시스
             content['synopsis'] = schema_to_dict['description']
+            # 연령고지
             content['notice_age'] = schema_to_dict['contentRating']
-            # 출시정보 추출
+            # 국가
+            content['country'] = ""
+            # 출시정보
             release = soup.find("span", class_="item-year")
             if release is not None:
                 content['release'] = release.text.strip()
-            # 장르 추출
+            # 상영시간
+            runtime = soup.find("span", class_="item-runtime")
+            if runtime is not None:
+                content['runtime'] = runtime.text.strip()
+            # 출연진
+            content['actor'] = list()
+            actor_count = 0
+            for actor in schema_to_dict['actors']:
+                actor_code = "10"
+                if actor_count > 1:
+                    actor_code = "11"
+                content['actor'].append({
+                    "code": actor_code, "name": actor['name'], "role": "", "picture": "", "profile": ""
+                })
+                actor_count += 1
+            # 감독
+            content['staff'] = list()
+            for director in schema_to_dict['director']:
+                content['staff'].append({"code": "10", "name": director['name'], "picture": "", "profile": ""})
+            # 제작진
+            for creator in schema_to_dict['creator']:
+                content['staff'].append({"code": "11", "name": creator['name'], "picture": "", "profile": ""})
+            # 장르
             content['genre'] = []
             genres = soup.find_all("a", class_="item-genres")
             for genre in genres:
                 content['genre'].append({"name": genre.text.strip()})
-            # 썸네일 추출
+            # 플랫폼 시청정보
+            content['platform'] = [{"code": self.ott_code, "ext_id": content_id, "url": schema_to_dict['url']}]
+            # 제작사
+            content['production'] = []
+            # 썸네일
             content['thumbnail'] = [{
-                "type": "11", "url": schema_to_dict['image'], "extension": "", "size": 0, "width": 0, "height": 0
+                "code": "11", "url": schema_to_dict['image'], "extension": "", "size": 0, "width": 0, "height": 0
             }]
-            # 시청정보 추출
-            content['watch'] = [{"type": "10", "url": schema_to_dict['url']}]
-            # 출연진 추출
-            content['actor'] = list()
-            actor_count = 0
-            for actor in schema_to_dict['actors']:
-                actor_type = "10"
-                if actor_count > 1:
-                    actor_type = "11"
-                content['actor'].append({
-                    "type": actor_type, "name": actor['name'], "role": "", "picture": "", "profile": ""
-                })
-                actor_count += 1
-            # 감독 추출
-            content['staff'] = list()
-            for director in schema_to_dict['director']:
-                content['staff'].append({"type": "10", "name": director['name'], "picture": "", "profile": ""})
-            # 제작진 추출
-            for creator in schema_to_dict['creator']:
-                content['staff'].append({"type": "11", "name": creator['name'], "picture": "", "profile": ""})
-            # 상영시간 추출
-            runtime = soup.find("span", class_="item-runtime")
-            if runtime is not None:
-                content['runtime'] = runtime.text.strip()
-            soup.decompose()
             return content
-
         except Exception as e:
             raise e
+        finally:
+            if soup:
+                soup.decompose()
 
     @classmethod
     def boxoffice(cls):
@@ -236,8 +243,8 @@ class NetflixParser(OTTParser):
         try:
             # selenium 설정
             selenium_options = Options()
-            # options.add_experimental_option("detach", True) # 브라우저 종료 방지
-            selenium_options.add_argument("--headless")  # 헤드리스 모드 설정
+            selenium_options.add_experimental_option("detach", True)  # 브라우저 종료 방지
+            # selenium_options.add_argument("--headless")  # 헤드리스 모드 설정
             selenium_options.add_argument("--no-sandbox")
             selenium_options.add_argument("--disable-dev-shm-usage")
             # WebDriver 설정
@@ -255,10 +262,12 @@ class NetflixParser(OTTParser):
                 EC.presence_of_element_located((By.TAG_NAME, "body"))
             )
             # 스크롤 다운 & 업
-            body.send_keys(Keys.PAGE_DOWN)
-            sleep(2)
-            body.send_keys(Keys.PAGE_UP)
-            sleep(2)
+            for i in range(8):
+                body.send_keys(Keys.PAGE_DOWN)
+                sleep(2)
+            for i in range(8):
+                body.send_keys(Keys.PAGE_UP)
+                sleep(2)
             # 컨텐츠 목록 가져오기
             content_rows = driver.find_elements(by=By.CLASS_NAME, value="lolomoRow")
             for content_row in content_rows:
@@ -291,31 +300,35 @@ class NetflixParser(OTTParser):
                     rank = dict()
                     try:
                         link = item.find_element(by=By.TAG_NAME, value="a").get_attribute("href")
-                        video['platform_id'] = link.split("?")[0].split("/watch/")[1]
+                        ext_id = link.split("?")[0].split("/watch/")[1]
                         # mostWatched 컨텐츠 ROW 식별
                         if content_row_title in ["오늘 대한민국의 TOP 10 시리즈", "오늘 대한민국의 TOP 10 영화"]:
                             # mostWatched 컨텐츠는 랭킹데이터 저장
                             rank['type'] = "movie" if content_row_title == "오늘 대한민국의 TOP 10 영화" else "series"
                             rank['rank'] = int(item.find_element(by=By.TAG_NAME, value="svg").get_attribute("id").split("-")[1])
-                            rank['platform_code'] = "10"
-                            rank['platform_id'] = str(video['platform_id'])
+                            rank['code'] = "10"
+                            rank['ext_id'] = ext_id
                             if rank not in ranks:
                                 ranks.append(rank)
-                            # 랭킹 컨텐츠에 있는 이미지 추출
-                            video['thumbnail'] = {
-                                "type": "10",
+                            video['thumbnail'] = [{
+                                "code": "10",
                                 "url": item.find_element(by=By.TAG_NAME, value="img").get_attribute("src"),
                                 "extension": "",
                                 "size": 0,
                                 "width": 0,
                                 "height": 0
-                            }
+                            }]
+                        # 랭킹 컨텐츠에 있는 이미지 추출
+                        video['platform'] = [{"code": "10", "ext_id": ext_id, "url": link}]
                         # 컨텐츠 목록에 추가
                         if video not in videos:
                             videos.append(video)
                     except Exception as e:
                         print(e)
                         continue
+                # for test
+                if len(videos) > 10:
+                    break
             # 랭킹 데이터 재정렬
             ranks = sorted(ranks, key=lambda k: (k['type'], k['rank']))
             # 컨텐츠 리턴
@@ -351,14 +364,22 @@ class TvingParser(OTTParser):
             # 컨텐츠 스키마 가져오기
             schema = selenium.find_element(By.CSS_SELECTOR, 'head script[type="application/ld+json"]')
             schema_to_dict = json.loads(schema.get_attribute('innerHTML'))
-            # 컨텐츠 정보 수집
-            content['type'] = schema_to_dict['@type'] == "Movie" and "10" or "11"
-            content['platform_code'] = self.ott_type
-            content['platform_id'] = content_id
-            content['title'] = ""
-            content['release'] = schema_to_dict['startDate']
+            # 컨텐츠 코드
+            content['code'] = schema_to_dict['@type'] == "Movie" and "10" or "11"
+            # 제목
+            content['title'] = schema_to_dict['name']
+            # 시놉시스 수집
+            content['synopsis'] = schema_to_dict['description']
+            synopsis = selenium.find_element(By.CSS_SELECTOR, 'p.ee4wkaf25').text
+            if len(content['synopsis']) < len(synopsis):
+                content['synopsis'] = synopsis
+            # 연령고지
             content['notice_age'] = schema_to_dict['contentRating']
-            # 런타임 수집
+            # 국가
+            content['country'] = ""
+            # 출시정보
+            content['release'] = schema_to_dict['startDate']
+            # 상영시간
             content['runtime'] = ""
             tag_parent = selenium.find_element(By.CSS_SELECTOR, 'div.tag_detail')
             tag_elements = tag_parent.find_elements(By.CSS_SELECTOR, 'div.tag-blank')
@@ -366,29 +387,27 @@ class TvingParser(OTTParser):
                 if tag_element.text.find("분") > -1 or tag_element.text.find("시즌") > -1:
                     content['runtime'] = tag_element.text
                     break
-            # 시놉시스 수집
-            content['synopsis'] = schema_to_dict['description']
-            synopsis = selenium.find_element(By.CSS_SELECTOR, 'p.ee4wkaf25').text
-            if len(content['synopsis']) < len(synopsis):
-                content['synopsis'] = synopsis
-
-            # 장르 수집
-            content['genre'] = [{"name": schema_to_dict['genre']}]
-            # 배우 수집
+            # 출연진 수집
             content['actor'] = []
             actor_count = 0
             for actor in schema_to_dict['actors']:
-                actor_type = "10"
+                actor_code = "10"
                 if actor_count > 1:
-                    actor_type = "11"
+                    actor_code = "11"
                 content['actor'].append({
-                    "type": actor_type, "name": actor['name'], "role": "", "picture": "", "profile": ""
+                    "code": actor_code, "name": actor['name'], "role": "", "picture": "", "profile": ""
                 })
                 actor_count += 1
             # 제작진 수집
             content['staff'] = []
             for creator in schema_to_dict['creator']:
-                content['staff'].append({"type": "11", "name": creator['name'], "picture": "", "profile": ""})
+                content['staff'].append({"code": "11", "name": creator['name'], "picture": "", "profile": ""})
+            # 장르 수집
+            content['genre'] = [{"name": schema_to_dict['genre']}]
+            # 플랫폼 시청정보
+            content['platform'] = [{"code": self.ott_code, "ext_id": content_id, "url": selenium.current_url}]
+            # 제작사
+            content['production'] = []
             # 썸네일 수집
             content['thumbnail'] = []
             img_tags = selenium.find_elements(by=By.TAG_NAME, value='img')
@@ -398,28 +417,33 @@ class TvingParser(OTTParser):
                     and img_tag.get_attribute('src').find("image.tving.com") > -1
                 ):
                     if img_tag.get_attribute('src').split("/")[-1] == "1280":
+                        # 타이틀 정보 업데이트
                         content['title'] = img_tag.get_attribute('alt')
                         content['thumbnail'].append({
-                            "type": "11",
+                            "code": "11",
                             "url": img_tag.get_attribute('src'),
                             "extension": "",
-                            "size": 0
+                            "size": 0,
+                            "width": 0,
+                            "height": 0
                         })
                     elif img_tag.get_attribute('src').split("/")[-1] == "480":
                         content['thumbnail'].append({
-                            "type": "10",
+                            "code": "10",
                             "url": img_tag.get_attribute('src'),
                             "extension": "",
-                            "size": 0
+                            "size": 0,
+                            "width": 0,
+                            "height": 0
                         })
                     else:
                         continue
-            content['watch'] = [{"type": self.ott_type, "url": selenium.current_url}]
             print(content)
             # selenium 종료
             selenium.quit()
             return content
         except Exception as e:
+            print(e)
             raise e
         finally:
             if selenium is not None:
@@ -486,13 +510,13 @@ class TvingParser(OTTParser):
                     try:
                         video = dict()
                         link = item.find_element(by=By.TAG_NAME, value="a").get_attribute("href")
-                        video['platform_id'] = link.split("/")[-1]
+                        video['platform'] = [{"code": "12", "ext_id": link.split("/")[-1], "url": link}]
                         if content_row_title == "":
                             rank = dict()
                             rank['platform_code'] = "12"
                             rank['type'] = "all"
                             rank['rank'] = item.get_attribute("data-swiper-slide-index")
-                            rank['platform_id'] = video['platform_id']
+                            rank['platform_id'] = link.split("/")[-1]
                             if rank not in ranks:
                                 ranks.append(rank)
                         if video not in videos:
@@ -500,6 +524,9 @@ class TvingParser(OTTParser):
                     except Exception as e:
                         print(e)
                         continue
+                # for test
+                if len(videos) > 10:
+                    break
             return ranks, videos
 
         except Exception as e:

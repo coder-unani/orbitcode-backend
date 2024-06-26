@@ -1,7 +1,9 @@
 from django.db import models
 from django.utils import timezone
 
-from config.constraints import VIDEO_TYPE, VIDEO_PLATFORM_CODE, VIDEO_ACTOR_TYPE, VIDEO_STAFF_TYPE, VIDEO_THUMBNAIL_TYPE
+from config.constraints import (
+    VIDEO_CODE, VIDEO_PLATFORM_CODE, VIDEO_ACTOR_CODE, VIDEO_STAFF_CODE, VIDEO_THUMBNAIL_CODE, USER_CODE
+)
 
 
 #=======================================================================================================================
@@ -10,9 +12,9 @@ from config.constraints import VIDEO_TYPE, VIDEO_PLATFORM_CODE, VIDEO_ACTOR_TYPE
 
 class Video(models.Model):
     # 타입 : 10=movie, 11=series
-    type = models.CharField(
+    code = models.CharField(
         max_length=2,
-        choices=VIDEO_TYPE,
+        choices=VIDEO_CODE,
         null=False,
         db_index=True,
         verbose_name='Video Type',
@@ -30,8 +32,6 @@ class Video(models.Model):
     notice_age = models.CharField(max_length=20, null=True)
     # 제작국가
     country = models.CharField(max_length=2, null=True)
-    # 제작사
-    production = models.CharField(max_length=100, null=True)
     # 평점
     rating = models.FloatField(default=0.0, db_index=True)
     # 좋아요 수
@@ -40,22 +40,10 @@ class Video(models.Model):
     review_count = models.IntegerField(default=0)
     # 조회수
     view_count = models.IntegerField(default=0)
-    # 플랫폼 코드
-    platform_code = models.CharField(
-        max_length=2,
-        choices=VIDEO_PLATFORM_CODE,
-        null=False,
-        db_index=True,
-        verbose_name='Platform Code',
-        help_text='플랫폼 코드 정의: 10=넷플릭스, 11=디즈니+, 12=티빙, 13=웨이브, 14=쿠팡플레이, 15=왓챠, 50=영화관'
-    )
-    # 플랫폼별 ID
-    platform_id = models.CharField(max_length=50, null=False)
     # 확인여부
     is_confirm = models.BooleanField(default=False)
     # 삭제여부
     is_delete = models.BooleanField(default=False)
-
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
@@ -115,6 +103,7 @@ class Genre(models.Model):
     updated_at = models.DateTimeField(null=True, auto_now=True)
     # ManyToManyField
     video = models.ManyToManyField(Video, through='VideoGenre', related_name="genre")
+
     def __str__(self):
         return self.name
 
@@ -122,15 +111,29 @@ class Genre(models.Model):
         db_table = "rvvs_genre"
 
 
+class Production(models.Model):
+    # 제작사 로고
+    logo = models.CharField(max_length=200, null=True)
+    # 제작사 명
+    name = models.CharField(max_length=100, null=False, db_index=True)
+    # ManyToManyField
+    video = models.ManyToManyField(Video, through='VideoProduction', related_name="production")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = "rvvs_production"
+
+
 class VideoActor(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="actor_list")
     # 출연진
     actor = models.ForeignKey(Actor, on_delete=models.CASCADE)
     # 타입 : 10=main actor, 11=sub actor
-    # type = models.CharField(max_length=2, null=False)
-    type = models.CharField(
+    code = models.CharField(
         max_length=2,
-        choices=VIDEO_ACTOR_TYPE,
+        choices=VIDEO_ACTOR_CODE,
         null=False,
         db_index=True,
         verbose_name='Actor Type',
@@ -138,12 +141,14 @@ class VideoActor(models.Model):
     )
     # 역할
     role = models.CharField(max_length=100, null=True)
+    # 정렬 순서
+    sort = models.IntegerField(default=99)
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
 
     def __str__(self):
-        return f"{self.type}: {self.actor.name}"
+        return f"{self.code}: {self.actor.name}"
 
     class Meta:
         db_table = "rvvs_video_actor"
@@ -155,14 +160,18 @@ class VideoStaff(models.Model):
     staff = models.ForeignKey(Staff, on_delete=models.CASCADE)
     # 타입 : 10=director, 11=creator
     # type = models.CharField(max_length=2, null=False)
-    type = models.CharField(
+    code = models.CharField(
         max_length=2,
-        choices=VIDEO_STAFF_TYPE,
+        choices=VIDEO_STAFF_CODE,
         null=False,
         db_index=True,
         verbose_name='Staff Type',
-        help_text='제작진 타입 정의: 10=감독, 11=작가, 12=제작, 13=프로듀서, 14=연출, 15=기획, 16=각본, 17=원작, 18=음악, 19=미술, 20=촬영, 21=편집, 22=특수효과, 23=의상, 24=분장, 25=조명'
+        help_text='''
+        제작진 타입 정의: 10=감독, 11=작가, 12=제작, 13=프로듀서, 14=연출, 15=기획, 16=각본, 17=원작, 18=음악, 19=미술, 20=촬영, 21=편집, 22=특수효과, 23=의상, 24=분장, 25=조명
+        '''
     )
+    # 정렬 순서
+    sort = models.IntegerField(default=99)
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
@@ -178,6 +187,8 @@ class VideoGenre(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="genre_list")
     # 장르
     genre = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    # 정렬 순서
+    sort = models.IntegerField(default=99)
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
@@ -189,12 +200,26 @@ class VideoGenre(models.Model):
         db_table = "rvvs_video_genre"
 
 
+class VideoProduction(models.Model):
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="production_list")
+    # 제작사
+    production = models.ForeignKey(Production, on_delete=models.CASCADE)
+    # 생성일, 수정일
+    created_at = models.DateTimeField(default=timezone.now)
+    updated_at = models.DateTimeField(null=True, auto_now=True)
+
+    def __str__(self):
+        return self.production.name
+
+    class Meta:
+        db_table = "rvvs_video_production"
+
+
 class VideoThumbnail(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="thumbnail")
     # 타입
-    type = models.CharField(
+    code = models.CharField(
         max_length=2,
-        choices=VIDEO_THUMBNAIL_TYPE,
+        choices=VIDEO_THUMBNAIL_CODE,
         null=False,
         db_index=True,
         verbose_name='Thumbnail Type',
@@ -211,37 +236,42 @@ class VideoThumbnail(models.Model):
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
+    # Video
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="thumbnail")
 
     def __str__(self):
         return self.url
 
     class Meta:
         db_table = "rvvs_video_thumbnail"
-        ordering = ['type']
+        ordering = ['code']
 
 
-class VideoWatch(models.Model):
-    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="watch")
-    # 타입
-    type = models.CharField(
+class VideoPlatform(models.Model):
+    # 플랫폼 코드
+    code = models.CharField(
         max_length=2,
         choices=VIDEO_PLATFORM_CODE,
         null=False,
         db_index=True,
-        verbose_name='Watch Type',
-        help_text='시청정보 타입. = Video Platform Code'
+        verbose_name='Platform Code',
+        help_text='플랫폼 코드 정의: 10=넷플릭스, 11=디즈니플러스, 12=티빙, 13=웨이브, 14=쿠팡플레이, 15=왓챠, 50=극장'
     )
-    # 시청 URL
+    # 플랫폼 외부 ID
+    ext_id = models.CharField(max_length=50, null=False)
+    # 플랫폼 URL
     url = models.CharField(max_length=100, null=False)
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
+    # Video
+    video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="platform")
 
     def __str__(self):
         return self.url
 
     class Meta:
-        db_table = "rvvs_video_watch"
+        db_table = "rvvs_video_platform"
 
 
 class VideoTag(models.Model):
@@ -261,8 +291,14 @@ class VideoTag(models.Model):
 
 class VideoRank(models.Model):
     video = models.ForeignKey(Video, on_delete=models.CASCADE, related_name="rank")
-    # 타입 : 10=netflix, 11=disney+, 12=tving, 13=waave, 14=coupang play, 15=watcha, 50=Theater
-    platform_code = models.CharField(max_length=2, null=False)
+    platform_code = models.CharField(
+        max_length=2,
+        choices=VIDEO_PLATFORM_CODE,
+        null=False,
+        db_index=True,
+        verbose_name='Platform Code',
+        help_text='플랫폼 코드 정의: 10=넷플릭스, 11=디즈니플러스, 12=티빙, 13=웨이브, 14=쿠팡플레이, 15=왓챠, 50=극장'
+    )
     # 기준 코드
     rank_code = models.CharField(max_length=20, null=False)
     # 랭킹 분류
@@ -282,8 +318,14 @@ class VideoRank(models.Model):
 #=======================================================================================================================
 # User
 class User(models.Model):
-    # 타입 : 10 = email, 11 = google, 12 = facebook, 13 = apple, 14 = kakao, 15 = naver
-    type = models.CharField(max_length=2, null=False)
+    code = models.CharField(
+        max_length=2,
+        choices=USER_CODE,
+        null=False,
+        db_index=True,
+        verbose_name='User Code',
+        help_text='사용자 코드 정의: 10=이메일, 11=구글, 12=페이스북, 13=애플, 14=카카오, 15=네이버'
+    )
     email = models.EmailField(max_length=100, unique=True)
     password = models.CharField(max_length=60)
     nickname = models.CharField(max_length=40, unique=True, null=True)

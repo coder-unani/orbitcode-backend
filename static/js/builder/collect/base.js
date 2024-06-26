@@ -114,7 +114,7 @@ btnSearchFilter?.addEventListener("click", function (e) {
 // 저장 버튼 이벤트 리스너
 btnSaveVideos?.addEventListener("click", function (e) {
     e.preventDefault();
-    const checkVideos = document.querySelectorAll("input[name=platform_ids]")
+    const checkVideos = document.querySelectorAll("input[name=ext_ids]")
     let isCheckedVideo = false;
     checkVideos.forEach((checkVideo) => {
         if (checkVideo.checked) {
@@ -132,7 +132,7 @@ btnSaveVideos?.addEventListener("click", function (e) {
 const chkVideoAll = document.querySelector("#chkVideoAll");
 chkVideoAll?.addEventListener('click', () => {
     const checkAllValue = chkVideoAll.checked;
-    const checkVideos = document.querySelectorAll("input[name=platform_ids]")
+    const checkVideos = document.querySelectorAll("input[name=ext_ids]")
     checkVideos.forEach((checkVideo) => {
         checkVideo.checked = checkAllValue;
     })

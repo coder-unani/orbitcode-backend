@@ -9,13 +9,14 @@ TVING_BOXOFFICE_URL = "https://www.tving.com/boxoffice"
 AWS_S3_VIDEO_THUMBNAIL = "video/thumbnail/"
 AWS_S3_NETFLIX_THUMBNAIL = AWS_S3_VIDEO_THUMBNAIL + "netflix/"
 
-AWS_S3_PATH_VIDEO_ACTOR = "video/actor/"
-AWS_S3_PATH_VIDEO_STAFF = "video/staff/"
+AWS_S3_PATH_ACTOR = "actor/"
+AWS_S3_PATH_STAFF = "staff/"
+AWS_S3_PATH_VIDEO = "video/"
 
 LOCAL_DATA_PATH = "data/"
 LOCAL_NETFLIX_THUMBNAIL = LOCAL_DATA_PATH + AWS_S3_NETFLIX_THUMBNAIL
 
-VIDEO_TYPE = [
+VIDEO_CODE = [
     ('10', '영화'),
     ('11', '시리즈'),
 ]
@@ -30,12 +31,12 @@ VIDEO_PLATFORM_CODE = [
     ('50', '극장'),
 ]
 
-VIDEO_THUMBNAIL_TYPE = [
+VIDEO_THUMBNAIL_CODE = [
     ('10', '대표 이미지'),
     ('11', '스틸컷'),
 ]
 
-VIDEO_ACTOR_TYPE = [
+VIDEO_ACTOR_CODE = [
     ('10', '주연'),
     ('11', '조연'),
     ('12', '단역'),
@@ -47,7 +48,7 @@ VIDEO_ACTOR_TYPE = [
     ('18', '성우'),
 ]
 
-VIDEO_STAFF_TYPE = [
+VIDEO_STAFF_CODE = [
     ('10', '감독'),
     ('11', '작가'),
     ('12', '제작'),
@@ -65,4 +66,13 @@ VIDEO_STAFF_TYPE = [
     ('24', '분장'),
     ('25', '조명'),
     ('26', '극본'),
+]
+
+USER_CODE = [
+    ('10', '이메일'),
+    ('11', '구글'),
+    ('12', '페이스북'),
+    ('13', '애플'),
+    ('14', '카카오'),
+    ('15', '네이버'),
 ]

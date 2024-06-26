@@ -12,7 +12,7 @@ btnSearchNetflix?.addEventListener("click", function (e) {
 // 저장 버튼 이벤트 리스너
 btnSaveVideos?.addEventListener("click", function (e) {
     e.preventDefault();
-    const checkedVideos = document.querySelectorAll("input[name=platform_ids]:checked");
+    const checkedVideos = document.querySelectorAll("input[name=ext_ids]:checked");
     if (checkedVideos.length === 0) {
         alert("선택된 데이터가 없습니다.");
         return;
@@ -24,7 +24,7 @@ btnSaveVideos?.addEventListener("click", function (e) {
 const chkVideoAll = document.querySelector("#chkVideoAll");
 chkVideoAll.addEventListener('click', () => {
     const checkAllValue = chkVideoAll.checked;
-    const checkVideos = document.querySelectorAll("input[name=platform_ids]")
+    const checkVideos = document.querySelectorAll("input[name=ext_ids]")
     checkVideos.forEach((checkVideo) => {
         checkVideo.checked = checkAllValue;
     })

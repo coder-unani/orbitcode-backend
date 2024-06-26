@@ -1,4 +1,4 @@
-# 파이썬 가상환경 설치
+python3 manage.py createsuperuser --username=orbitcode --email=groot@orbitcode.kr# 파이썬 가상환경 설치
 ~~~bash
 python3 -m venv .venv
 ~~~
