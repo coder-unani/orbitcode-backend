@@ -1,3 +1,5 @@
+import ast
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -33,17 +35,24 @@ class CollectNetflix(AuthView):
         context = dict()
         context['title'] = "넷플릭스 검색"
         search_ids = request.GET.get('search_ids')
-        netflix_parser: OTTParser = NetflixParser()
-        builder = VideoBuilder(netflix_parser)
-        videos = builder.build(search_ids)
-        builder.close()
-        if videos:
-            context['videos'] = videos
+        if search_ids:
+            parser: OTTParser = NetflixParser()
+            builder = VideoBuilder(parser)
+            videos = list()
+            for search_id in search_ids.split(","):
+                video = builder.build(search_id)
+                if video and video not in videos:
+                    videos.append(video)
+            builder.close()
+            if videos:
+                context['videos'] = videos
         # 화면 출력
         return render(request, template_name=self.template_name, context=context)
     # POST
     def post(self, request):
-        platform_ids = request.POST.getlist('platform_ids')
+        ext_ids = request.POST.getlist('ext_ids')
+        # 빈 값 제거
+        ext_ids = [item for item in ext_ids if item]
         # 화면 출력용 context
         context = dict()
         context['summary'] = dict()
@@ -53,28 +62,44 @@ class CollectNetflix(AuthView):
         # VideoStore Init
         s3_image_uploader: ImageUploader = S3ImageUploader()
         video_store = VideoStore(s3_image_uploader)
-        # platform_ids 기준으로 Loop
-        for platform_id in platform_ids:
-            # platform_id에 해당되는 컨텐츠
-            content = eval(request.POST.get('video_' + platform_id))
-            # DB저장
-            result = video_store.store(content)
-            if result:
-                context['messages'].append({
-                    "result": "success",
-                    "message": "{} 저장에 성공하였습니다.".format(platform_id)
-                })
-                s_cnt += 1
-            else:
-                context['messages'].append({
-                    "result": "fail",
-                    "message": "{} 저장에 실패하였습니다.".format(platform_id)
-                })
-                f_cnt += 1
+        # ext_ids 기준으로 Loop
+        for ext_id in ext_ids:
+            try:
+                # ext_id에 해당되는 form data
+                form_video = request.POST.get('video_' + ext_id)
+                if not form_video:
+                    continue
+                # form data를 dict로 변환
+                content = ast.literal_eval(form_video)
+                # 이미 저장된 컨텐츠는 저장하지 않음
+                if content.get('is_db', False):
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 이미 저장되어 있는 컨텐츠 입니다."
+                    })
+                    f_cnt += 1
+                    continue
+                # DB저장
+                result = video_store.store(content)
+                # 저장 결과
+                if result:
+                    context['messages'].append({
+                        "result": "success",
+                        "message": f"{ext_id} 컨텐츠 저장에 성공 했습니다."
+                    })
+                    s_cnt += 1
+                else:
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 저장에 실패하였습니다."
+                    })
+                    f_cnt += 1
+            except Exception as e:
+                print(e)
         # VideoStore Close
         video_store.close()
         # 화면 출력용 요약 정보
-        context['summary'] = {"total": len(platform_ids), "success": s_cnt, "fail": f_cnt}
+        context['summary'] = {"total": len(ext_ids), "success": s_cnt, "fail": f_cnt}
         # 화면 출력
         return render(request, template_name="pages/common/process-result.html", context=context)
 
@@ -92,21 +117,23 @@ class CollectNetflixBoxoffice(AuthView):
         # parser가 on일 경우 실행
         if context['parser'] == "on":
             # boxoffice 페이지 랭킹, 비디오 추출
-            rank, temps = NetflixParser.boxoffice()
-            # 비디오 플랫폼 코드들만 추출
-            platform_ids = [video['platform_id'] for video in temps]
+            rank, boxoffice_videos = NetflixParser.boxoffice()
             # 넷플릭스 파서 생성
             tving_parser: OTTParser = NetflixParser()
             # 비디오 빌더 생성
             builder = VideoBuilder(tving_parser)
-            # 비디오 빌드
-            videos = builder.build(platform_ids)
-            # 비디오에 썸네일 추가
-            for video in videos:
-                for temp in temps:
-                    if video['platform_id'] == temp['platform_id'] and 'thumbnail' in temp:
-                        video['thumbnail'].append(temp['thumbnail'])
-            # 빌더 종료
+            # 비디오 생성
+            videos = list()
+            for video in boxoffice_videos:
+                platforms = video.get('platform', [])
+                thumbnails = video.get('thumbnail', [])
+                for platform in platforms:
+                    build_video = builder.build(platform['ext_id'])
+                    if build_video['is_db']:
+                        continue
+                    build_video['thumbnail'].extend(thumbnails)
+                    videos.append(build_video)
+            # 비디오 빌더 종료
             builder.close()
             # 화면 출력용 context
             context['rank'] = rank
@@ -117,8 +144,10 @@ class CollectNetflixBoxoffice(AuthView):
     def post(self, request):
         # rank 데이터
         ranks = request.POST.getlist('rank')
-        # 저장 할 데이터 platform_id List
-        platform_ids = request.POST.getlist('platform_ids')
+        # HTML Form에서 전달받은 ext_id 목록
+        ext_ids = request.POST.getlist('ext_ids')
+        # 빈 값 제거
+        ext_ids = [item for item in ext_ids if item]
         # 화면 출력용 context
         context = dict()
         context['summary'] = dict()
@@ -128,28 +157,44 @@ class CollectNetflixBoxoffice(AuthView):
         # 비디오 저장 객체 생성
         s3_image_uploader: ImageUploader = S3ImageUploader()
         video_store = VideoStore(s3_image_uploader)
-        # platform_ids 기준으로 Loop
-        for platform_id in platform_ids:
-            # platform_id에 해당되는 컨텐츠
-            content = eval(request.POST.get('video_' + platform_id))
-            # DB저장
-            result = video_store.store(content)
-            if result:
-                context['messages'].append({
-                    "result": "success",
-                    "message": "{} 저장에 성공하였습니다.".format(platform_id)
-                })
-                s_cnt += 1
-            else:
-                context['messages'].append({
-                    "result": "fail",
-                    "message": "{} 저장에 실패하였습니다.".format(platform_id)
-                })
-                f_cnt += 1
+        # ext_ids 기준으로 Loop
+        for ext_id in ext_ids:
+            try:
+                # ext_id에 해당되는 form data
+                form_video = request.POST.get('video_' + ext_id)
+                if not form_video:
+                    continue
+                # form data를 dict로 변환
+                content = ast.literal_eval(form_video)
+                # 이미 저장된 컨텐츠는 저장하지 않음
+                if content.get('is_db', False):
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 이미 저장되어 있는 컨텐츠 입니다."
+                    })
+                    f_cnt += 1
+                    continue
+                # DB저장
+                result = video_store.store(content)
+                # 저장 결과
+                if result:
+                    context['messages'].append({
+                        "result": "success",
+                        "message": f"{ext_id} 컨텐츠 저장에 성공 했습니다."
+                    })
+                    s_cnt += 1
+                else:
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 저장에 실패하였습니다."
+                    })
+                    f_cnt += 1
+            except Exception as e:
+                print(e)
         # VideoStore Close
         video_store.close()
         # 화면 출력용 요약 정보
-        context['summary'] = {"total": len(platform_ids), "success": s_cnt, "fail": f_cnt}
+        context['summary'] = {"total": len(ext_ids), "success": s_cnt, "fail": f_cnt}
         # 화면 출력
         return render(request, template_name="pages/common/process-result.html", context=context)
 
@@ -162,17 +207,22 @@ class CollectTving(AuthView):
         context['title'] = "티빙 검색"
         search_ids = request.GET.get('search_ids')
         if search_ids:
-            tving_parser: OTTParser = TvingParser()
-            builder = VideoBuilder(tving_parser)
-            videos = builder.build(search_ids)
+            parser: OTTParser = TvingParser()
+            builder = VideoBuilder(parser)
+            videos = list()
+            for search_id in search_ids.split(","):
+                video = builder.build(search_id)
+                if video and video not in videos:
+                    videos.append(video)
             builder.close()
             if videos:
                 context['videos'] = videos
         return render(request, template_name=self.template_name, context=context)
 
     def post(self, request):
-        # 저장 할 데이터 platform_ids
-        platform_ids = request.POST.getlist('platform_ids')
+        ext_ids = request.POST.getlist('ext_ids')
+        # 빈 값 제거
+        ext_ids = [item for item in ext_ids if item]
         # 화면 출력용 context
         context = dict()
         context['summary'] = dict()
@@ -182,28 +232,46 @@ class CollectTving(AuthView):
         # VideoStore Init
         s3_image_uploader: ImageUploader = S3ImageUploader()
         video_store = VideoStore(s3_image_uploader)
-        # platform_ids 기준으로 Loop
-        for platform_id in platform_ids:
-            # platform_id에 해당되는 컨텐츠
-            content = eval(request.POST.get('video_' + platform_id))
-            # DB저장
-            result = video_store.store(content)
-            if result:
-                context['messages'].append({
-                    "result": "success",
-                    "message": "{} 저장에 성공하였습니다.".format(platform_id)
-                })
-                s_cnt += 1
-            else:
-                context['messages'].append({
-                    "result": "fail",
-                    "message": "{} 저장에 실패하였습니다.".format(platform_id)
-                })
-                f_cnt += 1
+        # ext_ids 기준으로 Loop
+        for ext_id in ext_ids:
+            try:
+                # ext_id에 해당되는 form data
+                form_video = request.POST.get('video_' + ext_id)
+                print("form_video", form_video)
+                if not form_video:
+                    continue
+                # form data를 dict로 변환
+                content = ast.literal_eval(form_video)
+                print("content", content)
+                # 이미 저장된 컨텐츠는 저장하지 않음
+                if content.get('is_db', False):
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 이미 저장되어 있는 컨텐츠 입니다."
+                    })
+                    f_cnt += 1
+                    continue
+                # DB저장
+                result = video_store.store(content)
+                # 저장 결과
+                if result:
+                    context['messages'].append({
+                        "result": "success",
+                        "message": f"{ext_id} 컨텐츠 저장에 성공 했습니다."
+                    })
+                    s_cnt += 1
+                else:
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 저장에 실패하였습니다."
+                    })
+                    f_cnt += 1
+            except Exception as e:
+                print(e)
         # VideoStore Close
         video_store.close()
         # 화면 출력용 요약 정보
-        context['summary'] = {"total": len(platform_ids), "success": s_cnt, "fail": f_cnt}
+        context['summary'] = {"total": len(ext_ids), "success": s_cnt, "fail": f_cnt}
         # 화면 출력
         return render(request, template_name="pages/common/process-result.html", context=context)
 
@@ -220,21 +288,32 @@ class CollectTvingBoxoffice(AuthView):
         context['view_mode'] = request.GET.get('view_mode')
         # parser가 on일 경우 실행
         if context['parser'] == "on":
-            boxoffice, videos = TvingParser.boxoffice()
+            rank, boxoffice_videos = TvingParser.boxoffice()
             tving_parser: OTTParser = TvingParser()
             builder = VideoBuilder(tving_parser)
-            platform_ids = [video['platform_id'] for video in videos]
-            videos = builder.build(platform_ids)
+            # 비디오 생성
+            videos = list()
+            for video in boxoffice_videos:
+                platforms = video.get('platform', [])
+                for platform in platforms:
+                    build_video = builder.build(platform['ext_id'])
+                    if build_video['is_db']:
+                        continue
+                    videos.append(build_video)
+            # 비디오 빌더 종료
             builder.close()
             if videos:
                 context['videos'] = videos
         return render(request, self.template_name, context)
 
+    # POST
     def post(self, request):
         # rank 데이터
         ranks = request.POST.getlist('rank')
-        # 저장 할 데이터 platform_id List
-        platform_ids = request.POST.getlist('platform_ids')
+        # HTML Form에서 전달받은 ext_id 목록
+        ext_ids = request.POST.getlist('ext_ids')
+        # 빈 값 제거
+        ext_ids = [item for item in ext_ids if item]
         # 화면 출력용 context
         context = dict()
         context['summary'] = dict()
@@ -244,36 +323,44 @@ class CollectTvingBoxoffice(AuthView):
         # 비디오 저장 객체 생성
         s3_image_uploader: ImageUploader = S3ImageUploader()
         video_store = VideoStore(s3_image_uploader)
-        # platform_ids 기준으로 Loop
-        for platform_id in platform_ids:
-            # platform_id에 해당되는 컨텐츠
+        # ext_ids 기준으로 Loop
+        for ext_id in ext_ids:
             try:
-                content = eval(request.POST.get('video_' + platform_id))
+                # ext_id에 해당되는 form data
+                form_video = request.POST.get('video_' + ext_id)
+                if not form_video:
+                    continue
+                # form data를 dict로 변환
+                content = ast.literal_eval(form_video)
+                # 이미 저장된 컨텐츠는 저장하지 않음
+                if content.get('is_db', False):
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 이미 저장되어 있는 컨텐츠 입니다."
+                    })
+                    f_cnt += 1
+                    continue
                 # DB저장
                 result = video_store.store(content)
+                # 저장 결과
                 if result:
                     context['messages'].append({
                         "result": "success",
-                        "message": "{} 저장에 성공하였습니다.".format(platform_id)
+                        "message": f"{ext_id} 컨텐츠 저장에 성공 했습니다."
                     })
                     s_cnt += 1
                 else:
                     context['messages'].append({
                         "result": "fail",
-                        "message": "{} 저장에 실패하였습니다.".format(platform_id)
+                        "message": f"{ext_id} 저장에 실패하였습니다."
                     })
                     f_cnt += 1
             except Exception as e:
                 print(e)
-                context['messages'].append({
-                    "result": "fail",
-                    "message": "{} 저장에 실패하였습니다. {}".format(platform_id, e)
-                })
-                f_cnt += 1
         # VideoStore Close
         video_store.close()
         # 화면 출력용 요약 정보
-        context['summary'] = {"total": len(platform_ids), "success": s_cnt, "fail": f_cnt}
+        context['summary'] = {"total": len(ext_ids), "success": s_cnt, "fail": f_cnt}
         # 화면 출력
         return render(request, template_name="pages/common/process-result.html", context=context)
 

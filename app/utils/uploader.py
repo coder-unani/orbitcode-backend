@@ -121,9 +121,15 @@ class S3ImageUploader(ImageUploader):
             raise e
 
     # 이미지 리사이즈
-    def resize_image(self, image, width):
+    def resize_image(self, image, size):
         aspect_ratio = image.height / image.width
-        height = int(width * aspect_ratio)
+        if image.width >= image.height:  # 가로 이미지
+            width = size
+            height = int(size * aspect_ratio)
+        else:  # 세로 이미지
+            height = size
+            width = int(size / aspect_ratio)
+
         return image.resize((width, height), Image.Resampling.LANCZOS)
 
     # S3 클라이언트 종료

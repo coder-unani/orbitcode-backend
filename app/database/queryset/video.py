@@ -3,181 +3,32 @@ from django.db import transaction
 
 from app.database.models import (
     Video,
-    VideoThumbnail,
-    VideoWatch,
     Actor,
     Staff,
     Genre,
+    Production,
+    VideoGenre,
 )
 
 
+# Video
 def create_video(new_video):
-    video = Video.objects.create(
-        type=new_video['type'],
-        title=new_video['title'],
-        synopsis=new_video['synopsis'],
-        release=new_video['release'],
-        runtime=new_video['runtime'],
-        notice_age=new_video['notice_age'],
-        platform_code=new_video['platform_code'],
-        platform_id=new_video['platform_id'],
-    )
-    video.save()
-
-    return video
-
-
-def create_actor(new_cast):
-    actor = Actor.objects.create(
-        name=new_cast['name'],
-        picture=new_cast['picture'] if new_cast['picture'] else "",
-        profile=new_cast['profile'] if new_cast['profile'] else "",
-    )
-    actor.save()
-
-    return actor
-
-
-def create_staff(new_staff):
-    staff = Staff.objects.create(
-        name=new_staff['name'],
-        picture=new_staff['picture'] if new_staff['picture'] else "",
-        profile=new_staff['profile'] if new_staff['profile'] else "",
-    )
-    staff.save()
-
-    return staff
-
-
-def create_genre(new_genre):
-    genre = Genre.objects.create(
-        name=new_genre['name'],
-    )
-    genre.save()
-
-    return genre
-
-
-def create_video_actor(video, new_actor):
-    find_actor = Actor.objects.filter(name=new_actor['name']).all()
-    if find_actor.exists():
-        actor = find_actor.first()
-    else:
-        actor = create_actor(new_actor)
-    video.actor.add(actor)
-    
-    return True
-
-
-def create_video_staff(video, new_staff):
-    find_staff = Staff.objects.filter(name=new_staff['name']).all()
-    if find_staff.exists():
-        staff = find_staff.first()
-    else:
-        staff = create_staff(new_staff)
-    video.staff.add(staff)
-
-    return True
-
-
-def create_video_genre(video, new_genre):
-    find_genre = Genre.objects.filter(name=new_genre['name']).all()
-    if find_genre.exists():
-        genre = find_genre.first()
-    else:
-        genre = create_genre(new_genre)
-    video.genre.add(genre)
-    
-    return True
-
-
-def create_video_thumbnail(video, new_thumbnail):
-    VideoThumbnail.objects.create(
-        video=video,
-        type=new_thumbnail['type'],
-        url=new_thumbnail['url'],
-        extension=new_thumbnail['extension'],
-        size=new_thumbnail['size'],
-    ).save()
-
-    return True
-
-
-def create_video_watch(video, new_watch):
-    VideoWatch.objects.create(
-        video=video,
-        type=new_watch['type'],
-        url=new_watch['url'],
-    ).save()
-
-    return True
-
-
-def create_video_all(new_content):
     try:
-        with transaction.atomic():
-            video = create_video(new_content)
-            for new_actor in new_content['actor']:
-                create_video_actor(video, new_actor)
-            for new_staff in new_content['staff']:
-                create_video_staff(video, new_staff)
-            for new_genre in new_content['genre']:
-                create_video_genre(video, new_genre)
-            for new_watch in new_content['watch']:
-                create_video_watch(video, new_watch)
-            for new_thumbnail in new_content['thumbnail']:
-                create_video_thumbnail(video, new_thumbnail)
-            return video
-    except Exception as e:
-        raise e
-
-
-def exist_video(video_id=None, platform_id=None):
-    try:
-        video = None
-        if video_id:
-            video = Video.objects.filter(id=video_id)
-        elif platform_id:
-            video = Video.objects.filter(platform_id=platform_id)
-
-        if video.exists():
-            return True
-        else:
-            return False
-    except Exception as e:
-        raise e
-
-
-def select_video_by_videoid(video_id):
-    try:
-        video = Video.objects.get(id=video_id),
-        return video
-    
-    except Exception as e:
-        raise e
-
-
-def select_video_by_platformid(platform_id):
-    try:
-        video = Video.objects.filter(platform_id=platform_id)
+        video = Video.objects.create(
+            code=new_video['code'],
+            title=new_video['title'],
+            synopsis=new_video['synopsis'],
+            release=new_video['release'],
+            runtime=new_video['runtime'],
+            notice_age=new_video['notice_age'],
+        )
+        video.save()
         return video
     except Exception as e:
         raise e
 
 
-def get_videos():
-    pass
-
-
-def select_video_by_title(title):
-    try:
-        videos = Video.objects.filter(title=title).all()
-        return videos
-    except Exception as e:
-        raise e
-
-
-def get_video_by_id(video_id):
+def read_video(video_id):
     try:
         video = Video.objects.get(id=video_id)
         return video
@@ -185,36 +36,552 @@ def get_video_by_id(video_id):
         raise e
 
 
-def get_video_by_platform_id(platform_id):
+def update_video(video, new_video):
     try:
-        print(platform_id)
-        video = Video.objects.get(platform_id=platform_id)
-
-        return video
+        is_updated = False
+        if not video:
+            return False
+        if new_video.get('code'):
+            if video.code != new_video['code']:
+                video.code = new_video['code']
+                is_updated = True
+        if new_video.get('title'):
+            if video.title != new_video['title']:
+                video.title = new_video['title']
+                is_updated = True
+        if new_video.get('synopsis'):
+            if video.synopsis != new_video['synopsis']:
+                video.synopsis = new_video['synopsis']
+                is_updated = True
+        if new_video.get('release'):
+            if video.release != new_video['release']:
+                video.release = new_video['release']
+                is_updated = True
+        if new_video.get('runtime'):
+            if video.runtime != new_video['runtime']:
+                video.runtime = new_video['runtime']
+                is_updated = True
+        if new_video.get('notice_age'):
+            if video.notice_age != new_video['notice_age']:
+                video.notice_age = new_video['notice_age']
+                is_updated = True
+        if new_video.get('country'):
+            if video.country != new_video['country']:
+                video.country = new_video['country']
+                is_updated = True
+        if new_video.get('is_confirm', None) is not None:
+            if video.is_confirm != new_video['is_confirm']:
+                video.is_confirm = new_video['is_confirm']
+                is_updated = True
+        if is_updated:
+            video.save()
+        return True
     except Exception as e:
         raise e
 
 
-def search_videos_by_title(title):
+def delete_video(video):
     try:
-        videos = Video.objects.filter(title=title).all()
-        return videos
+        video.objects.delete()
+        return True
     except Exception as e:
+        raise e
+
+
+# Actor
+def create_actor(new_actor):
+    try:
+        actor = Actor.objects.create(
+            name=new_actor['name'],
+            picture=new_actor['picture'],
+            profile=new_actor['profile'],
+        )
+        actor.save()
+        return actor
+    except Exception as e:
+        raise e
+
+
+def read_actor(actor_id):
+    try:
+        return Actor.objects.get(id=actor_id)
+    except Exception as e:
+        raise e
+
+
+def update_actor(actor, new_actor):
+    try:
+        is_updated = False
+        if not actor:
+            return False
+        if new_actor.get('name'):
+            if actor.name != new_actor['name']:
+                actor.name = new_actor['name']
+                is_updated = True
+        if new_actor.get('picture'):
+            if actor.picture != new_actor['picture']:
+                actor.picture = new_actor['picture']
+                is_updated = True
+        if new_actor.get('profile'):
+            if actor.profile != new_actor['profile']:
+                actor.profile = new_actor['profile']
+                is_updated = True
+        if is_updated:
+            actor.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_actor(actor):
+    try:
+        actor.objects.delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# Staff
+def create_staff(new_staff):
+    try:
+        staff = Staff.objects.create(
+            name=new_staff['name'],
+            picture=new_staff['picture'],
+            profile=new_staff['profile'],
+        )
+        staff.save()
+        return staff
+    except Exception as e:
+        raise e
+
+
+def read_staff(staff_id):
+    try:
+        return Staff.objects.get(id=staff_id)
+    except Exception as e:
+        raise e
+
+
+def update_staff(staff, new_staff):
+    try:
+        is_updated = False
+        if not staff:
+            return False
+        if new_staff.get('name'):
+            if staff.name != new_staff['name']:
+                staff.name = new_staff['name']
+                is_updated = True
+        if new_staff.get('picture'):
+            if staff.picture != new_staff['picture']:
+                staff.picture = new_staff['picture']
+                is_updated = True
+        if new_staff.get('profile'):
+            if staff.profile != new_staff['profile']:
+                staff.profile = new_staff['profile']
+                is_updated = True
+        if is_updated:
+            staff.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_staff(staff):
+    try:
+        staff.objects.delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# Genre
+def create_genre(new_genre):
+    try:
+        genre = Genre.objects.create(
+            name=new_genre['name'],
+        ).save()
+        return genre
+    except Exception as e:
+        raise e
+
+
+def read_genre(genre_id):
+    try:
+        return Genre.objects.get(id=genre_id)
+    except Exception as e:
+        raise e
+
+
+def update_genre(genre, new_genre):
+    try:
+        is_updated = False
+        if not genre:
+            return False
+        if new_genre.get('name'):
+            genre.name = new_genre['name']
+            is_updated = True
+        if is_updated:
+            genre.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_genre(genre):
+    try:
+        genre.objects.delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# Production
+def create_production(new_production):
+    try:
+        production = Production.objects.create(
+            name=new_production['name'],
+            logo=new_production['logo'],
+        )
+        production.save()
+        return production
+    except Exception as e:
+        raise e
+
+
+def read_production(production_id):
+    try:
+        return Production.objects.get(id=production_id)
+    except Exception as e:
+        raise e
+
+
+def update_production(production, new_production):
+    try:
+        is_updated = False
+        if not production:
+            return False
+        if new_production.get('name'):
+            if production.name != new_production['name']:
+                production.name = new_production['name']
+                is_updated = True
+        if new_production.get('logo'):
+            if production.logo != new_production['logo']:
+                production.logo = new_production['logo']
+                is_updated = True
+        if is_updated:
+            production.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_production(production):
+    try:
+        production.objects.delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# VideoActor
+def create_video_actor(video, new_actor):
+    try:
+        actor, created = Actor.objects.get_or_create(name=new_actor['name'])
+        video.actor_list.create(
+            actor=actor,
+            code=new_actor['code'],
+            role=new_actor['role'],
+            sort=new_actor['sort']
+        ).save()
+        return True
+    except Exception as e:
+        print(e)
+        raise e
+
+
+def update_video_actor(vide_actor, new_actor):
+    try:
+        is_updated = False
+        if new_actor.get('code'):
+            if vide_actor.code != new_actor['code']:
+                vide_actor.code = new_actor['code']
+                is_updated = True
+        if new_actor.get('role'):
+            if vide_actor.role != new_actor['role']:
+                vide_actor.role = new_actor['role']
+                is_updated = True
+        if new_actor.get('sort'):
+            if vide_actor.sort != new_actor['sort']:
+                vide_actor.sort = new_actor['sort']
+                is_updated = True
+        if is_updated:
+            vide_actor.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_video_actor(video, video_actor_id):
+    try:
+        video.actor_list.get(id=video_actor_id).delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# VideoStaff
+def create_video_staff(video, new_staff):
+    try:
+        staff, created = Staff.objects.get_or_create(name=new_staff['name'])
+        video.staff_list.create(
+            staff=staff,
+            code=new_staff['code'],
+            sort=new_staff['sort']
+        ).save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def update_video_staff(video_staff, new_staff):
+    try:
+        is_updated = False
+        if new_staff.get('code'):
+            if video_staff.code != new_staff['code']:
+                video_staff.code = new_staff['code']
+                is_updated = True
+        if new_staff.get('sort'):
+            if video_staff.sort != new_staff['sort']:
+                video_staff.sort = new_staff['sort']
+                is_updated = True
+        if is_updated:
+            video_staff.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_video_staff(video, video_staff_id):
+    try:
+        video.staff_list.get(id=video_staff_id).delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# VideoGenre
+def create_video_genre(video, new_genre):
+    try:
+        genre, created = Genre.objects.get_or_create(name=new_genre['name'])
+        VideoGenre.objects.create(
+            video=video,
+            genre=genre,
+            sort=new_genre['sort']
+        )
+        return True
+    except Exception as e:
+        raise e
+
+
+def update_video_genre(video_genre, new_genre):
+    try:
+        is_updated = False
+        if new_genre.get('sort'):
+            if video_genre.sort != new_genre['sort']:
+                video_genre.sort = new_genre['sort']
+                is_updated = True
+        if is_updated:
+            video_genre.save()
+        return True
+    except Exception as e:
+        raise e
+
+    
+def delete_video_genre(video, video_genre_id):
+    try:
+        video.genre_list.get(id=video_genre_id).delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# VideoPlatform
+def create_video_platform(video, new_platform):
+    try:
+        video.platform.create(
+            code=new_platform['code'],
+            ext_id=new_platform['ext_id'],
+            url=new_platform['url'],
+        ).save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def update_video_platform(video_platform, new_platform):
+    try:
+        is_updated = False
+        if not video_platform:
+            return False
+        if new_platform.get('code'):
+            if video_platform.code != new_platform['code']:
+                video_platform.code = new_platform['code']
+                is_updated = True
+        if new_platform.get('url'):
+            if video_platform.url != new_platform['url']:
+                video_platform.url = new_platform['url']
+                is_updated = True
+        if new_platform.get('ext_id'):
+            if video_platform.ext_id != new_platform['ext_id']:
+                video_platform.ext_id = new_platform['ext_id']
+                is_updated = True
+        if is_updated:
+            video_platform.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_video_platform(video, platform_id):
+    try:
+        video.platform.get(id=platform_id).delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# VideoProduction
+def create_video_production(video, new_production):
+    try:
+        production, created = Production.objects.get_or_create(name=new_production['name'])
+        video.production_list.create(
+            production=production
+        ).save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_video_production(video, video_production_id):
+    try:
+        video.production_list.get(id=video_production_id).delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+# VideoThumbnail
+def create_video_thumbnail(video, new_thumbnail):
+    try:
+        return video.thumbnail.create(
+            code=new_thumbnail['code'],
+            url=new_thumbnail['url'],
+            extension=new_thumbnail['extension'],
+            size=new_thumbnail['size'],
+            width=new_thumbnail['width'],
+            height=new_thumbnail['height']
+        )
+    except Exception as e:
+        raise e
+
+
+def update_video_thumbnail(video, video_thumbnail_id, new_thumbnail):
+    try:
+        is_updated = False
+        video_thumbnail = video.thumbnail_list.get(id=video_thumbnail_id)
+        if not new_thumbnail.get('code'):
+            if video_thumbnail.code != new_thumbnail['code']:
+                video_thumbnail.code = new_thumbnail['code']
+                is_updated = True
+        if new_thumbnail.get('url'):
+            if video_thumbnail.url != new_thumbnail['url']:
+                video_thumbnail.url = new_thumbnail['url']
+                is_updated = True
+        if new_thumbnail.get('extension'):
+            if video_thumbnail.extension != new_thumbnail['extension']:
+                video_thumbnail.extension = new_thumbnail['extension']
+                is_updated = True
+        if new_thumbnail.get('size'):
+            if video_thumbnail.size != new_thumbnail['size']:
+                video_thumbnail.size = new_thumbnail['size']
+                is_updated = True
+        if new_thumbnail.get('width'):
+            if video_thumbnail.width != new_thumbnail['width']:
+                video_thumbnail.width = new_thumbnail['width']
+                is_updated = True
+        if new_thumbnail.get('height'):
+            if video_thumbnail.height != new_thumbnail['height']:
+                video_thumbnail.height = new_thumbnail['height']
+                is_updated = True
+        if is_updated:
+            video_thumbnail.save()
+        return True
+    except Exception as e:
+        raise e
+
+
+def delete_video_thumbnail(video, video_thumbnail_id):
+    try:
+        video.thumbnail.get(id=video_thumbnail_id).delete()
+        return True
+    except Exception as e:
+        raise e
+
+
+def create_video_object_all(new_object):
+    try:
+        with transaction.atomic():
+            video = create_video(new_object)
+            for new_actor in new_object.get('actor'):
+                create_video_actor(video, new_actor)
+            for new_staff in new_object.get('staff'):
+                create_video_staff(video, new_staff)
+            for new_genre in new_object.get('genre'):
+                create_video_genre(video, new_genre)
+            for new_platform in new_object.get('platform'):
+                create_video_platform(video, new_platform)
+            for new_production in new_object.get('production'):
+                create_video_production(video, new_production)
+            for new_thumbnail in new_object.get('thumbnail'):
+                create_video_thumbnail(video, new_thumbnail)
+            return video
+    except Exception as e:
+        raise e
+
+
+# search
+def search_video_by_platform(code, ext_id):
+    videos = search_videos_by_platform(code, ext_id)
+    if not videos:
+        return None
+    return videos.first()
+
+
+def search_videos_by_platform(code, ext_id):
+    try:
+        videos = Video.objects.filter(platform__code=code, platform__ext_id=ext_id)
+        if not videos:
+            return None
+        return videos.all()
+    except Exception as e:
+        print(e)
+        raise e
+
+
+def search_video_by_title(title):
+    return search_videos_by_title(title).first()
+
+
+def search_videos_by_title(title):
+    return Video.objects.filter(title=title)
+
+
+# exist
+def exist_video_genre(video, genre_name):
+    try:
+        for genre in video.genre_list.all():
+            if genre.name == genre_name:
+                return True
         return False
-
-
-def select_videos_by_genre(genre):
-    # videos = Video.objects.filter(genres__genre=genre).all()
-    # return videos
-    pass
-
-
-def select_videos_by_actor(cast):
-    pass
-
-
-def select_videos_by_staff(staff):
-    pass
-
-
-
+    except Exception as e:
+        raise e

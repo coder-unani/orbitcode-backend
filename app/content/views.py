@@ -4,16 +4,16 @@ from django.shortcuts import render
 from django.urls import reverse
 from django.views.generic import TemplateView, ListView, DetailView
 
-from app.database.models import Video, Genre, VideoGenre, Actor, VideoActor, Staff, VideoStaff, CountryCode
+from app.database.models import Video, Genre, Actor, Staff, CountryCode
+from app.database.queryset import video as queryset
 from app.utils.uploader import S3ImageUploader
-from app.utils.utils import make_filename
+from app.utils.utils import make_s3_path
 from config.constraints import (
-    AWS_S3_VIDEO_THUMBNAIL,
-    VIDEO_TYPE,
+    VIDEO_CODE,
     VIDEO_PLATFORM_CODE,
-    VIDEO_THUMBNAIL_TYPE,
-    VIDEO_ACTOR_TYPE,
-    VIDEO_STAFF_TYPE
+    VIDEO_THUMBNAIL_CODE,
+    VIDEO_ACTOR_CODE,
+    VIDEO_STAFF_CODE
 )
 from config.settings.settings import AWS_S3_BASE_URL
 
@@ -82,7 +82,7 @@ class VideoList(LoginRequiredMixin, ListView):
             video.is_mainimage = False
             for thumbnail in video.thumbnail.all():
                 thumbnail.url = AWS_S3_BASE_URL + thumbnail.url
-                if thumbnail.type == "10":
+                if thumbnail.code == "10":
                     video.is_mainimage = True
         return videos
 
@@ -103,17 +103,17 @@ class VideoEdit(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         video = self.get_object()
-        context['video_platform'] = VIDEO_PLATFORM_CODE
-        context['video_type'] = VIDEO_TYPE
-        context['video_thumbnail_type'] = VIDEO_THUMBNAIL_TYPE
-        context['video_watch_type'] = VIDEO_PLATFORM_CODE
-        context['video_actor_type'] = VIDEO_ACTOR_TYPE
-        context['video_staff_type'] = VIDEO_STAFF_TYPE
-        context['video_genre_list'] = video.genre_list.all().order_by('id')
-        context['video_actor_list'] = video.actor_list.all().order_by('type')
-        context['video_staff_list'] = video.staff_list.all().order_by('type')
-        context['video_thumbnail_list'] = video.thumbnail.all().order_by('type')
-        context['video_watch_list'] = video.watch.all().order_by('type')
+        context['video_code'] = VIDEO_CODE
+        context['video_platform_code'] = VIDEO_PLATFORM_CODE
+        context['video_actor_code'] = VIDEO_ACTOR_CODE
+        context['video_staff_code'] = VIDEO_STAFF_CODE
+        context['video_thumbnail_code'] = VIDEO_THUMBNAIL_CODE
+        context['video_platform_code'] = VIDEO_PLATFORM_CODE
+        context['video_genre_list'] = video.genre_list.all().order_by('sort', 'id')
+        context['video_actor_list'] = video.actor_list.all().order_by('sort', 'code')
+        context['video_staff_list'] = video.staff_list.all().order_by('sort', 'code')
+        context['video_thumbnail_list'] = video.thumbnail.all().order_by('code')
+        context['video_platform_list'] = video.platform.all().order_by('code')
         context['country_code_list'] = CountryCode.objects.all()
         return context
 
@@ -129,43 +129,32 @@ class VideoEdit(LoginRequiredMixin, DetailView):
         if edit_type == "basic":
             # 비디오 제목
             title = request.POST.get('title')
-            if title:
-                video.title = title
             # 비디오 타입
-            video_type = request.POST.get('type')
-            if video_type:
-                video.type = video_type
+            video_code = request.POST.get('code')
             # 개봉일
             release = request.POST.get('release')
-            if release:
-                video.release = release
             # 런타임
             runtime = request.POST.get('runtime')
-            if runtime:
-                video.runtime = runtime
             # 연령 고지
             notice_age = request.POST.get('notice_age')
-            if notice_age:
-                video.notice_age = notice_age
             # 제작사
-            production = request.POST.get('production')
-            if production:
-                video.production = production
+            # production = request.POST.get('production')
             # 제작국가
             country = request.POST.get('country')
-            if country:
-                video.country = country
             # 시놉시스
             synopsis = request.POST.get('synopsis')
-            if synopsis:
-                video.synopsis = synopsis
             # 관리자 확인
-            is_confirm = request.POST.get('is_confirm')
-            if is_confirm:
-                video.is_confirm = is_confirm == "true"
-            else:
-                video.is_confirm = False
-            video.save()
+            is_confirm = request.POST.get('is_confirm') == "true"
+            queryset.update_video(video, {
+                'title': title,
+                'code': video_code,
+                'release': release,
+                'runtime': runtime,
+                'notice_age': notice_age,
+                'country': country,
+                'synopsis': synopsis,
+                'is_confirm': is_confirm
+            })
             # 비디오 상세 페이지로 리다이렉트
             return HttpResponseRedirect(reverse('content:video-detail', kwargs={'pk': video_id}))
         # 썸네일 생성/수정/삭제
@@ -181,29 +170,33 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                 # 생성요청 썸네일 리스트 Loop
                 for thumbnail_id in thumbnail_create_list:
                     # 썸네일 정보 가져오기
-                    thumbnail_type = request.POST.get('thumbnail_type_' + thumbnail_id)
-                    thumbnail_url = request.POST.get('thumbnail_url_' + thumbnail_id)
+                    code = request.POST.get('thumbnail_code_' + thumbnail_id)
+                    url = request.POST.get('thumbnail_url_' + thumbnail_id)
+                    upload_type = request.POST.get('thumbnail_upload_type_' + thumbnail_id)
                     # 썸네일 정보가 없으면 다음 썸네일로 이동
-                    if not thumbnail_type or not thumbnail_url:
+                    if not code or not url or not upload_type:
                         continue
                     try:
-                        # 썸네일 저장
-                        file_name = make_filename(thumbnail_url)
-                        # 썸네일 S3 업로드 경로 생성
-                        s3_path = f"{AWS_S3_VIDEO_THUMBNAIL}{video.platform_code}/{video.platform_id}{video.id}{file_name}"
-                        result = uploader.upload_from_url(thumbnail_url, s3_path)
+                        if upload_type == "url":
+                            s3_path = make_s3_path("video", video.id, url)
+                            result = uploader.upload_from_url(url, s3_path)
+                        elif upload_type == "file":
+                            file = request.FILES.get('thumbnail_file_' + thumbnail_id)
+                            s3_path = make_s3_path("video", video.id, file.name)
+                            result = uploader.upload_from_file(file, s3_path)
+                        else:
+                            raise Exception("Invalid upload type")
                         if not result:
                             raise Exception("Failed to upload the thumbnail")
                         # S3 업로드 성공 시 DB에 썸네일 정보 저장
-                        thumbnail = video.thumbnail.create(
-                            type=thumbnail_type,
-                            url=result['url'],
-                            extension=result['extension'],
-                            size=result['size'],
-                            width=result['width'],
-                            height=result['height']
-                        )
-                        thumbnail.save()
+                        queryset.create_video_thumbnail(video, {
+                            'code': code,
+                            'url': result['url'],
+                            'extension': result['extension'],
+                            'size': result['size'],
+                            'width': result['width'],
+                            'height': result['height']
+                        })
                     except Exception as e:
                         print(e)
                 # S3 이미지업로더 종료
@@ -214,60 +207,57 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                 thumbnail_delete_list = thumbnail_delete.split(',')
                 for thumbnail_id in thumbnail_delete_list:
                     # 썸네일 삭제
-                    thumbnail = video.thumbnail.get(id=thumbnail_id)
-                    thumbnail.delete()
+                    queryset.delete_video_thumbnail(video, thumbnail_id)
             # 비디오 상세 페이지로 리다이렉트
             return HttpResponseRedirect(reverse('content:video-detail', kwargs={'pk': video_id}))
         # 시청 정보 생성/수정/삭제
-        elif edit_type == "watch":
-            watch_create = request.POST.get('watch_create')
-            watch_delete = request.POST.get('watch_delete')
+        elif edit_type == "platform":
+            platform_create = request.POST.get('platform_create')
+            platform_delete = request.POST.get('platform_delete')
             # 시청정보 생성 요청 확인
-            if watch_create:
+            if platform_create:
                 # 생성요청 시청정보 리스트
-                watch_create_list = watch_create.split(',')
-                for watch_id in watch_create_list:
+                platform_create_list = platform_create.split(',')
+                for platform_id in platform_create_list:
                     try:
                         # 시청정보 가져오기
-                        watch_type = request.POST.get('watch_type_' + watch_id)
-                        watch_url = request.POST.get('watch_url_' + watch_id)
-                        if not watch_type or not watch_url:
+                        code = request.POST.get('platform_code_' + platform_id)
+                        url = request.POST.get('platform_url_' + platform_id)
+                        ext_id = url.split('/')[-1]
+                        if not code or not code:
                             continue
-                        video.watch.create(
-                            type=watch_type,
-                            url=watch_url
-                        )
+                        queryset.create_video_platform(video, {
+                            'code': code,
+                            'ext_id': ext_id,
+                            'url': url
+                        })
                     except Exception as e:
                         print(e)
             # 시청정보 삭제 요청 확인
-            if watch_delete:
+            if platform_delete:
                 # 삭제요청 시청정보 리스트
-                watch_delete_list = watch_delete.split(',')
-                for watch_id in watch_delete_list:
+                platform_delete_list = platform_delete.split(',')
+                for platform_id in platform_delete_list:
                     # 시청정보 삭제
-                    watch = video.watch.get(id=watch_id)
-                    watch.delete()
+                    queryset.delete_video_platform(video, platform_id)
             # 시청정보 수정
-            for watch in video.watch.all():
+            for platform in video.platform.all():
                 try:
                     # 최종적으로 업데이트 여부 결정
                     is_update = False
                     # 시청정보 수정 요청 확인
-                    watch_type = request.POST.get('watch_type_' + str(watch.id))
-                    watch_url = request.POST.get('watch_url_' + str(watch.id))
+                    code = request.POST.get('platform_code_' + str(platform.id))
+                    url = request.POST.get('platform_url_' + str(platform.id))
+                    ext_id = url.split('/')[-1]
                     # 시청정보가 없으면 다음 시청정보로 이동
-                    if not watch_type or not watch_url:
+                    if not code or not url:
                         continue
                     # 시청정보 수정
-                    if watch.type != watch_type:
-                        watch.type = watch_type
-                        is_update = True
-                    if watch.url != watch_url:
-                        watch.url = watch_url
-                        is_update = True
-                    # 업데이트가 필요한 경우 저장
-                    if is_update:
-                        watch.save()
+                    queryset.update_video_platform(video.platform, {
+                        'code': code,
+                        'ext_id': ext_id,
+                        'url': url
+                    })
                 except Exception as e:
                     print(e)
             # 비디오 상세 페이지로 리다이렉트
@@ -283,15 +273,15 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                     try:
                         # 장르 가져오기
                         genre_name = request.POST.get('genre_name_' + genre_id)
+                        genre_sort = request.POST.get('genre_sort_' + genre_id)
+                        if not genre_sort:
+                            genre_sort = 99
                         if genre_name is None:
                             continue
-                        # 기존 장르 가져오기 또는 신규 생성
-                        new_genre, created = Genre.objects.get_or_create(name=genre_name)
-                        # 비디오에 장르 추가
-                        VideoGenre.objects.create(
-                            video=video,
-                            genre=new_genre
-                        )
+                        queryset.create_video_genre(video, {
+                            'name': genre_name,
+                            'sort': genre_sort
+                        })
                     except Exception as e:
                         raise Exception(e)
             # 장르 삭제 요청
@@ -301,23 +291,23 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                     genre_delete_list = genre_delete.split(',')
                     for genre_id in genre_delete_list:
                         # 장르 삭제
-                        VideoGenre.objects.get(id=genre_id).delete()
+                        queryset.delete_video_genre(video, genre_id)
                 except Exception as e:
                     raise Exception(e)
             # 장르 수정
             for genre in video.genre_list.all():
                 try:
-                    # 장르 수정 요청
-                    genre_name = request.POST.get('genre_name_' + str(genre.id))
+                    # 장르 수정 요청 확인
+                    genre_sort = request.POST.get('genre_sort_' + str(genre.id))
+                    if not genre_sort:
+                        genre_sort = 99
                     # 장르 정보가 없으면 다음 장르로 이동
-                    if genre_name is None:
+                    if not genre_sort:
                         continue
-                    # 장르 이름이 변경된 경우
-                    if genre.genre.name != genre_name:
-                        # 장르 가져오기
-                        new_genre, created = Genre.objects.get_or_create(name=genre_name)
-                        genre.genre = new_genre
-                        genre.save()
+                    # 장르 업데이트
+                    queryset.update_video_genre(genre, {
+                        'sort': genre_sort
+                    })
                 except Exception as e:
                     raise Exception(e)
             # 비디오 상세 페이지로 리다이렉트
@@ -332,20 +322,21 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                 for actor_id in actor_create_list:
                     try:
                         # 배우정보 가져오기
-                        actor_type = request.POST.get('actor_type_' + actor_id)
+                        actor_code = request.POST.get('actor_code_' + actor_id)
                         actor_role = request.POST.get('actor_role_' + actor_id)
                         actor_name = request.POST.get('actor_name_' + actor_id)
+                        actor_sort = request.POST.get('actor_sort_' + actor_id)
+                        if not actor_sort:
+                            actor_sort = 99
                         # 배우정보가 없으면 다음 배우정보로 이동
-                        if not actor_type or not actor_role or not actor_name:
+                        if not actor_code or not actor_role or not actor_name:
                             continue
-                        # 배우가 이미 존재하는지 확인하고, 없으면 새로 생성
-                        new_actor, created = Actor.objects.get_or_create(name=actor_name)
-                        # 비디오에 배우정보 추가
-                        video.actor_list.create(
-                            type=actor_type,
-                            role=actor_role,
-                            actor=new_actor
-                        )
+                        queryset.create_video_actor(video, {
+                            'code': actor_code,
+                            'role': actor_role,
+                            'name': actor_name,
+                            'sort': actor_sort
+                        })
                     except Exception as e:
                         raise Exception(e)
             # 배우정보 삭제 요청
@@ -355,41 +346,27 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                     actor_delete_list = actor_delete.split(',')
                     for actor_id in actor_delete_list:
                         # 배우정보 삭제
-                        VideoActor.objects.get(id=actor_id).delete()
+                        queryset.delete_video_actor(video, actor_id)
                 except Exception as e:
                     raise Exception(e)
             # 배우정보 수정
             for actor in video.actor_list.all():
                 try:
-                    # 최종적으로 업데이트 여부 결정
-                    is_update = False
                     # 배우정보 수정 요청 확인
-                    actor_type = request.POST.get('actor_type_' + str(actor.id))
-                    actor_name = request.POST.get('actor_name_' + str(actor.id))
+                    actor_code = request.POST.get('actor_code_' + str(actor.id))
                     actor_role = request.POST.get('actor_role_' + str(actor.id))
+                    actor_sort = request.POST.get('actor_sort_' + str(actor.id))
+                    if not actor_sort:
+                        actor_sort = 99
                     # 배우정보가 없으면 다음 배우정보로 이동
-                    if not actor_type or not actor_name or not actor_role:
+                    if not actor_code or not actor_role:
                         continue
-                    # 배우 이름이 변경된 경우
-                    if actor.actor.name != actor_name:
-                        # 배우정보 가져오기
-                        new_actor, created = Actor.objects.get_or_create(name=actor_name)
-                        actor.actor = new_actor
-                        # 업데이트 True로 변경
-                        is_update = True
-                    # 배우 타입 수정
-                    if actor.type != actor_type:
-                        actor.type = actor_type
-                        # 업데이트 True로 변경
-                        is_update = True
-                    # 배우 역할 수정
-                    if actor.role != actor_role:
-                        actor.role = actor_role
-                        # 업데이트 True로 변경
-                        is_update = True
-                    # 업데이트가 필요한 경우 저장
-                    if is_update:
-                        actor.save()
+                    # 배우정보 업데이트
+                    queryset.update_video_actor(actor, {
+                        'code': actor_code,
+                        'role': actor_role,
+                        'sort': actor_sort
+                    })
                 except Exception as e:
                     raise Exception(e)
             # 비디오 상세 페이지로 리다이렉트
@@ -405,18 +382,18 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                 for staff_id in staff_create_list:
                     try:
                         # 시청정보 가져오기
-                        staff_type = request.POST.get('staff_type_' + staff_id)
+                        staff_code = request.POST.get('staff_code_' + staff_id)
                         staff_name = request.POST.get('staff_name_' + staff_id)
-                        if not staff_type or not staff_name:
+                        staff_sort = request.POST.get('staff_sort_' + staff_id)
+                        if not staff_sort:
+                            staff_sort = 99
+                        if not staff_code or not staff_name:
                             continue
-                        # 제작진이 이미 존재하는지 확인하고, 없으면 새로 생성
-                        new_staff, created = Staff.objects.get_or_create(name=staff_name)
-                        # 비디오에 제작진 추가
-                        VideoStaff.objects.create(
-                            video=video,
-                            type=staff_type,
-                            staff=new_staff
-                        )
+                        queryset.create_video_staff(video, {
+                            'code': staff_code,
+                            'name': staff_name,
+                            'sort': staff_sort
+                        })
                     except Exception as e:
                         raise Exception(e)
             # 제작진 삭제 요청
@@ -425,31 +402,22 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                 staff_delete_list = staff_delete.split(',')
                 for staff_id in staff_delete_list:
                     # 시청정보 삭제
-                    VideoStaff.objects.get(id=staff_id).delete()
+                    queryset.delete_video_staff(video, staff_id)
             # 제작진 수정
             for staff in video.staff_list.all():
                 try:
-                    # 최종적으로 업데이트 여부 결정
-                    is_update = False
                     # 기존 제작진 입력 정보 가져오기
-                    staff_type = request.POST.get('staff_type_' + str(staff.id))
-                    staff_name = request.POST.get('staff_name_' + str(staff.id))
+                    staff_code = request.POST.get('staff_code_' + str(staff.id))
+                    staff_sort = request.POST.get('staff_sort_' + str(staff.id))
+                    if not staff_sort:
+                        staff_sort = 99
                     # 제작진 정보가 없으면 다음 제작진으로 이동
-                    if not staff_type or not staff_name:
+                    if not staff_code:
                         continue
-                    # 제작진 타입이 변경된 경우
-                    if staff.type != staff_type:
-                        staff.type = staff_type
-                        is_update = True
-                    # 제작진 이름이 변경된 경우
-                    if staff.staff.name != staff_name:
-                        # 제작진 정보 가져오거나 새로 생성
-                        new_staff, created = Staff.objects.get_or_create(name=staff_name)
-                        staff.staff = new_staff
-                        is_update = True
-                    # 업데이트가 필요한 경우 저장
-                    if is_update:
-                        staff.save()
+                    queryset.update_video_staff(staff, {
+                        'code': staff_code,
+                        'sort': staff_sort
+                    })
                 except Exception as e:
                     raise Exception(e)
             # 비디오 상세 페이지로 리다이렉트
