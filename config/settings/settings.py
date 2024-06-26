@@ -147,6 +147,9 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static')
 ]
 
+# POST 파라미터 수 변경
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
