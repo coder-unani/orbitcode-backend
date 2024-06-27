@@ -327,8 +327,8 @@ class NetflixParser(OTTParser):
                         print(e)
                         continue
                 # for test
-                if len(videos) > 10:
-                    break
+                # if len(videos) > 10:
+                #     break
             # 랭킹 데이터 재정렬
             ranks = sorted(ranks, key=lambda k: (k['type'], k['rank']))
             # 컨텐츠 리턴
@@ -362,8 +362,13 @@ class TvingParser(OTTParser):
             # 페이지 로딩되는 동안 대기
             sleep(2)
             # 컨텐츠 스키마 가져오기
-            schema = selenium.find_element(By.CSS_SELECTOR, 'head script[type="application/ld+json"]')
-            schema_to_dict = json.loads(schema.get_attribute('innerHTML'))
+            try:
+                schema = selenium.find_element(By.CSS_SELECTOR, 'head script[type="application/ld+json"]')
+                schema_to_dict = json.loads(schema.get_attribute('innerHTML'))
+            except Exception as e:
+                print(e)
+                return False
+
             # 컨텐츠 코드
             content['code'] = schema_to_dict['@type'] == "Movie" and "10" or "11"
             # 제목
@@ -525,8 +530,8 @@ class TvingParser(OTTParser):
                         print(e)
                         continue
                 # for test
-                if len(videos) > 10:
-                    break
+                # if len(videos) > 10:
+                #     break
             return ranks, videos
 
         except Exception as e:
