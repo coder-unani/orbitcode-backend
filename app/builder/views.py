@@ -297,7 +297,7 @@ class CollectTvingBoxoffice(AuthView):
                 platforms = video.get('platform', [])
                 for platform in platforms:
                     build_video = builder.build(platform['ext_id'])
-                    if build_video['is_db']:
+                    if not build_video or build_video.get('is_db', False):
                         continue
                     videos.append(build_video)
             # 비디오 빌더 종료
