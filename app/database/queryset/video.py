@@ -291,7 +291,7 @@ def create_video_actor(video, new_actor):
             actor=actor,
             code=new_actor['code'],
             role=new_actor['role'],
-            sort=new_actor['sort']
+            sort=new_actor['sort'] if new_actor.get('sort') else 99
         ).save()
         return True
     except Exception as e:
@@ -312,7 +312,7 @@ def update_video_actor(vide_actor, new_actor):
                 is_updated = True
         if new_actor.get('sort'):
             if vide_actor.sort != new_actor['sort']:
-                vide_actor.sort = new_actor['sort']
+                vide_actor.sort = new_actor['sort'] if new_actor.get('sort') else 99
                 is_updated = True
         if is_updated:
             vide_actor.save()
@@ -336,7 +336,7 @@ def create_video_staff(video, new_staff):
         video.staff_list.create(
             staff=staff,
             code=new_staff['code'],
-            sort=new_staff['sort']
+            sort=new_staff['sort'] if new_staff.get('sort') else 99
         ).save()
         return True
     except Exception as e:
@@ -352,7 +352,7 @@ def update_video_staff(video_staff, new_staff):
                 is_updated = True
         if new_staff.get('sort'):
             if video_staff.sort != new_staff['sort']:
-                video_staff.sort = new_staff['sort']
+                video_staff.sort = new_staff['sort'] if new_staff.get('sort') else 99
                 is_updated = True
         if is_updated:
             video_staff.save()
@@ -376,7 +376,7 @@ def create_video_genre(video, new_genre):
         VideoGenre.objects.create(
             video=video,
             genre=genre,
-            sort=new_genre['sort']
+            sort=new_genre['sort'] if new_genre.get('sort') else 99
         )
         return True
     except Exception as e:
