@@ -293,10 +293,19 @@
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('genre', [], ['name', 'sort'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label for="actor_search" class="text-sm">장르 검색</label>
+                                        <div class="flex gap-1.5">
+                                            <input type="text" id="genre_search" class="form-input" placeholder="장르 검색" onkeyup="handleSearchGenre(this.value)"/>
+                                            <button type="button" onclick="addElement('genre', [], ['id', 'name', 'sort'])" class="btn w-[120px] bg-primary text-white hover:bg-primary/[0.85] border border-gray/10 rounded-[10px] transition-all duration-300">직접 입력</button>
+                                        </div>
+                                    </div>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
+                            <div class="mt-3">
+                                <ul id="ulSearchGenre" class="h-[200px] gap-1.5"></ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -561,6 +570,36 @@ const handleSearchStaff = (q) => {
                 li.addEventListener('click', () => {
                     const actorId = li.querySelector('input').value;
                     addElement('staff', ACTOR_CODE, ['id', 'name', 'sort'], [`${staff.id}`, `${staff.name}`, '99']);
+                    ulSearchResult.innerHTML = "";
+                });
+                ulSearchResult.appendChild(li);
+            });
+        });
+
+}
+
+const handleSearchGenre = (q) => {
+    const ulSearchResult = document.querySelector('#ulSearchGenre');
+    ulSearchResult.innerHTML = "";
+    if (q.length < 2) {
+        return;
+    }
+
+    fetch(`/api/find/genres?q=${q}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach((genre) => {
+                const li = document.createElement('li');
+                li.classList.add('flex', 'gap-2.5', 'cursor-pointer', 'hover:bg-gray/10', 'p-2.5', 'rounded-lg');
+                li.innerHTML = `
+                    <input type="hidden" value="${genre.id}">
+                    <div class="flex items-center">
+                        <span class="text-sm font-semibold">${genre.name}</span>
+                    </div>
+                `;
+                li.addEventListener('click', () => {
+                    const actorId = li.querySelector('input').value;
+                    addElement('genre', [], ['id', 'name', 'sort'], [`${genre.id}`, `${genre.name}`, '99']);
                     ulSearchResult.innerHTML = "";
                 });
                 ulSearchResult.appendChild(li);
