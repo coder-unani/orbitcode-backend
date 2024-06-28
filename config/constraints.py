@@ -8,6 +8,8 @@ TVING_LOGIN_URL = "https://user.tving.com/pc/user/otherLogin.tving?loginType=10&
 TVING_CONTENT_URL = "https://www.tving.com/contents/"
 TVING_BOXOFFICE_URL = "https://www.tving.com/boxoffice"
 
+WAVVE_CONTENT_URL = "https://www.wavve.com/player/vod?programid="
+
 AWS_S3_VIDEO_THUMBNAIL = "video/thumbnail/"
 AWS_S3_NETFLIX_THUMBNAIL = AWS_S3_VIDEO_THUMBNAIL + "netflix/"
 
