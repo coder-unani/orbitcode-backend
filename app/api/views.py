@@ -1,10 +1,10 @@
-from PIL import Image
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from app.database.models import Actor, Staff
 from app.utils.uploader import S3ImageUploader
 from app.utils.utils import make_s3_path
+from config.settings.settings import AWS_S3_BASE_URL
 from .serializers import VideoThumbnailUploadSerializer, ActorPictureUploadSerializer, StaffPictureUploadSerializer
 
 
@@ -79,6 +79,30 @@ class VideoThumbnailUpload(APIView):
             except Exception as e:
                 print(e)
                 return Response("Failed to upload the image", status=400)
+
+
+class FindActor(APIView):
+
+    def get(self, request, *args, **kwargs):
+        name = request.query_params.get('q', None)
+        if not name:
+            return Response("Failed to find the actor", status=400)
+        actors = Actor.objects.filter(name__contains=name).values('id', 'name', 'picture')
+        for actor in actors:
+            actor['picture'] = f"{AWS_S3_BASE_URL}{actor['picture']}" if actor['picture'] else "/static/images/no-people.png"
+        return Response(actors, status=200)
+
+
+class FindStaff(APIView):
+
+    def get(self, request, *args, **kwargs):
+        name = request.query_params.get('q', None)
+        if not name:
+            return Response("Failed to find the actor", status=400)
+        staffs = Staff.objects.filter(name__contains=name).values('id', 'name', 'picture')
+        for staff in staffs:
+            staff['picture'] = f"{AWS_S3_BASE_URL}{staff['picture']}" if staff['picture'] else "/static/images/no-people.png"
+        return Response(staffs, status=200)
 
 
 # class VideoThumbnailUploadPre(APIView):
