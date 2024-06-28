@@ -2,6 +2,8 @@ NETFLIX_LOGIN_URL = "https://www.netflix.com/login"
 NETFLIX_CONTENT_URL = "https://www.netflix.com/kr/title/"
 NETFLIX_BOXOFFICE_URL = "https://www.netflix.com/browse"
 
+DISNEY_CONTENT_URL = "https://www.disneyplus.com/ko-kr/browse/"
+
 TVING_LOGIN_URL = "https://user.tving.com/pc/user/otherLogin.tving?loginType=10&from=pc"
 TVING_CONTENT_URL = "https://www.tving.com/contents/"
 TVING_BOXOFFICE_URL = "https://www.tving.com/boxoffice"
