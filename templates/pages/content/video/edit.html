@@ -334,10 +334,19 @@
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('actor', ACTOR_CODE, ['role', 'name', 'sort'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label for="actor_search" class="text-sm">배우 검색</label>
+                                        <div class="flex gap-1.5">
+                                            <input type="text" id="actor_search" class="form-input" placeholder="배우 검색" onkeyup="handleSearchActor(this.value)"/>
+                                            <button type="button" onclick="addElement('actor', ACTOR_CODE, ['id', 'role', 'name', 'sort'])" class="btn w-[120px] bg-primary text-white hover:bg-primary/[0.85] border border-gray/10 rounded-[10px] transition-all duration-300">직접 입력</button>
+                                        </div>
+                                    </div>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
+                            <div class="mt-3">
+                                <ul id="ulSearchActor" class="h-[200px]"></ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -377,10 +386,19 @@
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center mt-[30px] gap-2.5">
-                                    <button type="button" onclick="addElement('staff', STAFF_CODE, ['name', 'sort'])" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">추가</button>
+                                    <div class="flex flex-col gap-1.5">
+                                        <label for="actor_search" class="text-sm">제작진 검색</label>
+                                        <div class="flex gap-1.5">
+                                            <input type="text" id="staff_search" class="form-input" placeholder="스텝 검색" onkeyup="handleSearchStaff(this.value)"/>
+                                            <button type="button" onclick="addElement('staff', STAFF_CODE, ['id', 'name', 'sort'])" class="btn w-[120px] bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">직접 입력</button>
+                                        </div>
+                                    </div>
                                     <button type="submit" class="bg-primary px-4 py-1 border border-primary rounded-xl text-white transition-all duration-300 hover:bg-primary/[0.85] hover:border-primary/[0.85]">저장</button>
                                 </div>
                             </form>
+                            <div class="mt-3">
+                                <ul id="ulSearchStaff" class="h-[200px]"></ul>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -462,7 +480,6 @@ const newIds = {
 };
 
 // 썸네일 타입 정의
-
 const THUMBNAIL_CODE = [
     {% for thumbnail in video_thumbnail_code %} {"value": "{{ thumbnail.0 }}", "text": "{{ thumbnail.1 }}"}, {% endfor %}
 ]
@@ -481,6 +498,73 @@ const ACTOR_CODE = [
 const STAFF_CODE = [
     {% for staff in video_staff_code %} {"value": "{{ staff.0 }}", "text": "{{ staff.1 }}"}, {% endfor %}
 ];
+
+
+const handleSearchActor = (q) => {
+    const ulSearchResult = document.querySelector('#ulSearchActor');
+    ulSearchResult.innerHTML = "";
+    if (q.length < 2) {
+        return;
+    }
+
+    fetch(`/api/find/actors?q=${q}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach((actor) => {
+                const li = document.createElement('li');
+                li.classList.add('flex', 'gap-2.5', 'cursor-pointer', 'hover:bg-gray/10', 'p-2.5', 'rounded-lg');
+                li.innerHTML = `
+                    <input type="hidden" value="${actor.id}">
+                    <div class="flex w-[50px] h-[50px] overflow-hidden rounded-lg">
+                        <img src="${actor.picture}" alt="${actor.name}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm font-semibold">${actor.name}</span>
+                    </div>
+                `;
+                li.addEventListener('click', () => {
+                    const actorId = li.querySelector('input').value;
+                    addElement('actor', ACTOR_CODE, ['id', 'role', 'name', 'sort'], [`${actor.id}`, '', `${actor.name}`, '99']);
+                    ulSearchResult.innerHTML = "";
+                });
+                ulSearchResult.appendChild(li);
+            });
+        });
+
+}
+
+const handleSearchStaff = (q) => {
+    const ulSearchResult = document.querySelector('#ulSearchStaff');
+    ulSearchResult.innerHTML = "";
+    if (q.length < 2) {
+        return;
+    }
+
+    fetch(`/api/find/staffs?q=${q}`)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach((staff) => {
+                const li = document.createElement('li');
+                li.classList.add('flex', 'gap-2.5', 'cursor-pointer', 'hover:bg-gray/10', 'p-2.5', 'rounded-lg');
+                li.innerHTML = `
+                    <input type="hidden" value="${staff.id}">
+                    <div class="flex w-[50px] h-[50px] overflow-hidden rounded-lg">
+                        <img src="${staff.picture}" alt="${staff.name}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-sm font-semibold">${staff.name}</span>
+                    </div>
+                `;
+                li.addEventListener('click', () => {
+                    const actorId = li.querySelector('input').value;
+                    addElement('staff', ACTOR_CODE, ['id', 'name', 'sort'], [`${staff.id}`, `${staff.name}`, '99']);
+                    ulSearchResult.innerHTML = "";
+                });
+                ulSearchResult.appendChild(li);
+            });
+        });
+
+}
 
 // 아이디 발행
 const publishId = (prefix) => {
@@ -643,7 +727,7 @@ const addThumbnailElement = (video_id) => {
 }
 
 // 엘리멘트 추가
-const addElement = (prefix, options = [], input=[]) => {
+const addElement = (prefix, options = [], input=[], init=[]) => {
     const id = publishId(prefix);
     if (id === "") {
         alert(`${prefix}는 최대 ${newIds[prefix].length}개까지 등록 가능합니다.`);
@@ -668,15 +752,19 @@ const addElement = (prefix, options = [], input=[]) => {
             const opt = document.createElement('option');
             opt.value = `${option.value}`;
             opt.textContent = option.text;
+
+
             select.appendChild(opt);
         });
         newDiv.appendChild(select);
     }
 
     if (input.length > 0) {
-        input.map((item) => {
+        input.map((item, index) => {
             const newInput = document.createElement('input');
-            if (item == "sort") {
+            if (item === "id") {
+                newInput.type = "hidden";
+            } else if (item === "sort") {
                 newInput.type = "number";
             } else {
                 newInput.type = "text";
@@ -684,6 +772,7 @@ const addElement = (prefix, options = [], input=[]) => {
             newInput.name = `${prefix}_${item}_${id}`;
             newInput.classList.add('form-input', 'rounded-lg');
             newInput.placeholder = item;
+            newInput.value = init[index] ? init[index] : "";
             newDiv.appendChild(newInput);
         });
     }

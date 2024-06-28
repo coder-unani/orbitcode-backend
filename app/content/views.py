@@ -318,21 +318,24 @@ class VideoEdit(LoginRequiredMixin, DetailView):
             # 배우정보 생성 요청
             if actor_create:
                 # 배우정보 생성요청 리스트
-                actor_create_list = actor_create.split(',')
-                for actor_id in actor_create_list:
+                create_list = actor_create.split(',')
+                for new_id in create_list:
                     try:
                         # 배우정보 가져오기
-                        actor_code = request.POST.get('actor_code_' + actor_id)
-                        actor_role = request.POST.get('actor_role_' + actor_id)
-                        actor_name = request.POST.get('actor_name_' + actor_id)
-                        actor_sort = request.POST.get('actor_sort_' + actor_id)
+                        actor_code = request.POST.get('actor_code_' + new_id, "")
+                        actor_id = request.POST.get('actor_id_' + new_id, "")
+                        actor_role = request.POST.get('actor_role_' + new_id, "")
+                        actor_name = request.POST.get('actor_name_' + new_id, "")
+                        actor_sort = request.POST.get('actor_sort_' + new_id, "")
+                        print(actor_code, actor_id, actor_role, actor_name, actor_sort)
                         if not actor_sort:
                             actor_sort = 99
                         # 배우정보가 없으면 다음 배우정보로 이동
-                        if not actor_code or not actor_role or not actor_name:
+                        if not actor_name:
                             continue
                         queryset.create_video_actor(video, {
                             'code': actor_code,
+                            'actor_id': actor_id,
                             'role': actor_role,
                             'name': actor_name,
                             'sort': actor_sort
@@ -378,19 +381,21 @@ class VideoEdit(LoginRequiredMixin, DetailView):
             # 제작진 생성 요청
             if staff_create:
                 # 제작진 생성요청 리스트
-                staff_create_list = staff_create.split(',')
-                for staff_id in staff_create_list:
+                create_list = staff_create.split(',')
+                for new_id in create_list:
                     try:
                         # 시청정보 가져오기
-                        staff_code = request.POST.get('staff_code_' + staff_id)
-                        staff_name = request.POST.get('staff_name_' + staff_id)
-                        staff_sort = request.POST.get('staff_sort_' + staff_id)
+                        staff_code = request.POST.get('staff_code_' + new_id)
+                        staff_id = request.POST.get('staff_id_' + new_id)
+                        staff_name = request.POST.get('staff_name_' + new_id)
+                        staff_sort = request.POST.get('staff_sort_' + new_id)
                         if not staff_sort:
                             staff_sort = 99
-                        if not staff_code or not staff_name:
+                        if not staff_name:
                             continue
                         queryset.create_video_staff(video, {
                             'code': staff_code,
+                            'staff_id': staff_id,
                             'name': staff_name,
                             'sort': staff_sort
                         })

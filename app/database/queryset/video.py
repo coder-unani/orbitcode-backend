@@ -286,7 +286,10 @@ def delete_production(production):
 # VideoActor
 def create_video_actor(video, new_actor):
     try:
-        actor, created = Actor.objects.get_or_create(name=new_actor['name'])
+        if new_actor.get('actor_id', False):
+            actor = Actor.objects.get(id=new_actor['actor_id'])
+        else:
+            actor, created = Actor.objects.get_or_create(name=new_actor['name'])
         video.actor_list.create(
             actor=actor,
             code=new_actor['code'],
@@ -332,7 +335,10 @@ def delete_video_actor(video, video_actor_id):
 # VideoStaff
 def create_video_staff(video, new_staff):
     try:
-        staff, created = Staff.objects.get_or_create(name=new_staff['name'])
+        if new_staff.get('staff_id', False):
+            staff = Staff.objects.get(id=new_staff['staff_id'])
+        else:
+            staff, created = Staff.objects.get_or_create(name=new_staff['name'])
         video.staff_list.create(
             staff=staff,
             code=new_staff['code'],
