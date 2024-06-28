@@ -3,13 +3,14 @@
 
 {% block content %}
 
-<div class="bg-white dark:bg-dark text-dark dark:text-white bg-[url(\'{% static 'images/autho-light-bg.png' %}\')] dark:bg-[url(\{% static 'images/autho-dark-bg.png' %}\')] bg-fixed bg-cover bg-center min-h-screen">
+<div class="bg-white dark:bg-dark text-dark dark:text-white bg bg-[url('../images/autho-light-bg.png')] dark:bg-[url('../images/autho-dark-bg.png')] bg-fixed bg-cover bg-center min-h-screen">
     <!-- Start Content -->
     <div class="relative">
         <div class="md:p-10 p-6 flex items-center justify-center sm:justify-between w-full flex-wrap gap-5">
-            <a href="/" class="main-logo">
-                <img src="{% static 'images/logo-dark.svg' %}" class="dark-logo h-8 logo dark:hidden" alt="logo" />
-                <img src="{% static 'images/logo-light.svg' %}" class="light-logo h-8 logo hidden dark:block" alt="logo" />
+            <a href="/" class="main-logo flex gap-2.5 items-center">
+                <img src="{% static 'images/rvvs-logo-1.png' %}" class="dark-logo h-8 logo dark:hidden" alt="logo" />
+                <img src="{% static 'images/rvvs-logo-1.png' %}" class="light-logo h-8 logo hidden dark:block" alt="logo" />
+                <h1 class="text-gray">ORBITCODE GALAXY-!</h1>
             </a>
             <div class="flex items-center gap-5">
                 <div class="text-lightgray hover:text-primary duration-300 md:block hidden">
