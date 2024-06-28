@@ -43,8 +43,11 @@
     {% if object_list.count > 0 %}
         <div class="grid gap-1.5 mb-8 rounded-lg shadow-sm md:mb-12 md:grid-cols-3">
             {% for genre in object_list %}
-                <div class="flex gap-1.5 bg-white dark:bg-dark dark:border-gray/20 border border-lightgray/10 p-5 rounded-lg">
+                <div class="flex gap-1.5 justify-between bg-white dark:bg-dark dark:border-gray/20 border border-lightgray/10 p-5 rounded-lg">
                     <div class="text-lg font-semibold text-base dark:text-gray-200 hover:underline">{{ genre.name }}</div>
+                    <a href="/content/video?gid={{ genre.id }}" class="font-semibold text-base dark:text-gray-200 hover:underline">
+                        포함된 작품 보기
+                    </a>
                 </div>
             {% endfor %}
         </div>
