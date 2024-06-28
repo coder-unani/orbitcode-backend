@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 
 from app.utils.uploader import ImageUploader, S3ImageUploader
 from .builder import VideoBuilder
-from .parser import OTTParser, NetflixParser, DisneyParser, TvingParser
+from .parser import OTTParser, NetflixParser, DisneyParser, TvingParser, WavveParser
 from .store import VideoStore
 
 DJANGO_LOGIN_URL = "/login/"
@@ -30,10 +30,15 @@ class Index(LoginRequiredMixin, TemplateView):
 class CollectNetflix(AuthView):
     # Template
     template_name = 'pages/builder/collect/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "넷플릭스 검색"
+        return context
+
     # GET
     def get(self, request, **kwargs):
-        context = dict()
-        context['title'] = "넷플릭스 검색"
+        context = self.get_context_data(**kwargs)
         search_ids = request.GET.get('search_ids')
         if search_ids:
             parser: OTTParser = NetflixParser()
@@ -107,11 +112,16 @@ class CollectNetflix(AuthView):
 class CollectNetflixBoxoffice(AuthView):
     # Template
     template_name = "pages/builder/collect/boxoffice.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "넷플릭스 박스오피스 검색"
+        return context
+
     # GET
     def get(self, request, *args, **kwargs):
         # 화면 출력용 context
-        context = dict()
-        context['title'] = "넷플릭스 박스오피스 검색"
+        context = self.get_context_data(**kwargs)
         context['parser'] = request.GET.get('parser')
         context['view_mode'] = request.GET.get('view_mode')
         # parser가 on일 경우 실행
@@ -202,9 +212,13 @@ class CollectNetflixBoxoffice(AuthView):
 class CollectDisney(AuthView):
     template_name = 'pages/builder/collect/index.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "디즈니플러스 검색"
+        return context
+
     def get(self, request, *args, **kwargs):
-        context = dict()
-        context['title'] = "디즈니 검색"
+        context = self.get_context_data(**kwargs)
         search_ids = request.GET.get('search_ids')
         if search_ids:
             parser: OTTParser = DisneyParser()
@@ -223,9 +237,13 @@ class CollectDisney(AuthView):
 class CollectTving(AuthView):
     template_name = 'pages/builder/collect/index.html'
 
-    def get(self, request, *args, **kwargs):
-        context = dict()
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
         context['title'] = "티빙 검색"
+        return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
         search_ids = request.GET.get('search_ids')
         if search_ids:
             parser: OTTParser = TvingParser()
@@ -301,10 +319,14 @@ class CollectTvingBoxoffice(AuthView):
     # Template
     template_name = "pages/builder/collect/boxoffice.html"
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "티빙 박스오피스 검색"
+        return context
+
     def get(self, request, *args, **kwargs):
         # 화면 출력용 context
-        context = dict()
-        context['title'] = "티빙 박스오피스 검색"
+        context = self.get_context_data(**kwargs)
         context['parser'] = request.GET.get('parser')
         context['view_mode'] = request.GET.get('view_mode')
         # parser가 on일 경우 실행
@@ -386,5 +408,28 @@ class CollectTvingBoxoffice(AuthView):
         return render(request, template_name="pages/common/process-result.html", context=context)
 
 
+class CollectWavve(AuthView):
+    template_name = 'pages/builder/collect/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = "웨이브 검색"
+        return context
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+        search_ids = request.GET.get('search_ids')
+        if search_ids:
+            parser: OTTParser = WavveParser()
+            builder = VideoBuilder(parser)
+            videos = list()
+            for search_id in search_ids.split(","):
+                video = builder.build(search_id)
+                if video and video not in videos:
+                    videos.append(video)
+            builder.close()
+            if videos:
+                context['videos'] = videos
+        return render(request, template_name=self.template_name, context=context)
 
 

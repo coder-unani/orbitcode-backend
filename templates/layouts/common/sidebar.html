@@ -2,7 +2,7 @@
 <nav class="sidebar fixed z-50 flex-none w-[226px] border-r-2 border-lightgray/[8%] dark:border-gray/20 transition-all duration-300">
     <div class="bg-white dark:bg-dark h-full">
         <div class="p-3.5">
-            <a href="/static" class="main-logo w-full flex justify-start items-center px-2.5 pt-3">
+            <a href="{% url 'dashboard:index' %}" class="main-logo w-full flex justify-start items-center px-2.5 pt-3">
                 <img src="{% static '/images/rvvs-logo-1.svg' %}" class="dark-logo h-8 logo dark:hidden" alt="logo" />
                 <img src="{% static '/images/rvvs-logo-1.svg' %}" class="light-logo h-8 logo hidden dark:block" alt="logo" />
                 <span class="px-2.5">ORBITCODE</span>
@@ -62,6 +62,7 @@
                         <li><a :class="{'active': activeItem === 'disney'}" href="{% url 'builder:collect-disney' %}">디즈니+</a></li>
                         <li><a :class="{'active': activeItem === 'tving'}" href="{% url 'builder:collect-tving' %}">티빙</a></li>
                         <li><a :class="{'active': activeItem === 'tving-boxoffice'}" href="{% url 'builder:collect-tving-boxoffice' %}">티빙 박스오피스</a></li>
+                        <li><a :class="{'active': activeItem === 'wavve'}" href="{% url 'builder:collect-wavve' %}">웨이브</a></li>
                     </ul>
                 </li>
                 <!-- CONTENT -->

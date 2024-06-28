@@ -11,4 +11,5 @@ urlpatterns = [
     path("collect/disney/", view=views.CollectDisney.as_view(), name="collect-disney"),
     path("collect/tving/", view=views.CollectTving.as_view(), name="collect-tving"),
     path("collect/tving/boxoffice", view=views.CollectTvingBoxoffice.as_view(), name="collect-tving-boxoffice"),
+    path("collect/wavve/", view=views.CollectWavve.as_view(), name="collect-wavve"),
 ]
