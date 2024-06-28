@@ -11,7 +11,9 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from config.constraints import NETFLIX_LOGIN_URL, NETFLIX_CONTENT_URL, TVING_LOGIN_URL, TVING_CONTENT_URL
+from config.constraints import (
+    NETFLIX_LOGIN_URL, NETFLIX_CONTENT_URL, DISNEY_CONTENT_URL, TVING_LOGIN_URL, TVING_CONTENT_URL
+)
 from config.settings import settings
 
 
@@ -339,6 +341,104 @@ class NetflixParser(OTTParser):
             # Selenium 종료
             if driver is not None:
                 driver.quit()
+
+
+class DisneyParser(OTTParser):
+    def __init__(self):
+        super().__init__("11", DISNEY_CONTENT_URL)
+
+    def parse(self, content_id):
+        soup = None
+        try:
+            content = dict()
+            soup = BeautifulSoup(requests.get(self.ott_content_url + content_id).text, 'html.parser')
+            next_data = soup.find("script", attrs={"id": "__NEXT_DATA__"})
+            json_data = json.loads(next_data.text)
+
+            # 코드
+            content_type = json_data['props']['pageProps']['metadataProps']['ldJSON']['@type']
+            content['code'] = content_type == "Movie" and "10" or "11"
+            # 타이틀
+            content['title'] = json_data['props']['pageProps']['detailProps']['title']
+            # 시놉시스
+            content['synopsis'] = json_data['props']['pageProps']['heroProps']['synopsis']
+            # 연령고지
+            content['notice_age'] = json_data['props']['pageProps']['metadataProps']['ldJSON']['contentRating']
+            # 출시일
+            content['release'] = json_data['props']['pageProps']['metadataProps']['ldJSON']['datePublished']
+            # 플랫폼
+            links = json_data['props']['pageProps']['metadataProps']['linkTags']
+            ext_id = json_data['props']['pageProps']['pageId']
+            content['platform'] = [
+                {"code": self.ott_code, "ext_id": ext_id, "url": link['href']}
+                for link in links if link.get('rel') == "canonical"
+            ]
+            stats = json_data['props']['pageProps']['detailProps']['stats']
+            # for stat in stats:
+            #     if stat['title'] == "공개일":
+            #         release = stat['value']
+            #     if stat['title'] == "장르":
+            #         genre = stat['value']
+            #
+            #         break
+            # release =
+            # 런타임
+            # 출연진, 제작진
+            cast_crews = json_data['props']['pageProps']['detailProps']['castCrew']
+            for crew in cast_crews:
+                
+                if crew['title'] == "감독:":
+                    content['staff'] = [
+                        {"code": "10", "name": value, "picture": "", "profile": ""}
+                        for value in crew['value'].replace(" ", "")
+                    ]
+                elif crew['title'] == "제작:":
+                    content['staff'] = [
+                        {"code": "12", "name": value, "picture": "", "profile": ""}
+                        for value in crew['value']
+                    ]
+                elif crew['title'] == "출연:":
+                    content['actor'] = [
+                        {"code": "10", "name": value, "role": "", "picture": "", "profile": ""}
+                        for value in crew['value']
+                    ]
+            # 플랫폼
+            # 썸네일 1-3
+            thumbnail = json_data['props']['pageProps']['heroProps']['backgroundImage']['mediumImage']['source'].split(",")[0]
+            # 장르
+            categories = json_data['props']['pageProps']['heroProps']['categories']
+            content['genre'] = [
+                {"name": category.replace("\u2060", "")}
+                for category in categories
+            ]
+            print(content)
+            # self.print_dict(json_data['props']['pageProps'])
+            # with open(f"output_{ext_id}.txt", 'w', encoding='utf-8') as file:
+            #     self.write_dict_to_file(json_data, file)
+
+        except Exception as e:
+            raise e
+        finally:
+            if soup:
+                soup.decompose()
+
+    def write_dict_to_file(self, d, file, depth=0):
+        indent = '  ' * depth  # 깊이에 따른 들여쓰기 설정
+        for key, value in d.items():
+            if isinstance(value, dict):
+                file.write(f"{indent}{key}:\n")
+                self.write_dict_to_file(value, file, depth + 1)  # 중첩된 딕셔너리를 재귀적으로 출력
+            else:
+                file.write(f"{indent}{key}: {value}\n")
+
+    def print_dict(self, d, depth=0):
+        indent = '  ' * depth  # 깊이에 따른 들여쓰기 설정
+        for key, value in d.items():
+            if isinstance(value, dict):
+                print(f"{indent}{key}:")
+                self.print_dict(value, depth + 1)  # 중첩된 딕셔너리를 재귀적으로 출력
+            else:
+                print(f"{indent}{key}: {value}")
 
 
 class TvingParser(OTTParser):

@@ -6,7 +6,7 @@ from django.views.generic import TemplateView
 
 from app.utils.uploader import ImageUploader, S3ImageUploader
 from .builder import VideoBuilder
-from .parser import OTTParser, NetflixParser, TvingParser
+from .parser import OTTParser, NetflixParser, DisneyParser, TvingParser
 from .store import VideoStore
 
 DJANGO_LOGIN_URL = "/login/"
@@ -197,6 +197,27 @@ class CollectNetflixBoxoffice(AuthView):
         context['summary'] = {"total": len(ext_ids), "success": s_cnt, "fail": f_cnt}
         # 화면 출력
         return render(request, template_name="pages/common/process-result.html", context=context)
+
+
+class CollectDisney(AuthView):
+    template_name = 'pages/builder/collect/index.html'
+
+    def get(self, request, *args, **kwargs):
+        context = dict()
+        context['title'] = "디즈니 검색"
+        search_ids = request.GET.get('search_ids')
+        if search_ids:
+            parser: OTTParser = DisneyParser()
+            builder = VideoBuilder(parser)
+            videos = list()
+            for search_id in search_ids.split(","):
+                video = builder.build(search_id)
+                if video and video not in videos:
+                    videos.append(video)
+            builder.close()
+            if videos:
+                context['videos'] = videos
+        return render(request, template_name=self.template_name, context=context)
 
 
 class CollectTving(AuthView):
