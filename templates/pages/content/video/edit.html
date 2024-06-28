@@ -185,11 +185,14 @@
                                                 <img id="thumbnail_preview_{{ thumbnail.id }}" src="{{ thumbnail.url|add_base_url }}" class="w-full h-full" style="object-fit: contain;"/>
                                             </div>
                                             <div class="flex-auto flex flex-col gap-1.5">
-                                                <select name="thumbnail_code_{{ thumbnail.id }}" class="form-select w-[200px]">
-                                                    {% for code in video_thumbnail_code %}
-                                                        <option value="{{ code.0 }}" {% if thumbnail.code == code.0 %} selected {% endif %}>{{ code.1 }}</option>
-                                                    {% endfor %}
-                                                </select>
+                                                <div class="flex gap-2.5">
+                                                    <select name="thumbnail_code_{{ thumbnail.id }}" class="form-select w-[200px]">
+                                                        {% for code in video_thumbnail_code %}
+                                                            <option value="{{ code.0 }}" {% if thumbnail.code == code.0 %} selected {% endif %}>{{ code.1 }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                    <input type="number" name="thumbnail_sort_{{ thumbnail.id }}" class="form-input" value="{{ thumbnail.sort }}" />
+                                                </div>
                                                 <input id="thumbnail" type="text" name="thumbnail_url_{{ thumbnail.id }}" class="form-input" value="{{thumbnail.url}}" readonly/>
                                                 <div class="flex gap-1.5">
                                                     <div class="rounded px-3 py-1 bg-primary/10 text-primary text-sm border border-primary/60 flex items-center gap-1">
@@ -698,9 +701,12 @@ const addThumbnailElement = (video_id) => {
             </div>
             <div class="flex-auto flex flex-col gap-1.5">
                 <div class="flex gap-2.5 justify-start items-center">
-                    <select name="thumbnail_code_${newId}" class="form-select w-[200px]">
-                        ${thumbnailCode}
-                    </select>
+                    <div class="flex gap-2.5">
+                        <select name="thumbnail_code_${newId}" class="form-select w-[200px]">
+                            ${thumbnailCode}
+                        </select>
+                        <input type="number" name="thumbnail_sort_${newId}" class="form-input" value="99" />
+                    </div>
                     <input type="radio" name="thumbnail_upload_type_${newId}" value="url" onchange="toggleUploadType(event, '${newId}')" checked> URL
                     <input type="radio" name="thumbnail_upload_type_${newId}" value="file" onchange="toggleUploadType(event, '${newId}')"> FILE
                 </div>
