@@ -229,10 +229,13 @@ class VideoThumbnail(models.Model):
     url = models.CharField(max_length=1000, null=False)
     # 확장자
     extension = models.CharField(max_length=10, null=False)
-    # 사이즈
+    # 파일 크기
     size = models.BigIntegerField(null=True)
+    # 이미지 사이즈
     width = models.IntegerField(null=True)
     height = models.IntegerField(null=True)
+    # 정렬 순서
+    sort = models.IntegerField(default=99)
     # 생성일, 수정일
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(null=True, auto_now=True)
@@ -244,7 +247,7 @@ class VideoThumbnail(models.Model):
 
     class Meta:
         db_table = "rvvs_video_thumbnail"
-        ordering = ['code']
+        ordering = ['code', 'sort']
 
 
 class VideoPlatform(models.Model):

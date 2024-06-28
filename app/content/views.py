@@ -112,7 +112,7 @@ class VideoEdit(LoginRequiredMixin, DetailView):
         context['video_genre_list'] = video.genre_list.all().order_by('sort', 'id')
         context['video_actor_list'] = video.actor_list.all().order_by('sort', 'code')
         context['video_staff_list'] = video.staff_list.all().order_by('sort', 'code')
-        context['video_thumbnail_list'] = video.thumbnail.all().order_by('code')
+        context['video_thumbnail_list'] = video.thumbnail.all().order_by('code', 'sort')
         context['video_platform_list'] = video.platform.all().order_by('code')
         context['country_code_list'] = CountryCode.objects.all()
         return context
@@ -172,6 +172,7 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                     # 썸네일 정보 가져오기
                     code = request.POST.get('thumbnail_code_' + thumbnail_id)
                     url = request.POST.get('thumbnail_url_' + thumbnail_id)
+                    sort = request.POST.get('thumbnail_sort_' + thumbnail_id)
                     upload_type = request.POST.get('thumbnail_upload_type_' + thumbnail_id)
                     # 썸네일 정보가 없으면 다음 썸네일로 이동
                     if not code or not url or not upload_type:
@@ -195,7 +196,8 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                             'extension': result['extension'],
                             'size': result['size'],
                             'width': result['width'],
-                            'height': result['height']
+                            'height': result['height'],
+                            'sort': sort
                         })
                     except Exception as e:
                         print(e)
@@ -208,6 +210,20 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                 for thumbnail_id in thumbnail_delete_list:
                     # 썸네일 삭제
                     queryset.delete_video_thumbnail(video, thumbnail_id)
+            # 썸네일 수정
+            for thumbnail in video.thumbnail.all():
+                try:
+                    # 입력된 썸네일 정보 가져오기
+                    code = request.POST.get('thumbnail_code_' + str(thumbnail.id))
+                    sort = request.POST.get('thumbnail_sort_' + str(thumbnail.id))
+                    if not sort:
+                        sort = 99
+                    queryset.update_video_thumbnail(thumbnail, {
+                        'code': code,
+                        'sort': sort
+                    })
+                except Exception as e:
+                    print(e)
             # 비디오 상세 페이지로 리다이렉트
             return HttpResponseRedirect(reverse('content:video-detail', kwargs={'pk': video_id}))
         # 시청 정보 생성/수정/삭제
@@ -361,9 +377,6 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                     actor_sort = request.POST.get('actor_sort_' + str(actor.id))
                     if not actor_sort:
                         actor_sort = 99
-                    # 배우정보가 없으면 다음 배우정보로 이동
-                    if not actor_code or not actor_role:
-                        continue
                     # 배우정보 업데이트
                     queryset.update_video_actor(actor, {
                         'code': actor_code,
@@ -416,9 +429,6 @@ class VideoEdit(LoginRequiredMixin, DetailView):
                     staff_sort = request.POST.get('staff_sort_' + str(staff.id))
                     if not staff_sort:
                         staff_sort = 99
-                    # 제작진 정보가 없으면 다음 제작진으로 이동
-                    if not staff_code:
-                        continue
                     queryset.update_video_staff(staff, {
                         'code': staff_code,
                         'sort': staff_sort

@@ -485,16 +485,16 @@ def create_video_thumbnail(video, new_thumbnail):
             extension=new_thumbnail['extension'],
             size=new_thumbnail['size'],
             width=new_thumbnail['width'],
-            height=new_thumbnail['height']
+            height=new_thumbnail['height'],
+            sort=new_thumbnail['sort'] if new_thumbnail.get('sort') else 99
         )
     except Exception as e:
         raise e
 
 
-def update_video_thumbnail(video, video_thumbnail_id, new_thumbnail):
+def update_video_thumbnail(video_thumbnail, new_thumbnail):
     try:
         is_updated = False
-        video_thumbnail = video.thumbnail_list.get(id=video_thumbnail_id)
         if not new_thumbnail.get('code'):
             if video_thumbnail.code != new_thumbnail['code']:
                 video_thumbnail.code = new_thumbnail['code']
@@ -518,6 +518,10 @@ def update_video_thumbnail(video, video_thumbnail_id, new_thumbnail):
         if new_thumbnail.get('height'):
             if video_thumbnail.height != new_thumbnail['height']:
                 video_thumbnail.height = new_thumbnail['height']
+                is_updated = True
+        if new_thumbnail.get('sort'):
+            if video_thumbnail.sort != new_thumbnail['sort']:
+                video_thumbnail.sort = new_thumbnail['sort']
                 is_updated = True
         if is_updated:
             video_thumbnail.save()
