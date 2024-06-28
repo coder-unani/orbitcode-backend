@@ -16,5 +16,7 @@ migrations/
 
 # User Data
 data/
+logs/
 /temp.txt
 /temp1.txt
+installation.md
