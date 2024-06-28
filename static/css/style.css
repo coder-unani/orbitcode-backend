@@ -3387,11 +3387,11 @@ table .invoice-table tr td:last-child{
 }
 
 .bg-\[url\(\'\.\.\/images\/autho-light-bg\.png\'\)\]{
-  background-image: url('../images/autho-light-bg.png');
+  background-image: url('/static/images/autho-light-bg.png');
 }
 
 .bg-\[url\(\'\.\.\/images\/bg-cover\.png\'\)\]{
-  background-image: url('../images/bg-cover.png');
+  background-image: url('/static/images/bg-cover.png');
 }
 
 .bg-gradient-to-t{
