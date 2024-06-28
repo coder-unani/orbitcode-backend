@@ -1,5 +1,6 @@
 import datetime
 
+from django.db.models import Count
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
@@ -29,5 +30,8 @@ class Dashboard(LoginRequiredMixin, TemplateView):
         context['today_video_read'] = VideoViewLog.objects.filter(created_at__date=datetime.date.today()).count()
         context['total_write_review'] = VideoReview.objects.count()
         context['today_write_review'] = VideoReview.objects.filter(created_at__date=datetime.date.today()).count()
+
+        actor = Actor.objects.values('name').annotate(name_count=Count('name')).filter(name_count__gt=1).order_by('-name_count')
+        context['duplicated_actor'] = actor
 
         return context
