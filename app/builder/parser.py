@@ -12,7 +12,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from config.constraints import (
-    NETFLIX_LOGIN_URL, NETFLIX_CONTENT_URL, DISNEY_CONTENT_URL, TVING_LOGIN_URL, TVING_CONTENT_URL
+    NETFLIX_LOGIN_URL, NETFLIX_CONTENT_URL, DISNEY_CONTENT_URL, TVING_LOGIN_URL, TVING_CONTENT_URL, WAVVE_CONTENT_URL
 )
 from config.settings import settings
 
@@ -386,7 +386,7 @@ class DisneyParser(OTTParser):
             # 출연진, 제작진
             cast_crews = json_data['props']['pageProps']['detailProps']['castCrew']
             for crew in cast_crews:
-                
+
                 if crew['title'] == "감독:":
                     content['staff'] = [
                         {"code": "10", "name": value, "picture": "", "profile": ""}
@@ -637,3 +637,22 @@ class TvingParser(OTTParser):
         except Exception as e:
             raise e
 
+
+class WavveParser(OTTParser):
+    def __init__(self):
+        super().__init__("13", WAVVE_CONTENT_URL)
+
+    def parse(self, content_id):
+        soup = None
+        try:
+            soup = BeautifulSoup(requests.get(self.ott_content_url + content_id).text, 'html.parser')
+            print(soup)
+        except Exception as e:
+            print(e)
+        finally:
+            if soup:
+                soup.decompose()
+
+    @classmethod
+    def boxoffice(cls):
+        pass
