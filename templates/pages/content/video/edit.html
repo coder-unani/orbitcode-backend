@@ -569,7 +569,7 @@ const handleSearchStaff = (q) => {
                 `;
                 li.addEventListener('click', () => {
                     const actorId = li.querySelector('input').value;
-                    addElement('staff', ACTOR_CODE, ['id', 'name', 'sort'], [`${staff.id}`, `${staff.name}`, '99']);
+                    addElement('staff', STAFF_CODE, ['id', 'name', 'sort'], [`${staff.id}`, `${staff.name}`, '99']);
                     ulSearchResult.innerHTML = "";
                 });
                 ulSearchResult.appendChild(li);
