@@ -548,14 +548,15 @@ def create_video_object_all(new_object):
                 create_video_staff(video, new_staff)
             for new_genre in new_object.get('genre'):
                 create_video_genre(video, new_genre)
-            for new_platform in new_object.get('platform'):
+            for new_platform in new_object.get('platform', []):
                 create_video_platform(video, new_platform)
-            for new_production in new_object.get('production'):
+            for new_production in new_object.get('production', []):
                 create_video_production(video, new_production)
-            for new_thumbnail in new_object.get('thumbnail'):
+            for new_thumbnail in new_object.get('thumbnail', []):
                 create_video_thumbnail(video, new_thumbnail)
             return video
     except Exception as e:
+        print(e)
         raise e
 
 
