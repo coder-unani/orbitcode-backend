@@ -1,4 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.db.models import Count
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
@@ -37,7 +38,7 @@ class VideoList(LoginRequiredMixin, ListView):
     context_object_name = "videos"
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by('id')
+        query_set = super().get_queryset().order_by('id')
         keyword = self.request.GET.get('q', '')
         gid = self.request.GET.get('gid', '')
         aid = self.request.GET.get('aid', '')
@@ -45,18 +46,18 @@ class VideoList(LoginRequiredMixin, ListView):
         is_confirm = self.request.GET.get('cfm', '')
         is_delete = self.request.GET.get('del', '')
         if keyword:
-            queryset = queryset.filter(title__icontains=keyword)
+            query_set = query_set.filter(title__icontains=keyword)
         if gid:
-            queryset = queryset.filter(genre_list__genre_id=gid)
+            query_set = query_set.filter(genre_list__genre_id=gid)
         if aid:
-            queryset = queryset.filter(actor_list__actor_id=aid)
+            query_set = query_set.filter(actor_list__actor_id=aid)
         if sid:
-            queryset = queryset.filter(staff_list__staff_id=sid)
+            query_set = query_set.filter(staff_list__staff_id=sid)
         if is_confirm != "" and is_confirm in ["true", "false"]:
-            queryset = queryset.filter(is_confirm=(is_confirm == 'true'))
+            query_set = query_set.filter(is_confirm=(is_confirm == 'true'))
         if is_delete != "" and is_delete in ["true", "false"]:
-            queryset = queryset.filter(is_delete=(is_delete == 'true'))
-        return queryset
+            query_set = query_set.filter(is_delete=(is_delete == 'true'))
+        return query_set
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -464,15 +465,22 @@ class ActorList(LoginRequiredMixin, ListView):
     template_name = "pages/content/actor/list.html"
 
     def get_queryset(self):
-        queryset = super().get_queryset().order_by('name')
+        query_set = super().get_queryset()
         keyword = self.request.GET.get('q', '')
+        order_by = self.request.GET.get('ob', '')
         if keyword:
-            queryset = queryset.filter(name__icontains=keyword)
-        return queryset
+            query_set = query_set.filter(name__icontains=keyword)
+        if order_by:
+            if order_by == 'vcd':
+                query_set = query_set.annotate(video_count=Count('video')).order_by('-video_count', 'name')
+            elif order_by == 'cd':
+                query_set = query_set.order_by('-created_at', 'name')
+        return query_set
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['q'] = self.request.GET.get('q', '')
+        context['ob'] = self.request.GET.get('ob', '')
         return context
 
 
