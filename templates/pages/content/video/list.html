@@ -90,12 +90,12 @@
                     <label for="checkbox{{ video.id }}" class="ml-2 text-sm text-gray">{{ video.id }}</label>
                 </div>
 
-                <div class="w-[200px] h-[200px]">
+                <div class="w-[200px] h-auto overflow-hidden">
                     <div class="swiper SwiperwithPagination">
                         <div class="swiper-wrapper">
                             {%  for thumbnail in video.thumbnail.all %}
                                 <div class="swiper-slide">
-                                    <img src="{{ thumbnail.url|add_base_url }}" alt="slider" class="max-h-96 object-cover rounded-[10px]" />
+                                    <img src="{{ thumbnail.url|add_base_url }}" alt="slider" class="max-h-96 object-cover rounded-[10px]" style="width: 100%; height: 100%; object-fit: cover; object-position: center;"/>
                                 </div>
                             {% endfor %}
                         </div>
