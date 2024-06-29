@@ -1,4 +1,5 @@
 import json
+import logging
 from abc import ABC, abstractmethod
 from time import sleep
 
@@ -15,6 +16,8 @@ from config.constraints import (
     NETFLIX_LOGIN_URL, NETFLIX_CONTENT_URL, DISNEY_CONTENT_URL, TVING_LOGIN_URL, TVING_CONTENT_URL, WAVVE_CONTENT_URL
 )
 from config.settings import settings
+
+logger = logging.getLogger(__name__)
 
 
 class SeleniumParser:
@@ -642,16 +645,177 @@ class WavveParser(OTTParser):
     def __init__(self):
         super().__init__("13", WAVVE_CONTENT_URL)
 
-    def parse(self, content_id):
-        soup = None
+    def parse(self, content_url):
+        driver = None
         try:
-            soup = BeautifulSoup(requests.get(self.ott_content_url + content_id).text, 'html.parser')
-            print(soup)
+            content = dict()
+            # selenium 설정
+            selenium_options = Options()
+            # selenium_options.add_experimental_option("detach", True) # 브라우저 종료 방지
+            selenium_options.add_argument("--headless")  # 헤드리스 모드 설정
+            selenium_options.add_argument("--no-sandbox")
+            selenium_options.add_argument("--disable-dev-shm-usage")
+            # selenium webdriver 설정
+            driver = webdriver.Chrome(options=selenium_options)
+            # 컨텐츠 URL 호출
+            # driver.get(self.ott_content_url + content_id)
+            driver.get(content_url)
+            body = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+            # code
+            meta_type = driver.find_element(
+                by=By.CSS_SELECTOR,
+                value='meta[property="og:type"][data-vue-meta="ssr"]'
+            ).get_attribute("content")
+            if meta_type == "video.movie":
+                content['code'] = "10"
+            else:
+                content['code'] = "11"
+            # title
+            meta_title = driver.find_element(
+                by=By.CSS_SELECTOR,
+                value='meta[property="og:title"][data-vue-meta="ssr"]'
+            ).get_attribute("content")
+            content['title'] = meta_title.replace("[wavve]", "").strip()
+            # synopsis
+            meta_description = driver.find_element(
+                by=By.CSS_SELECTOR,
+                value='meta[property="og:description"][data-vue-meta="ssr"]'
+            ).get_attribute("content")
+            content['synopsis'] = meta_description
+            # platform
+            meta_url = driver.find_element(
+                by=By.CSS_SELECTOR,
+                value='meta[property="og:url"][data-vue-meta="ssr"]'
+            ).get_attribute("content")
+            content['platform'] = [{"code": self.ott_code, "ext_id": meta_url.split("=")[-1], "url": meta_url}]
+            # 메타 데이터 리스트
+            metadata_list = driver.find_element(by=By.CLASS_NAME, value="metadata-list")
+            items = metadata_list.find_elements(By.TAG_NAME, "dd")
+            parsed_data = {}
+            content['release'] = ""
+            content['runtime'] = ""
+            content['notice_age'] = ""
+            for item in items:
+                em_elements = item.find_elements(By.TAG_NAME, "em")
+                if em_elements:
+                    em_text = em_elements[0].text.strip()
+                    item_text = item.text.replace(em_text, '').strip()
+            # 출시일
+                    if content['code'] == "10" and "개봉연도" in em_text:
+                        content['release'] = item_text
+            # 상영시간
+                    if content['code'] == "10" and "상영시간" in em_text:
+                        content['runtime'] = item_text
+                    if content['code'] == "11" and "에피소드" in em_text:
+                        content['runtime'] = item_text
+            # 연령고지
+                    elif "시청연령" in em_text:
+                        img_element = item.find_element(By.TAG_NAME, "img")
+                        content['notice_age'] = img_element.get_attribute(':alt').replace(' 아이콘', '')
+                    elif "종류" in em_text:
+                        parsed_data['code'] = item_text
+            # 컨텐츠 상세정보 불러오기
+            buttons = driver.find_element(by=By.CLASS_NAME, value="player-nav").find_elements(by=By.TAG_NAME, value="button")
+            for button in buttons:
+                if button.text == "상세정보":
+                    button.click()
+                    break
+            detail_view = driver.find_element(by=By.CLASS_NAME, value="detail-view-box")
+            # 썸네일 #1
+            content['thumbnail'] = list()
+            try:
+                thumb_box = detail_view.find_element(by=By.CLASS_NAME, value="thumb-box")
+                source_element = thumb_box.find_element(By.CSS_SELECTOR, 'picture > source')
+                srcset_value = source_element.get_attribute('srcset')
+                # srcset을 파싱하여 2.5x 이미지만 추출
+                srcset_items = srcset_value.split(',')
+                for item in srcset_items:
+                    if '1.7x' in item:
+                        content['thumbnail'].append({
+                            "code": "10",
+                            "url": item.strip().split(' ')[0],
+                            "extension": "",
+                            "size": 0,
+                            "width": 0,
+                            "height": 0,
+                            "sort": "1"
+                        })
+                        break
+            except Exception as e:
+                logger.error(e)
+            # 썸네일 #2
+            try:
+                video_container = driver.find_element(by=By.CLASS_NAME, value="video-container")
+                image = video_container.find_element(by=By.CLASS_NAME, value="poster-thumb")
+                content['thumbnail'].append({
+                    "code": "11",
+                    "url": image.get_attribute("src"),
+                    "extension": "",
+                    "size": 0,
+                    "width": 0,
+                    "height": 0,
+                    "sort": "1"
+                })
+            except Exception as e:
+                logger.error(e)
+            # 디테일 정보
+            detail_info = detail_view.find_element(by=By.CLASS_NAME, value="detail-info-box")
+            # 시놉시스
+            content['synopsis'] = detail_info.find_element(by=By.CLASS_NAME, value="detail-dsc").text
+            # 출연진
+            try:
+                actor_elements = detail_info.find_elements(By.XPATH, '//tr[th[text()="출연"]]/td/a')
+                content['actor'] = [
+                    {
+                        "code": "10",
+                        "role": "",
+                        "name": actor.text,
+                        "sort": "99"
+                    }
+                    for actor in actor_elements
+                ]
+            except Exception as e:
+                logger.error(e)
+            # 제작진
+            content['staff'] = list()
+            # 감독
+            try:
+                director_elements = driver.find_element(By.XPATH, '//tr[th[text()="감독"]]/td/a')
+                content['staff'].append({
+                    "code": "10",
+                    "name": director_elements.text.strip(),
+                })
+            except Exception as e:
+                logger.error(e)
+            # 작가
+            try:
+                writer_elements = driver.find_element(By.XPATH, '//tr[th[text()="작가"]]/td/a')
+                content['staff'].append({
+                    "code": "11",
+                    "name": writer_elements.text.strip(),
+                })
+            except Exception as e:
+                logger.error(e)
+            # 장르
+            content['genre'] = list()
+            try:
+                genre_elements = detail_info.find_elements(By.CSS_SELECTOR, 'tr:nth-of-type(2) td a.genre')
+                content['genre'] = [
+                    {
+                        "name": genre.text.replace("#", "").strip(),
+                    }
+                    for genre in genre_elements
+                ]
+            except Exception as e:
+                logger.error(e)
+            return content
         except Exception as e:
             print(e)
         finally:
-            if soup:
-                soup.decompose()
+            if driver:
+                driver.quit()
 
     @classmethod
     def boxoffice(cls):
