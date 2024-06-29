@@ -432,4 +432,58 @@ class CollectWavve(AuthView):
                 context['videos'] = videos
         return render(request, template_name=self.template_name, context=context)
 
+    def post(self, request):
+        ext_ids = request.POST.getlist('ext_ids')
+        # 빈 값 제거
+        ext_ids = [item for item in ext_ids if item]
+        # 화면 출력용 context
+        context = dict()
+        context['summary'] = dict()
+        context['messages'] = list()
+        s_cnt = 0
+        f_cnt = 0
+        # VideoStore Init
+        s3_image_uploader: ImageUploader = S3ImageUploader()
+        video_store = VideoStore(s3_image_uploader)
+        # ext_ids 기준으로 Loop
+        for ext_id in ext_ids:
+            try:
+                # ext_id에 해당되는 form data
+                form_video = request.POST.get('video_' + ext_id)
+                if not form_video:
+                    continue
+                # form data를 dict로 변환
+                content = ast.literal_eval(form_video)
+                # 이미 저장된 컨텐츠는 저장하지 않음
+                if content.get('is_db', False):
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 이미 저장되어 있는 컨텐츠 입니다."
+                    })
+                    f_cnt += 1
+                    continue
+                # DB저장
+                result = video_store.store(content)
+                # 저장 결과
+                if result:
+                    context['messages'].append({
+                        "result": "success",
+                        "message": f"{ext_id} 컨텐츠 저장에 성공 했습니다."
+                    })
+                    s_cnt += 1
+                else:
+                    context['messages'].append({
+                        "result": "fail",
+                        "message": f"{ext_id} 저장에 실패하였습니다."
+                    })
+                    f_cnt += 1
+            except Exception as e:
+                print(e)
+        # VideoStore Close
+        video_store.close()
+        # 화면 출력용 요약 정보
+        context['summary'] = {"total": len(ext_ids), "success": s_cnt, "fail": f_cnt}
+        # 화면 출력
+        return render(request, template_name="pages/common/process-result.html", context=context)
+
 
