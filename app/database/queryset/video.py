@@ -495,7 +495,7 @@ def create_video_thumbnail(video, new_thumbnail):
 def update_video_thumbnail(video_thumbnail, new_thumbnail):
     try:
         is_updated = False
-        if not new_thumbnail.get('code'):
+        if new_thumbnail.get('code'):
             if video_thumbnail.code != new_thumbnail['code']:
                 video_thumbnail.code = new_thumbnail['code']
                 is_updated = True
